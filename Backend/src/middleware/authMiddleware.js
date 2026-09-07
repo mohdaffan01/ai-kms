@@ -9,24 +9,27 @@ export const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      const parts = req.headers.authorization.trim().split(/\s+/);
+      const tokenParts = parts.filter((p) => p.toLowerCase() !== 'bearer');
+      token = tokenParts[tokenParts.length - 1] || '';
 
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || 'aikms_super_secret_jwt_key_2026_secure'
-      );
+      if (token) {
+        token = token.replace(/^["']|["']$/g, '').trim();
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || '123456');
 
       req.user = await User.findById(decoded.id).select('-password');
 
       if (!req.user) {
         res.status(401);
-        throw new Error('User not found or account removed');
+        return next(new Error('User not found or account removed'));
       }
 
-      next();
+      return next();
     } catch (error) {
       res.status(401);
-      return next(new Error('Not authorized, token failed or expired'));
+      return next(new Error(`Not authorized: ${error.message}`));
     }
   }
 

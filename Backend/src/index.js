@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import { authRoutes, userRoutes } from './routes/user.routes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import documentRoutes from "./routes/document.routes.js";
 
 dotenv.config();
 
@@ -21,6 +22,9 @@ app.use(
 
 app.use(express.json());
 
+// Makes files inside Backend/uploads publicly viewable/downloadable
+app.use("/uploads", express.static("uploads"));
+
 // API Routes
 app.get('/', (req, res) => {
   res.json({ message: 'AiKMS API Server is running smoothly' });
@@ -28,6 +32,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use("/api/documents", documentRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

@@ -22,17 +22,6 @@ const ChatWindow = ({ messages }) => {
           </div>
           <h1>Welcome to AiKMS</h1>
           <p>Ask anything from your uploaded learning materials.</p>
-          
-          <div className="sample-prompts-grid">
-            <div className="prompt-card">
-              <Sparkles size={18} className="prompt-icon" />
-              <span>"Summarize the key points in DBMS Notes.pdf"</span>
-            </div>
-            <div className="prompt-card">
-              <Sparkles size={18} className="prompt-icon" />
-              <span>"Explain process scheduling algorithms in Operating Systems"</span>
-            </div>
-          </div>
         </div>
       ) : (
         /* Messages Stream */

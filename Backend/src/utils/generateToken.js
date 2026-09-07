@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'aikms_super_secret_jwt_key_2026_secure', {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };
