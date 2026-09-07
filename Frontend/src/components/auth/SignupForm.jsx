@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { registerApi } from '../../api/authApi';
 
 const SignupForm = () => {
   const [fullName, setFullName] = useState('');
@@ -9,9 +10,10 @@ const SignupForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -25,21 +27,45 @@ const SignupForm = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password should be at least 6 characters.');
+    if (password.length < 8) {
+      setError('Password should be at least 8 characters.');
       return;
     }
 
-    // Demo Authentication Signup
-    const userObj = {
-      name: fullName.trim(),
-      email: email.trim(),
-    };
+    try {
+      setIsSubmitting(true);
+      const data = await registerApi({
+        name: fullName.trim(),
+        email: email.trim(),
+        password,
+        confirmPassword,
+      });
 
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify(userObj));
-
-    navigate('/dashboard');
+      if (data && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            id: data._id,
+            name: data.name,
+            email: data.email,
+            role: data.role,
+          })
+        );
+        navigate('/dashboard');
+      } else {
+        setError('Signup failed: Token not received from server.');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      const msg =
+        err.response?.data?.message ||
+        'Registration failed. Please try again or use another email.';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -121,8 +147,14 @@ const SignupForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-accent">
-          Create Account
+        <button type="submit" className="btn-accent" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <Loader2 size={18} className="spinner" /> Creating Account...
+            </span>
+          ) : (
+            'Create Account'
+          )}
         </button>
       </form>
 

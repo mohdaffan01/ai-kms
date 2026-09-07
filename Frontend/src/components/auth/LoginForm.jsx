@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { loginApi } from '../../api/authApi';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -18,21 +20,35 @@ const LoginForm = () => {
       return;
     }
 
-    // Demo Authentication Login
-    const nameFromEmail = email.split('@')[0];
-    const formattedName = nameFromEmail
-      ? nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
-      : 'Student';
+    try {
+      setIsSubmitting(true);
+      const data = await loginApi({ email: email.trim(), password });
 
-    const userObj = {
-      name: formattedName,
-      email: email.trim(),
-    };
-
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify(userObj));
-
-    navigate('/dashboard');
+      if (data && data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem(
+          'user',
+          JSON.stringify({
+            id: data._id,
+            name: data.name,
+            email: data.email,
+            role: data.role,
+          })
+        );
+        navigate('/dashboard');
+      } else {
+        setError('Login failed: Token not received from server.');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      const msg =
+        err.response?.data?.message ||
+        'Login failed. Please check your credentials or server connection.';
+      setError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,8 +98,14 @@ const LoginForm = () => {
           </div>
         </div>
 
-        <button type="submit" className="btn-accent">
-          Log in
+        <button type="submit" className="btn-accent" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <Loader2 size={18} className="spinner" /> Logging in...
+            </span>
+          ) : (
+            'Log in'
+          )}
         </button>
       </form>
 
