@@ -12,13 +12,14 @@ import {
   Folder,
   Trash2,
   Eye,
-  Loader2
+  Loader2,
+  LayoutDashboard
 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import DocumentViewerModal from './DocumentViewerModal';
 import { getMyDocumentsApi, deleteDocumentApi } from '../../api/documentApi';
 
-const Sidebar = ({ onNewChat }) => {
+const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [documents, setDocuments] = useState([]);
@@ -119,8 +120,20 @@ const Sidebar = ({ onNewChat }) => {
           </div>
 
           <button 
-            className="btn-new-chat"
+            className={`btn-sidebar-nav ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => {
+              if (onSelectTab) onSelectTab('dashboard');
+              setIsOpen(false);
+            }}
+          >
+            <LayoutDashboard size={18} />
+            <span>Dashboard</span>
+          </button>
+
+          <button 
+            className={`btn-new-chat ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => {
+              if (onSelectTab) onSelectTab('chat');
               if (onNewChat) onNewChat();
               setIsOpen(false);
             }}

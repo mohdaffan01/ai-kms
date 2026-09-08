@@ -51,6 +51,7 @@
   color: var(--text-main);
 }
 
+.btn-sidebar-nav,
 .btn-new-chat {
   width: 100%;
   background: transparent;
@@ -67,9 +68,36 @@
   transition: var(--transition);
 }
 
+.btn-sidebar-nav:hover,
 .btn-new-chat:hover {
   background: var(--bg-card);
   border-color: var(--text-muted);
+}
+
+.btn-sidebar-nav.active,
+.btn-new-chat.active {
+  background: var(--accent-green-light);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+/* Dashboard Placeholder Area */
+.dashboard-placeholder-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background: var(--bg-dark);
+}
+
+.dashboard-placeholder-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: 2px;
+  opacity: 0.85;
 }
 
 /* Sidebar Content Section */

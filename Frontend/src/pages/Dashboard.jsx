@@ -6,6 +6,7 @@ import ChatInput from '../components/dashboard/ChatInput';
 
 const Dashboard = () => {
   const [messages, setMessages] = useState([]);
+  const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'dashboard'
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,10 +38,22 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar onNewChat={handleNewChat} />
+      <Sidebar 
+        onNewChat={handleNewChat} 
+        activeTab={activeTab} 
+        onSelectTab={(tab) => setActiveTab(tab)} 
+      />
       <main className="chat-main-area">
-        <ChatWindow messages={messages} />
-        <ChatInput onSendMessage={handleSendMessage} />
+        {activeTab === 'dashboard' ? (
+          <div className="dashboard-placeholder-container">
+            <h1 className="dashboard-placeholder-title">DASHBOARD</h1>
+          </div>
+        ) : (
+          <>
+            <ChatWindow messages={messages} />
+            <ChatInput onSendMessage={handleSendMessage} />
+          </>
+        )}
       </main>
     </div>
   );
