@@ -8,37 +8,48 @@ export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password, confirmPassword, profileImage } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name?.trim() || !email?.trim() || !password?.trim()) {
       res.status(400);
       throw new Error('Please fill in all required fields (name, email, password)');
     }
 
-    if (confirmPassword && password !== confirmPassword) {
+    if (name?.trim().length < 3) {
+      res.status(400);
+      throw new Error('Name must be at least 3 characters');
+    }
+    
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password?.trim())) {
+      res.status(400);
+      throw new Error('Password must contain at least one uppercase letter, one lowercase letter and one number');
+    }
+
+    if (confirmPassword?.trim() && password?.trim() !== confirmPassword?.trim()) {
       res.status(400);
       throw new Error('Passwords do not match');
     }
 
-    if (password.length < 8) {
+    if (password?.trim().length < 8) {
       res.status(400);
       throw new Error('Password must be at least 8 characters');
     }
 
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(email?.trim())) {
       res.status(400);
       throw new Error('Please provide a valid email address');
     }
 
-    const userExists = await User.findOne({ email: email.toLowerCase() });
+    const userExists = await User.findOne({ email: email?.trim()?.toLowerCase() });
     if (userExists) {
       res.status(400);
       throw new Error('User already exists with this email address');
     }
 
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password,
+      name: name?.trim(),
+      email: email?.trim()?.toLowerCase(),
+      password: password?.trim(),
       profileImage: profileImage || undefined,
     });
 
@@ -70,12 +81,12 @@ export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email?.trim() || !password?.trim()) {
       res.status(400);
       throw new Error('Please provide email and password');
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email?.trim()?.toLowerCase() });
 
     if (user && (await user.matchPassword(password))) {
       const token = generateToken(user._id);

@@ -45,7 +45,7 @@ const fileFilter = (req, file, cb) => {
   if (isAllowed) {
     return cb(null, true);
   }
-
+  //cb = callback function used to pass values to the next middleware or the route handler
   cb(
     new Error(
       "Only PDF, PPT, PPTX, DOC, DOCX, TXT, and Markdown files are allowed."
@@ -57,7 +57,7 @@ const uploadDocumentMiddleware = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 20 * 1024 * 1024,
+    fileSize: 20 * 1024 * 1024, //20MB 
   },
 });
 
