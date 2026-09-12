@@ -8,7 +8,7 @@ trigger: always_on
 
 # AI Coding Agent Rules & Guidelines
 
-This document defines how an AI coding agent should operate within this multi-vendor marketplace repository (comprising `Backend` and `Frontend`).
+This document defines how an AI coding agent should operate within the AI-KMS repository (comprising `Backend` and `Frontend`).
 
 ## Core Principle
 - Prefer targeted investigation over broad repository analysis.
@@ -36,7 +36,7 @@ This document defines how an AI coding agent should operate within this multi-ve
 
 ## Change Validation
 - After making a change, validate the affected area first.
-- Run the smallest relevant test, typecheck, lint, or build command (e.g., `node --check` or specific targeted tests).
+- Run the smallest relevant test, typecheck, lint, or build command.
 - Do not perform a full-project validation unless the change actually requires it.
 - If validation fails, investigate the error's relevant dependency chain rather than rescanning the project.
 
@@ -47,12 +47,6 @@ Broader repository analysis is allowed only when:
 - A bug cannot be understood from the local scope.
 - A build or test error requires broader investigation.
 - The user explicitly asks for a full-project analysis.
-
-## Implementation Documentation
-- Maintain implementation knowledge separately from these rules.
-- If an `Implementation.md` exists in `Docs/`, use it as a high-level implementation map before exploring the repository.
-- Do not treat `Implementation.md` as a reason to read unrelated source files.
-- Update implementation documentation only when architecture, feature flow, important file relationships, or implementation status changes.
 
 ## Decision Making
 - Before reading a file, ask: *"Is this file necessary to complete the current task?"* If not, do not read it.
