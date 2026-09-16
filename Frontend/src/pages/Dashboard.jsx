@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import ChatInput from '../components/dashboard/ChatInput';
+import { speakText } from '../utils/voice';
 
 const Dashboard = () => {
   const [messages, setMessages] = useState([]);
@@ -29,6 +30,7 @@ const Dashboard = () => {
         text: 'This is a demo AI response. RAG-based answers will be added in the next module.',
       };
       setMessages((prev) => [...prev, aiMessage]);
+      speakText(window, aiMessage.text);
     }, 600);
   };
 
