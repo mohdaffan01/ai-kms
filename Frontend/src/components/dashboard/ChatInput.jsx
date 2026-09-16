@@ -1,8 +1,50 @@
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Mic, MicOff } from 'lucide-react';
+import {
+  supportsVoiceInput,
+  getVoiceRecognitionCtor,
+  extractVoiceTranscript,
+} from '../../utils/voice';
 
 const ChatInput = ({ onSendMessage }) => {
   const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
+  const recognitionRef = useRef(null);
+  const voiceSupported = supportsVoiceInput();
+
+  useEffect(() => {
+    const RecognitionCtor = getVoiceRecognitionCtor();
+    if (!RecognitionCtor) return undefined;
+
+    const recognition = new RecognitionCtor();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onresult = (event) => {
+      const transcript = extractVoiceTranscript(event);
+
+      if (transcript) {
+        setInput(transcript);
+      }
+    };
+
+    recognition.onerror = () => {
+      setVoiceError('Voice input is unavailable right now.');
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -10,6 +52,7 @@ const ChatInput = ({ onSendMessage }) => {
 
     onSendMessage(input.trim());
     setInput('');
+    setVoiceError('');
   };
 
   const handleKeyDown = (e) => {
@@ -17,6 +60,23 @@ const ChatInput = ({ onSendMessage }) => {
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const toggleVoiceInput = () => {
+    if (!voiceSupported || !recognitionRef.current) {
+      setVoiceError('Voice input is not supported in this browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    setVoiceError('');
+    recognitionRef.current.start();
+    setIsListening(true);
   };
 
   return (
@@ -30,6 +90,18 @@ const ChatInput = ({ onSendMessage }) => {
           onKeyDown={handleKeyDown}
           className="chat-textarea"
         />
+
+        {voiceSupported && (
+          <button
+            type="button"
+            className={`btn-voice-toggle ${isListening ? 'active' : ''}`}
+            onClick={toggleVoiceInput}
+            aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+          >
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+        )}
+
         <button
           type="submit"
           disabled={!input.trim()}
@@ -39,8 +111,11 @@ const ChatInput = ({ onSendMessage }) => {
           <Send size={18} />
         </button>
       </form>
+
+      {voiceError && <div className="voice-status-error">{voiceError}</div>}
+
       <div className="chat-footer-disclaimer">
-        AiKMS Demo Workspace • RAG-based AI answer model will be enabled in Module 2
+        AiKMS Demo Workspace • Voice input is available in supported browsers
       </div>
     </div>
   );

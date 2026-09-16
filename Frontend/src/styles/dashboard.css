@@ -473,6 +473,39 @@
   cursor: not-allowed;
 }
 
+.btn-voice-toggle {
+  position: absolute;
+  right: 3.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-voice-toggle:hover {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.btn-voice-toggle.active {
+  background: rgba(16, 163, 127, 0.15);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.voice-status-error {
+  color: #fca5a5;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 .chat-footer-disclaimer {
   font-size: 0.75rem;
   color: var(--text-dim);

@@ -1,0 +1,226 @@
+# Technical Requirement Document (TRD)
+
+## 1. Overview
+This document describes the technical architecture, stack, data communication patterns, authentication implementation, API endpoints, and technical constraints of the **AI-KMS** repository.
+
+---
+
+## 2. Technology Stack
+
+### 2.1 Frontend Stack
+- **Framework**: React 19 (`react` 19.2.8, `react-dom` 19.2.8)
+- **Build Tool / Bundler**: Vite 8.2.2 (`@vitejs/plugin-react` 6.1.0)
+- **Routing**: React Router DOM 7.18.3 (`BrowserRouter`, `Routes`, `Route`, `Navigate`)
+- **HTTP Client**: Axios 1.20.0
+- **Iconography**: Lucide React 1.42.0 (`Brain`, `FileText`, `UploadCloud`, `User`, `Lock`, `Mail`, etc.)
+- **Styling**: Vanilla CSS (Modular stylesheets: [index.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/index.css), [auth.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/auth.css), [dashboard.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/dashboard.css))
+- **Environment**: Node.js ES Modules (`"type": "module"`)
+
+### 2.2 Backend Stack
+- **Runtime Environment**: Node.js
+- **Web Framework**: Express.js 5.2.1
+- **Database ODM**: Mongoose 9.9.4
+- **File Upload Handler**: Multer 2.3.0 (`diskStorage`)
+- **Authentication**: JSON Web Tokens (`jsonwebtoken` 9.0.3)
+- **Password Hashing**: `bcryptjs` 3.0.3
+- **Middleware & Utilities**: `cors` 2.8.6, `dotenv` 17.4.2, `nodemon` 3.1.14
+
+### 2.3 Database
+- **Database System**: MongoDB
+- **Connection URI**: Configured via `MONGO_URI` in `.env` (Fallback: `mongodb://127.0.0.1:27017/aikms`) ([db.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/config/db.js))
+
+---
+
+## 3. Libraries and Dependencies Summary
+
+### Backend Dependencies (`Backend/package.json`)
+```json
+{
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "multer": "^2.3.0",
+    "nodemon": "^3.1.14"
+  }
+}
+```
+
+### Frontend Dependencies (`Frontend/package.json`)
+```json
+{
+  "dependencies": {
+    "axios": "^1.20.0",
+    "lucide-react": "^1.42.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "eslint": "^10.9.0",
+    "vite": "^8.2.2"
+  }
+}
+```
+
+---
+
+## 4. Project Architecture
+
+The application follows a standard **Client-Server (REST API)** architecture.
+
+```
+                      +---------------------------------------+
+                      |         React 19 Frontend             |
+                      |  (Vite + React Router + Context API)  |
+                      +-------------------+-------------------+
+                                          |
+                                HTTP / REST API Calls
+                                (Bearer JWT Token)
+                                          |
+                                          v
+                      +-------------------+-------------------+
+                      |         Node.js / Express Backend     |
+                      |  (Routes -> Middlewares -> Controllers)|
+                      +---------+-------------------+---------+
+                                |                   |
+                      Static File Serving      Mongoose ODM
+                                |                   |
+                                v                   v
+                      +---------+---------+   +-----+---------+
+                      | Local File System |   |    MongoDB    |
+                      | (Backend/uploads) |   |  (Database)   |
+                      +-------------------+   +---------------+
+```
+
+### 4.1 Frontend Component Structure
+```
+Frontend/src/
+├── api/
+│   ├── authApi.js           # Axios instance with request interceptor
+│   └── documentApi.js       # Endpoints for document upload, retrieval, & deletion
+├── components/
+│   ├── auth/
+│   │   ├── AuthLayout.jsx   # Shell for auth forms with brand header
+│   │   ├── LoginForm.jsx    # Login form component with error/loading states
+│   │   ├── ProtectedRoute.jsx # HOC route wrapper enforcing auth
+│   │   └── SignupForm.jsx   # Registration form component
+│   ├── common/
+│   │   ├── Logo.jsx         # Reusable brand logo
+│   │   └── Navbar.jsx       # Top navigation header
+│   └── dashboard/
+│       ├── ChatInput.jsx    # Chat textarea input box
+│       ├── ChatWindow.jsx   # Message stream display & welcome view
+│       ├── DocumentViewerModal.jsx # PDF preview & document metadata modal
+│       ├── Sidebar.jsx      # Left sidebar navigation & document drawer
+│       └── UploadModal.jsx  # Drag & drop document upload modal
+├── context/
+│   └── AuthContext.jsx      # Authentication provider state management
+├── pages/
+│   ├── Dashboard.jsx        # Main chat workspace page
+│   ├── Login.jsx            # Login page view
+│   ├── Profile.jsx          # User settings & security page
+│   ├── Register.jsx         # Standalone registration page view
+│   └── Signup.jsx           # Signup wrapper page view
+└── styles/
+    ├── auth.css             # Authentication styling
+    ├── dashboard.css        # Dashboard & modal layout styling
+    └── index.css            # Base design tokens & CSS resets
+```
+
+### 4.2 Backend Directory Structure
+```
+Backend/
+├── uploads/                 # Local directory storing uploaded files
+└── src/
+    ├── config/
+    │   └── db.js            # MongoDB connection logic via Mongoose
+    ├── controllers/
+    │   ├── document.controller.js # Upload, fetch, and delete logic
+    │   └── user.Controller.js    # Register, login, profile, password logic
+    ├── middleware/
+    │   ├── authMiddleware.js     # Bearer token verification middleware
+    │   ├── errorMiddleware.js    # 404 Not Found & global error handler
+    │   └── uploadMiddleware.js   # Multer diskStorage & file filter config
+    ├── models/
+    │   ├── document.model.js     # Mongoose Document schema definition
+    │   └── user.model.js         # Mongoose User schema definition with password hash hook
+    ├── routes/
+    │   ├── document.routes.js    # Express router for /api/documents
+    │   └── user.routes.js        # Express routers for /api/auth & /api/users
+    ├── utils/
+    │   └── generateToken.js      # JWT signing helper utility
+    └── index.js                  # Main Express app initialization & server entry point
+```
+
+---
+
+## 5. Frontend-Backend Communication
+
+1. **API Protocol**: JSON over HTTP/HTTPS.
+2. **Base URL**: `http://localhost:3000/api` (configured in [authApi.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/api/authApi.js#L3)).
+3. **Authentication Interceptor**: `authApi` configures an Axios request interceptor reading `token` from `localStorage` and populating `Authorization: Bearer <token>` on all outgoing requests.
+4. **Static File Serving**: Express serves uploaded document files via `app.use("/uploads", express.static("uploads"))` at `http://localhost:3000/uploads/<filename>`.
+
+---
+
+## 6. Authentication Implementation
+
+- **Token Generation**: Uses `jsonwebtoken` signed with secret `JWT_SECRET` (expiration: `30d`).
+- **Password Security**: Password pre-save hook in `user.model.js` uses `bcrypt.genSalt(10)` and `bcrypt.hash()` to encrypt passwords before saving to MongoDB.
+- **Password Comparison**: `userSchema.methods.matchPassword` compares raw candidate passwords against hashed stored values.
+- **Middleware Guard**: `protect` middleware ([authMiddleware.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/middleware/authMiddleware.js)) extracts token from Authorization header, verifies signature, fetches user document excluding `password`, and attaches it to `req.user`.
+
+---
+
+## 7. API Endpoints
+
+### 7.1 Authentication Routes (`/api/auth`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| POST | `/api/auth/register` | Public | `registerUser` | Register user, create account, and return user object with JWT token |
+| POST | `/api/auth/login` | Public | `loginUser` | Authenticate user credentials and return user object with JWT token |
+| GET | `/api/auth/me` | Private | `getUserProfile` | Get current logged-in user profile details |
+
+### 7.2 User Routes (`/api/users`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| PUT | `/api/users/profile` | Private | `updateUserProfile` | Update user name and profile image URL |
+| PUT | `/api/users/change-password` | Private | `changeUserPassword` | Validate current password and update to new password |
+
+### 7.3 Document Routes (`/api/documents`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| POST | `/api/documents/upload` | Private | `uploadDocument` | Upload file via Multer single file (`file`), store file on disk, create DB record |
+| GET | `/api/documents/my-documents` | Private | `getMyDocuments` | Fetch documents uploaded by user with optional query filters (`subject`, `topic`, `folder`) |
+| DELETE | `/api/documents/:id` | Private | `deleteDocument` | Verify ownership, delete file from `/uploads` directory, delete DB document record |
+
+### 7.4 System Routes
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/` | Public | Healthcheck endpoint returning `{ message: 'AiKMS API Server is running smoothly' }` |
+
+---
+
+## 8. Important Technical Decisions
+
+1. **Local Disk Storage for File Uploads**: Documents are uploaded to `Backend/uploads` with timestamped unique filenames (`${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`).
+2. **Dual State Persistence**: Auth state is maintained both in React Context state (`AuthContext`) and synchronized with `localStorage` (`token`, `user`, `isAuthenticated`).
+3. **Pre-defined Document Status Scheme**: Documents include a `processingStatus` enum (`'uploaded'`, `'processing'`, `'ready'`, `'failed'`) designed to orchestrate asynchronous background vector processing in upcoming modules.
+4. **Mongoose Timestamps**: Both User and Document schemas use `{ timestamps: true }` enabling automated `createdAt` and `updatedAt` field tracking.
+
+---
+
+## 9. Important Technical Constraints
+
+- **Single Host Static Base URL**: Frontend currently hardcodes `http://localhost:3000` for file serving and API requests.
+- **Upload File Limit**: Maximum size per file is capped at **20MB** in Multer config.
+- **Allowed Extensions**: Whitelist restricted strictly to `.pdf`, `.ppt`, `.pptx`, `.doc`, `.docx`, `.txt`, `.md`.
+- **Database Dependency**: MongoDB server must be running locally on port 27017 or accessible via `MONGO_URI`.
