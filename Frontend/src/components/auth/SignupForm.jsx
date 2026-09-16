@@ -13,12 +13,24 @@ const SignupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  const handleNameChange = (e) => {
+    // Restrict input to alphabets and spaces only (no numbers)
+    const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+    setFullName(filteredValue);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
       setError('Please fill in all fields.');
+      return;
+    }
+
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(fullName.trim())) {
+      setError('Name should contain only alphabetic characters.');
       return;
     }
 
@@ -89,7 +101,7 @@ const SignupForm = () => {
               id="fullName"
               placeholder="Mohd Affan"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={handleNameChange}
               required
             />
           </div>

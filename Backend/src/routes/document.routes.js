@@ -5,7 +5,12 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const documentRoutes = express.Router();
 
-documentRoutes.post("/upload", protect, uploadDocumentMiddleware.single("file"), uploadDocument);
+documentRoutes.post(
+  "/upload",
+  protect,
+  uploadDocumentMiddleware.single("file"),
+  uploadDocument
+);
 documentRoutes.get("/my-documents", protect, getMyDocuments);
 documentRoutes.delete("/:id", protect, deleteDocument);
 

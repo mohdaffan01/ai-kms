@@ -17,6 +17,12 @@ export const registerUser = async (req, res, next) => {
       res.status(400);
       throw new Error('Name must be at least 3 characters');
     }
+
+    const nameRegex = /^[A-Za-z\s]+$/;
+    if (!nameRegex.test(name?.trim())) {
+      res.status(400);
+      throw new Error('Name must contain only alphabets and spaces (no numbers allowed)');
+    }
     
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password?.trim())) {

@@ -7,6 +7,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add a name'],
       trim: true,
+      match: [
+        /^[A-Za-z\s]+$/,
+        'Name must contain only alphabets and spaces',
+      ],
     },
     email: {
       type: String,
