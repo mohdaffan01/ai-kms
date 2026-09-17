@@ -22,7 +22,7 @@
 ## 3. Detailed Feature Status Checklist
 
 ### 3.1 Authentication & User Management
-- [x] User registration API with validation (`POST /api/auth/register`)
+- [x] User registration API with validation (`POST /api/auth/register`) (Name regex: alphabets & spaces only; strict password strength regex)
 - [x] Password hashing using Bcrypt (`salt rounds = 10`)
 - [x] User login API issuing JWT (`POST /api/auth/login`)
 - [x] Persistent session handling using JWT stored in `localStorage`
@@ -85,9 +85,9 @@
   - `documents`: Document records, file metadata, ownership relation to `users`, processing status.
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 8 active endpoints.
+- **Total Operational Endpoints**: 9 active endpoints.
   1. `GET /`: Healthcheck response
-  2. `POST /api/auth/register`: Public registration
+  2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
   3. `POST /api/auth/login`: Public login
   4. `GET /api/auth/me`: Authenticated profile fetch
   5. `PUT /api/users/profile`: Update name & avatar
