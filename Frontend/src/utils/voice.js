@@ -29,16 +29,27 @@ export const extractVoiceTranscript = (event) => {
   return (transcript || '').trim();
 };
 
-export const speakText = (browserWindow = getBrowserWindow(), text = '') => {
+export const speakText = (browserWindow = getBrowserWindow(), text = '', onEndCallback) => {
   if (!text || !supportsTextToSpeech(browserWindow)) return false;
 
   if (!browserWindow.SpeechSynthesisUtterance) {
     return false;
   }
 
-  const utterance = new browserWindow.SpeechSynthesisUtterance(text);
   browserWindow.speechSynthesis.cancel();
-  browserWindow.speechSynthesis.speak(utterance);
+  const utterance = new browserWindow.SpeechSynthesisUtterance(text);
+  
+  if (typeof onEndCallback === 'function') {
+    utterance.onend = onEndCallback;
+    utterance.onerror = onEndCallback;
+  }
 
+  browserWindow.speechSynthesis.speak(utterance);
   return true;
+};
+
+export const stopSpeaking = (browserWindow = getBrowserWindow()) => {
+  if (browserWindow && browserWindow.speechSynthesis) {
+    browserWindow.speechSynthesis.cancel();
+  }
 };

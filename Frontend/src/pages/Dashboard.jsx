@@ -40,7 +40,6 @@ const Dashboard = () => {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-      speakText(window, aiText);
     } catch (error) {
       console.error('RAG Query Error:', error);
       const errorMessage = {

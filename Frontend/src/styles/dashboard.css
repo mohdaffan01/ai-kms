@@ -411,6 +411,33 @@
   border-color: #404040;
 }
 
+.btn-message-voice {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-dim);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-message-voice:hover {
+  background: var(--bg-card);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.btn-message-voice.active {
+  background: rgba(16, 163, 127, 0.15);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
 /* Chat Input Bar */
 .chat-input-wrapper {
   width: 100%;

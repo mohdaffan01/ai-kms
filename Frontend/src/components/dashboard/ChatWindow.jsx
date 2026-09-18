@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from 'react';
-import { Brain, User, FileText, Loader2 } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Brain, User, FileText, Loader2, Volume2, VolumeX } from 'lucide-react';
+import { speakText, stopSpeaking } from '../../utils/voice';
 
 const ChatWindow = ({ messages, isLoading }) => {
   const messagesEndRef = useRef(null);
+  const [speakingIndex, setSpeakingIndex] = useState(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -11,6 +13,26 @@ const ChatWindow = ({ messages, isLoading }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    // Cleanup speech synthesis on component unmount
+    return () => {
+      stopSpeaking(window);
+    };
+  }, []);
+
+  const handleToggleVoice = (index, text) => {
+    if (speakingIndex === index) {
+      stopSpeaking(window);
+      setSpeakingIndex(null);
+    } else {
+      stopSpeaking(window);
+      const started = speakText(window, text, () => setSpeakingIndex(null));
+      if (started) {
+        setSpeakingIndex(index);
+      }
+    }
+  };
 
   return (
     <div className="chat-window-container">
@@ -40,9 +62,33 @@ const ChatWindow = ({ messages, isLoading }) => {
               </div>
 
               <div className="message-bubble">
-                <div className="message-sender-name">
-                  {msg.sender === 'user' ? 'You' : 'AiKMS Assistant'}
+                <div className="message-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' }}>
+                  <div className="message-sender-name">
+                    {msg.sender === 'user' ? 'You' : 'AiKMS Assistant'}
+                  </div>
+
+                  {msg.sender === 'ai' && (
+                    <button
+                      type="button"
+                      className={`btn-message-voice ${speakingIndex === index ? 'active' : ''}`}
+                      onClick={() => handleToggleVoice(index, msg.text)}
+                      title={speakingIndex === index ? 'Stop reading' : 'Listen to response'}
+                    >
+                      {speakingIndex === index ? (
+                        <>
+                          <VolumeX size={14} />
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 size={14} />
+                          <span>Listen</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
+
                 <div className="message-text" style={{ whiteSpace: 'pre-wrap' }}>
                   {msg.text}
                 </div>

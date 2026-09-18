@@ -47,6 +47,7 @@
 - [x] Responsive sidebar with document drawer, count badge, view/delete action buttons, and mobile menu toggle ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] Chat interface layout with welcome empty state, auto-scrolling feed, and textarea input ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
 - [x] AI Chat Interaction (Fully connected to RAG backend `/api/knowledge/chat` to answer questions directly from uploaded PDFs)
+- [x] Manual Voice / Text-to-Speech Control (On-demand `Listen` / `Stop` button on AI response bubbles; auto-speak disabled)
 
 ### 3.4 Advanced AI & Analytics Capabilities
 - [x] PDF text extraction dependency installed (`pdf-parse`)
