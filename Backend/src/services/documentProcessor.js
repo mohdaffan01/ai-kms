@@ -5,14 +5,14 @@
  */
 
 import fs from 'fs';
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import { cleanText } from './textCleaner.js';
 import { chunkText } from './textChunker.js';
 import { generateBatchEmbeddings } from './embeddingService.js';
 import { upsertVectors } from './qdrantService.js';
 
 /**
- * Extract raw text from a PDF file using pdf-parse.
+ * Extract raw text from a PDF file using PDFParse.
  * 
  * @param {string} filePath - Absolute path to PDF file on disk
  * @returns {Promise<string>} Extracted raw text
@@ -23,8 +23,12 @@ export const extractTextFromPdf = async (filePath) => {
   }
 
   const dataBuffer = fs.readFileSync(filePath);
-  const pdfData = await pdfParse(dataBuffer);
-  return pdfData.text || '';
+  const parser = new PDFParse({ data: dataBuffer });
+  const result = await parser.getText();
+  if (typeof parser.destroy === 'function') {
+    await parser.destroy();
+  }
+  return result.text || '';
 };
 
 /**

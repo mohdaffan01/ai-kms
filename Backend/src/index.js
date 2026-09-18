@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import { authRoutes, userRoutes } from './routes/user.routes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import documentRoutes from "./routes/document.routes.js";
+import knowledgeRoutes from "./routes/knowledge.routes.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/knowledge", knowledgeRoutes);
 
 // Error Handling Middleware
 app.use(notFound);

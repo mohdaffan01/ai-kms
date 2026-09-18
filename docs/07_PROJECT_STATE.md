@@ -10,10 +10,10 @@
 ---
 
 ## 2. Current Development Phase
-- **Active Phase**: **Phase 2 (Text Parsing, Vector Embeddings & RAG Search Engine)** — *Step 1 Completed*.
+- **Active Phase**: Transitioning from **Phase 2 (Text Parsing, Vector Embeddings & RAG Search Engine)** to **Phase 3 (Knowledge Graph Canvas & Visualization)**.
 - **Phase Completion**:
   - Phase 1: Core System & Data Layer — **100% Completed**
-  - Phase 2: Document Vectorization & RAG Engine — **25% Completed (Service Architecture & PDF Parser Setup Done)**
+  - Phase 2: Document Vectorization & RAG Engine — **100% Completed**
   - Phase 3: Knowledge Graph Canvas — **0% Started**
   - Phase 4: Gap Detection & Analytics — **0% Started**
 
@@ -51,10 +51,10 @@
 ### 3.4 Advanced AI & Analytics Capabilities
 - [x] PDF text extraction dependency installed (`pdf-parse`)
 - [x] Backend service structure created ([`documentProcessor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [`textCleaner.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textCleaner.js), [`textChunker.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textChunker.js), [`embeddingService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [`qdrantService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/qdrantService.js))
-- [ ] Document processing API endpoint (`POST /api/knowledge/process/:documentId`)
-- [ ] Qdrant Docker vector database store setup & collection indexing
-- [ ] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
-- [ ] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
+- [x] Document processing API endpoint (`POST /api/knowledge/process/:documentId`) ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js))
+- [x] Qdrant Docker vector database store setup & collection indexing integration
+- [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
+- [x] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
 - [ ] Concept & relationship extraction for Knowledge Graphs
 - [ ] Interactive Knowledge Graph visualization canvas
 - [ ] Quiz generation & Knowledge Gap detection engine
@@ -87,7 +87,7 @@
   - `documents`: Document records, file metadata, ownership relation to `users`, processing status.
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 9 active endpoints.
+- **Total Operational Endpoints**: 12 active endpoints.
   1. `GET /`: Healthcheck response
   2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
   3. `POST /api/auth/login`: Public login
@@ -97,6 +97,9 @@
   7. `POST /api/documents/upload`: Multipart document file upload
   8. `GET /api/documents/my-documents`: List user documents with filters
   9. `DELETE /api/documents/:id`: Delete document file and DB record
+  10. `POST /api/knowledge/process/:documentId`: Extract, clean, chunk, embed & index document into Qdrant
+  11. `POST /api/knowledge/search`: User-isolated semantic RAG search across indexed documents
+  12. `DELETE /api/knowledge/:documentId`: Delete document vector embeddings from Qdrant
 
 ---
 
@@ -111,7 +114,6 @@
 
 ## 6. Current Next Steps
 
-1. **Set up Qdrant Vector Store**: Run Qdrant container via Docker and create vector collection.
-2. **Create Document Processing API**: Implement `POST /api/knowledge/process/:documentId` route calling `processDocument()` orchestrator.
-3. **Create Semantic Search API**: Implement `POST /api/knowledge/search` route with query embedding & Qdrant vector retrieval.
-4. **Implement Delete Route**: Implement `DELETE /api/knowledge/:documentId` to remove vectors from Qdrant upon document deletion.
+1. **Connect Frontend Chat UI to RAG Search**: Wire up `ChatWindow.jsx` to call `POST /api/knowledge/search` instead of mock dummy string response.
+2. **Phase 3 - Concept Extraction Engine**: Implement NLP / LLM extraction of concept triplets `(Subject, Relation, Object)` from document chunks.
+3. **Phase 3 - Knowledge Graph Canvas**: Render concept nodes and interactive relationships graph on frontend.
