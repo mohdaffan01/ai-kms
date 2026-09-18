@@ -68,7 +68,7 @@ const documentSchema = new mongoose.Schema(
     // Module 3 will update this after vector indexing
     processingStatus: {
       type: String,
-      enum: ["uploaded", "processing", "ready", "failed"],
+      enum: ["uploaded", "processing", "ready", "processed", "failed"],
       default: "uploaded",
     },
 

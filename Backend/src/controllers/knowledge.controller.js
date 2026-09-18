@@ -1,12 +1,12 @@
 import Document from '../models/document.model.js';
 import { processDocument, extractTextFromPdf } from '../services/documentProcessor.js';
+import { cleanText } from '../services/textCleaner.js';
 import { generateEmbedding } from '../services/embeddingService.js';
 import { searchVectors, deleteVectorsByDocument } from '../services/chromaService.js';
 import path from 'path';
 import fs from 'fs';
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
-const LLM_MODEL = process.env.LLM_MODEL || 'llama3';
 
 /**
  * @desc    Process uploaded document (Extract -> Clean -> Chunk -> Embed -> ChromaDB Store)
@@ -118,6 +118,88 @@ export const searchKnowledge = async (req, res) => {
 };
 
 /**
+ * Helper: Detect greetings
+ */
+const isGreeting = (text) => {
+  const clean = text.toLowerCase().trim().replace(/[^\w\s]/gi, '');
+  const greetingWords = ['hey', 'hello', 'hi', 'hey there', 'hi there', 'good morning', 'good afternoon', 'good evening', 'who are you', 'help'];
+  return greetingWords.includes(clean);
+};
+
+/**
+ * Helper: Detect summary request
+ */
+const isSummaryRequest = (text) => {
+  const clean = text.toLowerCase();
+  return (
+    clean.includes('summary') ||
+    clean.includes('summarize') ||
+    clean.includes('overview') ||
+    clean.includes('what is this pdf about') ||
+    clean.includes('what is this document about') ||
+    clean.includes('main points')
+  );
+};
+
+/**
+ * Helper: Clean media player artifacts and noise
+ */
+const cleanPdfNoise = (raw) => {
+  if (!raw) return '';
+  let text = cleanText(raw);
+  text = text.replace(/\d+\s*seconds\s*of\s*\d+\s*seconds\s*Volume\s*\d+%/gi, '');
+  text = text.replace(/GeeksforGeeks|www\.[a-z0-9.]+/gi, '');
+  text = text.replace(/[ \t]+/g, ' ');
+  text = text.replace(/\n\s*\n+/g, '\n\n');
+  return text.trim();
+};
+
+/**
+ * Helper: Generate structured summary from PDF text
+ */
+const generateDocumentSummary = (docTitle, rawText) => {
+  const text = cleanPdfNoise(rawText);
+  const paragraphs = text.split('\n\n').map((p) => p.trim()).filter((p) => p.length > 30);
+  const highlights = paragraphs.slice(0, 5).join('\n\n');
+
+  return `### 📑 Summary of "${docTitle}"\n\n**Overview & Key Excerpts**:\n${highlights}\n\n*You can ask me specific questions about any topic in this document!*`;
+};
+
+/**
+ * Helper: Generate structured response for specific concept question
+ */
+const generateStructuredConceptAnswer = (docTitle, userQuery, rawText) => {
+  const text = cleanPdfNoise(rawText);
+  const queryLower = userQuery.toLowerCase();
+  const paragraphs = text.split('\n\n').map((p) => p.trim()).filter((p) => p.length > 20);
+
+  const keywords = queryLower
+    .split(/\s+/)
+    .map((w) => w.replace(/[^\w]/g, ''))
+    .filter((w) => w.length > 2 && !['what', 'is', 'the', 'how', 'explain', 'tell', 'about', 'can', 'you', 'give', 'does', 'with', 'from', 'for'].includes(w));
+
+  // Rank paragraphs by keyword matches
+  const scored = paragraphs.map((p) => {
+    const pLower = p.toLowerCase();
+    let score = 0;
+    keywords.forEach((kw) => {
+      if (pLower.includes(kw)) score += 1;
+    });
+    return { paragraph: p, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const topMatches = scored.filter((s) => s.score > 0).slice(0, 3);
+
+  if (topMatches.length > 0) {
+    const matchedText = topMatches.map((m) => m.paragraph).join('\n\n');
+    return `### 📌 Answer from "${docTitle}"\n\n${matchedText}`;
+  }
+
+  return `### 📌 Context from "${docTitle}"\n\n${paragraphs.slice(0, 2).join('\n\n')}`;
+};
+
+/**
  * @desc    RAG Chat Query API - Answers user question grounded in uploaded PDF/document content
  * @route   POST /api/knowledge/chat
  * @access  Private
@@ -126,6 +208,7 @@ export const queryRagChat = async (req, res) => {
   try {
     const { message } = req.body;
     const userId = req.user._id || req.user.id;
+    const geminiApiKey = process.env.GEMINI_API_KEY || '';
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({
@@ -136,7 +219,27 @@ export const queryRagChat = async (req, res) => {
 
     const userQuery = message.trim();
 
-    // 1. Check if user has uploaded documents in MongoDB
+    // 1. Handle Casual Greetings
+    if (isGreeting(userQuery)) {
+      const userDocs = await Document.find({ uploadedBy: userId });
+      const docCount = userDocs.length;
+      const latestTitle = docCount > 0 ? userDocs[0].title : null;
+
+      let greetingText = `Hello! I'm your **AiKMS Study Assistant**. 👋\n\n`;
+      if (latestTitle) {
+        greetingText += `I am ready to help you analyze and answer questions from your uploaded document **"${latestTitle}"**! What would you like to know?`;
+      } else {
+        greetingText += `Upload a PDF or study material using the sidebar button, and I'll help you query and summarize it!`;
+      }
+
+      return res.status(200).json({
+        success: true,
+        answer: greetingText,
+        sources: latestTitle ? [latestTitle] : [],
+      });
+    }
+
+    // 2. Fetch User Documents from MongoDB
     const userDocs = await Document.find({ uploadedBy: userId }).sort({ createdAt: -1 });
 
     if (!userDocs || userDocs.length === 0) {
@@ -147,31 +250,115 @@ export const queryRagChat = async (req, res) => {
       });
     }
 
-    // 2. Try Vector Search via ChromaDB & Ollama Embeddings
+    const latestDoc = userDocs[0];
+    const fullPath = path.resolve(latestDoc.filePath);
+
+    // Extract raw text for intelligent text generation
+    let rawDocText = '';
+    if (fs.existsSync(fullPath)) {
+      if (latestDoc.mimeType?.includes('pdf') || latestDoc.originalFileName?.endsWith('.pdf')) {
+        rawDocText = await extractTextFromPdf(fullPath);
+      } else {
+        rawDocText = fs.readFileSync(fullPath, 'utf-8');
+      }
+    }
+
+    // 3. Handle Summary Requests
+    if (isSummaryRequest(userQuery) && rawDocText) {
+      if (geminiApiKey) {
+        try {
+          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Provide a clear, comprehensive, beautifully structured summary (using headings, bold key terms, and bullet points) of the following study document.\n\nDOCUMENT CONTEXT ("${latestDoc.title}"):\n${rawDocText.substring(0, 15000)}`;
+
+          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: geminiPrompt }] }] }),
+          });
+
+          if (gRes.ok) {
+            const gData = await gRes.json();
+            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (gAnswer) {
+              return res.status(200).json({
+                success: true,
+                answer: gAnswer,
+                sources: [latestDoc.title],
+              });
+            }
+          } else {
+            const errBody = await gRes.json();
+            console.warn(`[KnowledgeController] Gemini Summary Error (${gRes.status}):`, errBody.error?.message);
+          }
+        } catch (gErr) {
+          console.warn(`[KnowledgeController] Gemini API Summary fallback: ${gErr.message}`);
+        }
+      }
+
+      const summaryAnswer = generateDocumentSummary(latestDoc.title, rawDocText);
+      return res.status(200).json({
+        success: true,
+        answer: summaryAnswer,
+        sources: [latestDoc.title],
+      });
+    }
+
+    // 4. Try Vector Search via ChromaDB & Embeddings
     let ragMatches = [];
     try {
       const queryVector = await generateEmbedding(userQuery);
       ragMatches = await searchVectors(userId, queryVector, 4);
     } catch (vectorErr) {
-      console.warn(`[KnowledgeController] Vector RAG search unavailable (${vectorErr.message}). Falling back to document text extraction.`);
+      console.warn(`[KnowledgeController] Vector RAG search fallback: ${vectorErr.message}`);
     }
 
-    // 3. If vector matches were found via ChromaDB
+    // 5. If Vector Search Returned Matches
     if (ragMatches && ragMatches.length > 0) {
-      const contextTexts = ragMatches.map((m) => m.payload.text).join('\n\n---\n\n');
+      const contextTexts = ragMatches.map((m) => cleanPdfNoise(m.payload.text)).join('\n\n');
       const docIds = [...new Set(ragMatches.map((m) => m.payload.documentId))];
       const matchedDocs = await Document.find({ _id: { $in: docIds } });
       const sourceTitles = matchedDocs.map((d) => d.title);
 
-      // Attempt LLM generation via Ollama
+      // Attempt Gemini API if GEMINI_API_KEY exists
+      if (geminiApiKey) {
+        try {
+          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Answer the user's question clearly, concisely, and accurately using ONLY the provided document context below. Use Markdown formatting (bold terms, bullet points, headings).\n\nDOCUMENT CONTEXT:\n${contextTexts}\n\nUSER QUESTION: ${userQuery}`;
+
+          const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: geminiPrompt }] }],
+            }),
+          });
+
+          if (geminiRes.ok) {
+            const gData = await geminiRes.json();
+            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (gAnswer) {
+              return res.status(200).json({
+                success: true,
+                answer: gAnswer,
+                sources: sourceTitles,
+              });
+            }
+          } else {
+            const errBody = await geminiRes.json();
+            console.warn(`[KnowledgeController] Gemini Vector Search Error (${geminiRes.status}):`, errBody.error?.message);
+          }
+        } catch (gErr) {
+          console.warn(`[KnowledgeController] Gemini API fallback:`, gErr.message);
+        }
+      }
+
+      // Attempt Local Ollama LLM if available
       try {
-        const prompt = `System: You are an AI Study Assistant for AiKMS. Answer the user's question accurately using ONLY the provided document context below. If the context does not contain enough info, summarize what is available from the document context.\n\nDOCUMENT CONTEXT:\n${contextTexts}\n\nUSER QUESTION: ${userQuery}`;
+        const prompt = `System: You are an AI Study Assistant for AiKMS. Answer the user's question accurately using ONLY the provided document context below.\n\nDOCUMENT CONTEXT:\n${contextTexts}\n\nUSER QUESTION: ${userQuery}`;
 
         const llmRes = await fetch(`${OLLAMA_HOST}/api/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: LLM_MODEL,
+            model: 'llama3',
             prompt,
             stream: false,
           }),
@@ -184,67 +371,66 @@ export const queryRagChat = async (req, res) => {
               success: true,
               answer: llmData.response,
               sources: sourceTitles,
-              snippets: ragMatches.map((m) => m.payload.text.substring(0, 150) + '...'),
             });
           }
         }
       } catch (llmErr) {
-        console.warn(`[KnowledgeController] Local LLM generate fallback: ${llmErr.message}`);
+        console.warn(`[KnowledgeController] Ollama LLM fallback: ${llmErr.message}`);
       }
 
-      // Grounded Context Fallback (When Ollama LLM generator is offline)
-      const topMatch = ragMatches[0].payload.text;
-      const formattedAnswer = `Based on your uploaded document (${sourceTitles.join(', ') || 'Uploaded PDF'}):\n\n"${topMatch}"`;
+      // Smart Structured Context Answer Fallback
+      const topMatchText = cleanPdfNoise(ragMatches[0].payload.text);
+      const structuredAnswer = `### 📌 Answer from "${sourceTitles[0] || latestDoc.title}"\n\n${topMatchText}`;
 
       return res.status(200).json({
         success: true,
-        answer: formattedAnswer,
-        sources: sourceTitles,
-        snippets: ragMatches.map((m) => m.payload.text.substring(0, 200) + '...'),
+        answer: structuredAnswer,
+        sources: sourceTitles.length > 0 ? sourceTitles : [latestDoc.title],
       });
     }
 
-    // 4. Fallback Direct PDF Text Extraction (If ChromaDB service is not running locally)
-    const latestDoc = userDocs[0];
-    const fullPath = path.resolve(latestDoc.filePath);
+    // 6. Direct Extraction Fallback (Supports Gemini API)
+    if (rawDocText) {
+      if (geminiApiKey) {
+        try {
+          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Answer the user's question clearly, concisely, and accurately using ONLY the provided document context. Use Markdown formatting (bold terms, bullet points, headings).\n\nDOCUMENT CONTEXT FROM "${latestDoc.title}":\n${rawDocText.substring(0, 15000)}\n\nUSER QUESTION: ${userQuery}`;
 
-    if (fs.existsSync(fullPath)) {
-      let extractedText = '';
-      if (latestDoc.mimeType?.includes('pdf') || latestDoc.originalFileName?.endsWith('.pdf')) {
-        extractedText = await extractTextFromPdf(fullPath);
-      } else {
-        extractedText = fs.readFileSync(fullPath, 'utf-8');
-      }
+          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: geminiPrompt }] }] }),
+          });
 
-      if (extractedText && extractedText.trim()) {
-        const queryLower = userQuery.toLowerCase();
-        const sentences = extractedText.split(/(?<=[.?!])\s+/);
-
-        // Find sentences matching user query keywords
-        const keywords = queryLower.split(' ').filter((w) => w.length > 3);
-        const matchingSentences = sentences.filter((s) =>
-          keywords.some((kw) => s.toLowerCase().includes(kw))
-        );
-
-        let answerText = '';
-        if (matchingSentences.length > 0) {
-          answerText = `Based on your uploaded document "${latestDoc.title}":\n\n` + matchingSentences.slice(0, 4).join(' ');
-        } else {
-          answerText = `From your uploaded document "${latestDoc.title}":\n\n` + extractedText.trim().substring(0, 400) + '...';
+          if (gRes.ok) {
+            const gData = await gRes.json();
+            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (gAnswer) {
+              return res.status(200).json({
+                success: true,
+                answer: gAnswer,
+                sources: [latestDoc.title],
+              });
+            }
+          } else {
+            const errBody = await gRes.json();
+            console.warn(`[KnowledgeController] Gemini Direct Extraction Error (${gRes.status}):`, errBody.error?.message);
+          }
+        } catch (gErr) {
+          console.warn(`[KnowledgeController] Gemini API Direct extraction fallback: ${gErr.message}`);
         }
-
-        return res.status(200).json({
-          success: true,
-          answer: answerText,
-          sources: [latestDoc.title],
-          snippets: [extractedText.substring(0, 150) + '...'],
-        });
       }
+
+      const structuredAnswer = generateStructuredConceptAnswer(latestDoc.title, userQuery, rawDocText);
+      return res.status(200).json({
+        success: true,
+        answer: structuredAnswer,
+        sources: [latestDoc.title],
+      });
     }
 
     return res.status(200).json({
       success: true,
-      answer: `I found your uploaded document "${latestDoc.title}", but could not extract readable text passages. Please ensure it contains readable text.`,
+      answer: `I found your uploaded document "${latestDoc.title}", but could not extract readable text passages for "${userQuery}".`,
       sources: [latestDoc.title],
     });
   } catch (error) {
@@ -281,7 +467,7 @@ export const deleteDocumentKnowledge = async (req, res) => {
       documentId,
     });
   } catch (error) {
-    console.error(`[KnowledgeController] Delete vectors error:`, error);
+    console.error(`[KnowledgeController] Delete vectors error:`, error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to delete document vector embeddings',

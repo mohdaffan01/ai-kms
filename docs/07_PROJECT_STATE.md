@@ -54,6 +54,7 @@
 - [x] Document processing API endpoint (`POST /api/knowledge/process/:documentId`) ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js))
 - [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
+- [x] Gemini 2.5 Flash LLM Integration (`gemini-2.5-flash` API endpoint for grounded Q&A and summary generation)
 - [x] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
 - [ ] Concept & relationship extraction for Knowledge Graphs
 - [ ] Interactive Knowledge Graph visualization canvas
