@@ -10,10 +10,10 @@
 ---
 
 ## 2. Current Development Phase
-- **Active Phase**: Transitioning from **Phase 1 (Auth & Document Management)** to **Phase 2 (Text Parsing, Vector Embeddings & RAG Search Engine)**.
+- **Active Phase**: **Phase 2 (Text Parsing, Vector Embeddings & RAG Search Engine)** — *Step 1 Completed*.
 - **Phase Completion**:
   - Phase 1: Core System & Data Layer — **100% Completed**
-  - Phase 2: Document Vectorization & RAG Engine — **0% Started**
+  - Phase 2: Document Vectorization & RAG Engine — **25% Completed (Service Architecture & PDF Parser Setup Done)**
   - Phase 3: Knowledge Graph Canvas — **0% Started**
   - Phase 4: Gap Detection & Analytics — **0% Started**
 
@@ -49,10 +49,12 @@
 - [~] AI Chat Interaction (UI implemented; currently uses 600ms dummy timeout response)
 
 ### 3.4 Advanced AI & Analytics Capabilities
-- [ ] Document text extraction pipeline (`pdf-parse`, `docx`, `pptx` parsers)
-- [ ] Text chunking & vector embedding generation
-- [ ] Vector database integration (ChromaDB / Qdrant / Pinecone / MongoDB Vector Search)
-- [ ] RAG-based context-grounded AI chat endpoint (`POST /api/chat/query`)
+- [x] PDF text extraction dependency installed (`pdf-parse`)
+- [x] Backend service structure created ([`documentProcessor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [`textCleaner.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textCleaner.js), [`textChunker.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textChunker.js), [`embeddingService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [`qdrantService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/qdrantService.js))
+- [ ] Document processing API endpoint (`POST /api/knowledge/process/:documentId`)
+- [ ] Qdrant Docker vector database store setup & collection indexing
+- [ ] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
+- [ ] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
 - [ ] Concept & relationship extraction for Knowledge Graphs
 - [ ] Interactive Knowledge Graph visualization canvas
 - [ ] Quiz generation & Knowledge Gap detection engine
@@ -109,7 +111,7 @@
 
 ## 6. Current Next Steps
 
-1. **Implement Text Extraction Pipeline**: Integrate PDF, DOCX, and PPTX parsers in the backend to extract plain text from uploaded files upon receipt.
-2. **Setup Vector Store & Chunking**: Create text chunking logic and generate vector embeddings to store in a vector database.
-3. **Connect RAG Query Endpoint**: Implement `POST /api/chat/query` using similarity search and prompt construction to provide real context-aware AI answers.
-4. **Migrate Frontend URLs to `.env`**: Replace hardcoded `localhost:3000` references with `VITE_API_BASE_URL`.
+1. **Set up Qdrant Vector Store**: Run Qdrant container via Docker and create vector collection.
+2. **Create Document Processing API**: Implement `POST /api/knowledge/process/:documentId` route calling `processDocument()` orchestrator.
+3. **Create Semantic Search API**: Implement `POST /api/knowledge/search` route with query embedding & Qdrant vector retrieval.
+4. **Implement Delete Route**: Implement `DELETE /api/knowledge/:documentId` to remove vectors from Qdrant upon document deletion.
