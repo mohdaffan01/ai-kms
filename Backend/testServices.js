@@ -57,19 +57,19 @@ try {
 }
 console.log('');
 
-// 4. CHECK QDRANT CONNECTIVITY
-console.log('--- [4/4] TESTING QDRANT VECTOR STORE STATUS ---');
+// 4. CHECK CHROMADB CONNECTIVITY
+console.log('--- [4/4] TESTING CHROMADB VECTOR STORE STATUS ---');
 try {
-  const qdrantRes = await fetch('http://localhost:6333/collections');
-  if (qdrantRes.ok) {
-    const data = await qdrantRes.json();
-    console.log('✅ Qdrant status: RUNNING (Active collections: ' + (data.result?.collections ? data.result.collections.length : 0) + ')');
+  const chromaRes = await fetch('http://localhost:8000/api/v1/heartbeat');
+  if (chromaRes.ok) {
+    const data = await chromaRes.json();
+    console.log('✅ ChromaDB status: RUNNING (' + JSON.stringify(data) + ')');
   } else {
-    console.log('⚠️ Qdrant status: OFFLINE or Not Responding (HTTP ' + qdrantRes.status + ')');
+    console.log('⚠️ ChromaDB status: OFFLINE or Not Responding (HTTP ' + chromaRes.status + ')');
   }
 } catch (err) {
-  console.log('⚠️ Qdrant status: OFFLINE (Could not connect to http://localhost:6333)');
-  console.log('   -> To enable vector storage: run Qdrant via Docker (docker run -p 6333:6333 qdrant/qdrant)');
+  console.log('⚠️ ChromaDB status: OFFLINE (Could not connect to http://localhost:8000)');
+  console.log('   -> To enable vector storage: run ChromaDB (chroma run --path ./chroma_db or via Docker)');
 }
 
 console.log('\n==================================================');

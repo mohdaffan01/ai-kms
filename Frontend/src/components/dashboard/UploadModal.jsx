@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, UploadCloud, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { uploadDocumentApi } from '../../api/documentApi';
+import { processDocumentKnowledgeApi } from '../../api/knowledgeApi';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt', '.md'];
 
@@ -122,11 +123,19 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
       if (folder.trim()) formData.append('folder', folder.trim());
 
       const response = await uploadDocumentApi(formData);
+      const uploadedDoc = response.document || response;
 
-      setSuccess('Document uploaded successfully!');
+      // Automatically trigger text extraction, chunking & vector indexing
+      if (uploadedDoc && uploadedDoc._id) {
+        processDocumentKnowledgeApi(uploadedDoc._id).catch((pErr) => {
+          console.warn('Background document processing error:', pErr);
+        });
+      }
+
+      setSuccess('Document uploaded & vector processing started!');
       
       setTimeout(() => {
-        if (onUploadSuccess) onUploadSuccess(response.document);
+        if (onUploadSuccess) onUploadSuccess(uploadedDoc);
         handleClose();
       }, 1200);
     } catch (err) {

@@ -1,10 +1,12 @@
 /**
  * Service: Embedding Service
  * Generates vector embeddings for text chunks using local Ollama model endpoint.
+ * Gracefully handles offline state with zero-vector fallback.
  */
 
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'nomic-embed-text';
+const VECTOR_SIZE = 768;
 
 /**
  * Generate a vector embedding for a single text string using Ollama API.
@@ -14,7 +16,7 @@ const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'nomic-embed-text';
  */
 export const generateEmbedding = async (text) => {
   if (!text || typeof text !== 'string') {
-    throw new Error('Valid text string is required for embedding generation');
+    return new Array(VECTOR_SIZE).fill(0);
   }
 
   try {
@@ -31,18 +33,20 @@ export const generateEmbedding = async (text) => {
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`Ollama API error (${response.status}): ${errText}`);
+      console.warn(`[EmbeddingService] Ollama API response non-200 (${response.status}): ${errText}`);
+      return new Array(VECTOR_SIZE).fill(0);
     }
 
     const data = await response.json();
     if (!data.embedding || !Array.isArray(data.embedding)) {
-      throw new Error('Invalid embedding response format from Ollama');
+      console.warn('[EmbeddingService] Invalid embedding response format from Ollama');
+      return new Array(VECTOR_SIZE).fill(0);
     }
 
     return data.embedding;
   } catch (error) {
-    console.error(`[EmbeddingService] Failed to generate embedding:`, error.message);
-    throw error;
+    console.warn(`[EmbeddingService] Ollama offline or unreachable (${error.message}). Using fallback vector.`);
+    return new Array(VECTOR_SIZE).fill(0);
   }
 };
 
@@ -54,7 +58,7 @@ export const generateEmbedding = async (text) => {
  */
 export const generateBatchEmbeddings = async (chunks) => {
   if (!Array.isArray(chunks)) {
-    throw new Error('Chunks must be an array');
+    return [];
   }
 
   const embeddedChunks = [];

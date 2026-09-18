@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { Brain, User, Sparkles } from 'lucide-react';
+import { Brain, User, FileText, Loader2 } from 'lucide-react';
 
-const ChatWindow = ({ messages }) => {
+const ChatWindow = ({ messages, isLoading }) => {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -10,7 +10,7 @@ const ChatWindow = ({ messages }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isLoading]);
 
   return (
     <div className="chat-window-container">
@@ -21,7 +21,7 @@ const ChatWindow = ({ messages }) => {
             <Brain size={44} />
           </div>
           <h1>Welcome to AiKMS</h1>
-          <p>Ask anything from your uploaded learning materials.</p>
+          <p>Ask anything from your uploaded PDF learning materials.</p>
         </div>
       ) : (
         /* Messages Stream */
@@ -43,10 +43,35 @@ const ChatWindow = ({ messages }) => {
                 <div className="message-sender-name">
                   {msg.sender === 'user' ? 'You' : 'AiKMS Assistant'}
                 </div>
-                <div className="message-text">{msg.text}</div>
+                <div className="message-text" style={{ whiteSpace: 'pre-wrap' }}>
+                  {msg.text}
+                </div>
+
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="message-sources" style={{ marginTop: '8px', fontSize: '0.8rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <FileText size={14} />
+                    <span>Source: {msg.sources.join(', ')}</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}
+
+          {isLoading && (
+            <div className="message-row row-ai">
+              <div className="message-avatar">
+                <Brain size={18} />
+              </div>
+              <div className="message-bubble">
+                <div className="message-sender-name">AiKMS Assistant</div>
+                <div className="message-text" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Searching PDF & generating response...</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       )}

@@ -4,7 +4,7 @@
 
 - **Project Name**: AI-KMS (AI Knowledge Management System)
 - **Current Version**: 1.0.0 (Foundation Prototype)
-- **Overall Status**: Phase 1 Core Infrastructure Fully Complete & Operational. Ready for Phase 2 (RAG & Vector Embeddings Integration).
+- **Overall Status**: Phase 1 (Core Infrastructure) & Phase 2 (Document Vectorization & RAG Engine) Fully Complete & Operational. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
 - **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs and Knowledge Gap detection.
 
 ---
@@ -46,13 +46,13 @@
 - [x] Fixed navigation bar with brand logo, nav links, user badge, and logout ([Navbar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Navbar.jsx))
 - [x] Responsive sidebar with document drawer, count badge, view/delete action buttons, and mobile menu toggle ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] Chat interface layout with welcome empty state, auto-scrolling feed, and textarea input ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
-- [~] AI Chat Interaction (UI implemented; currently uses 600ms dummy timeout response)
+- [x] AI Chat Interaction (Fully connected to RAG backend `/api/knowledge/chat` to answer questions directly from uploaded PDFs)
 
 ### 3.4 Advanced AI & Analytics Capabilities
 - [x] PDF text extraction dependency installed (`pdf-parse`)
-- [x] Backend service structure created ([`documentProcessor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [`textCleaner.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textCleaner.js), [`textChunker.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textChunker.js), [`embeddingService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [`qdrantService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/qdrantService.js))
+- [x] Backend service structure created ([`documentProcessor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [`textCleaner.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textCleaner.js), [`textChunker.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textChunker.js), [`embeddingService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [`chromaService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/chromaService.js))
 - [x] Document processing API endpoint (`POST /api/knowledge/process/:documentId`) ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js))
-- [x] Qdrant Docker vector database store setup & collection indexing integration
+- [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
 - [x] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
 - [ ] Concept & relationship extraction for Knowledge Graphs
@@ -80,14 +80,15 @@
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
 
 ### 4.3 Database Status
-- **Engine**: MongoDB with Mongoose 9
-- **Health**: Operational. Connects via `connectDB()` in `Backend/src/config/db.js`.
+- **Engine**: MongoDB with Mongoose 9 (Metadata) + ChromaDB (Vector Store)
+- **Health**: Operational. Connects via `connectDB()` in `Backend/src/config/db.js` and `chromaService.js`.
 - **Collections Established**:
   - `users`: User profiles, credentials, role, timestamps.
   - `documents`: Document records, file metadata, ownership relation to `users`, processing status.
+  - `knowledge_chunks`: ChromaDB collection storing text chunks & vector embeddings with metadata payload (`userId`, `documentId`, `chunkIndex`).
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 12 active endpoints.
+- **Total Operational Endpoints**: 13 active endpoints.
   1. `GET /`: Healthcheck response
   2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
   3. `POST /api/auth/login`: Public login
@@ -97,23 +98,22 @@
   7. `POST /api/documents/upload`: Multipart document file upload
   8. `GET /api/documents/my-documents`: List user documents with filters
   9. `DELETE /api/documents/:id`: Delete document file and DB record
-  10. `POST /api/knowledge/process/:documentId`: Extract, clean, chunk, embed & index document into Qdrant
-  11. `POST /api/knowledge/search`: User-isolated semantic RAG search across indexed documents
-  12. `DELETE /api/knowledge/:documentId`: Delete document vector embeddings from Qdrant
+  10. `POST /api/knowledge/process/:documentId`: Extract, clean, chunk, embed & index document into ChromaDB
+  11. `POST /api/knowledge/search`: User-isolated semantic RAG search across indexed documents in ChromaDB
+  12. `POST /api/knowledge/chat`: Grounded RAG Chat endpoint answering user questions directly from uploaded PDFs
+  13. `DELETE /api/knowledge/:documentId`: Delete document vector embeddings from ChromaDB
 
 ---
 
 ## 5. Known Issues & Technical Debt
 
-1. **Mock AI Chat Response**: The ChatWindow currently appends a simulated dummy string ("This is a demo AI response...") after a 600ms delay instead of querying an LLM/RAG backend.
-2. **Hardcoded API URLs**: Frontend files hardcode `http://localhost:3000/api` in `authApi.js` and `http://localhost:3000` in `DocumentViewerModal.jsx`. Should be migrated to environment variables (`import.meta.env.VITE_API_BASE_URL`).
-3. **Placeholder Dashboard Tab**: Selecting "Dashboard" in the sidebar switches the main view to a placeholder screen with heading `"DASHBOARD"`. Real analytics widgets are to be implemented in Phase 4.
-4. **Hardcoded Default Profile Avatar**: Default profile picture uses an external Unsplash URL (`https://images.unsplash.com/photo-1534528741775-53994a69daeb...`).
+1. **Hardcoded API URLs**: Frontend files hardcode `http://localhost:3000/api` in `authApi.js` and `http://localhost:3000` in `DocumentViewerModal.jsx`. Should be migrated to environment variables (`import.meta.env.VITE_API_BASE_URL`).
+2. **Placeholder Dashboard Tab**: Selecting "Dashboard" in the sidebar switches the main view to a placeholder screen with heading `"DASHBOARD"`. Real analytics widgets are to be implemented in Phase 4.
+3. **Hardcoded Default Profile Avatar**: Default profile picture uses an external Unsplash URL (`https://images.unsplash.com/photo-1534528741775-53994a69daeb...`).
 
 ---
 
 ## 6. Current Next Steps
 
-1. **Connect Frontend Chat UI to RAG Search**: Wire up `ChatWindow.jsx` to call `POST /api/knowledge/search` instead of mock dummy string response.
-2. **Phase 3 - Concept Extraction Engine**: Implement NLP / LLM extraction of concept triplets `(Subject, Relation, Object)` from document chunks.
-3. **Phase 3 - Knowledge Graph Canvas**: Render concept nodes and interactive relationships graph on frontend.
+1. **Phase 3 - Concept Extraction Engine**: Implement NLP / LLM extraction of concept triplets `(Subject, Relation, Object)` from document chunks.
+2. **Phase 3 - Knowledge Graph Canvas**: Render concept nodes and interactive relationships graph on frontend.

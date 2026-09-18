@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import ChatInput from '../components/dashboard/ChatInput';
+import { queryKnowledgeChatApi } from '../api/knowledgeApi';
 import { speakText } from '../utils/voice';
 
 const Dashboard = () => {
   const [messages, setMessages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'dashboard'
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,20 +20,37 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
-  const handleSendMessage = (userText) => {
-    // Append User Message
+  const handleSendMessage = async (userText) => {
+    if (!userText || !userText.trim() || isLoading) return;
+
+    // 1. Append User Message
     const userMessage = { sender: 'user', text: userText };
     setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
 
-    // Append Dummy AI Response
-    setTimeout(() => {
+    try {
+      // 2. Query RAG Chat API grounded in user's PDFs
+      const data = await queryKnowledgeChatApi(userText);
+
+      const aiText = data.answer || "I couldn't process an answer for that query.";
       const aiMessage = {
         sender: 'ai',
-        text: 'This is a demo AI response. RAG-based answers will be added in the next module.',
+        text: aiText,
+        sources: data.sources || [],
       };
+
       setMessages((prev) => [...prev, aiMessage]);
-      speakText(window, aiMessage.text);
-    }, 600);
+      speakText(window, aiText);
+    } catch (error) {
+      console.error('RAG Query Error:', error);
+      const errorMessage = {
+        sender: 'ai',
+        text: 'Sorry, I encountered an error while searching your document. Please check your backend connection.',
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleNewChat = () => {
@@ -52,8 +71,8 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <ChatWindow messages={messages} />
-            <ChatInput onSendMessage={handleSendMessage} />
+            <ChatWindow messages={messages} isLoading={isLoading} />
+            <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
           </>
         )}
       </main>

@@ -1,7 +1,7 @@
 /**
  * Service: Document Processor
  * Main orchestrator service for document text extraction, cleaning, chunking,
- * embedding generation, and Qdrant vector store indexing.
+ * embedding generation, and ChromaDB vector store indexing.
  */
 
 import fs from 'fs';
@@ -9,7 +9,7 @@ import { PDFParse } from 'pdf-parse';
 import { cleanText } from './textCleaner.js';
 import { chunkText } from './textChunker.js';
 import { generateBatchEmbeddings } from './embeddingService.js';
-import { upsertVectors } from './qdrantService.js';
+import { upsertVectors } from './chromaService.js';
 
 /**
  * Extract raw text from a PDF file using PDFParse.
@@ -33,7 +33,8 @@ export const extractTextFromPdf = async (filePath) => {
 
 /**
  * Orchestrate the complete processing pipeline for a document:
- * Extract -> Clean -> Chunk -> Embed -> Store in Qdrant.
+ * Extract -> Clean -> Chunk -> Embed -> Store in ChromaDB.
+ * Gracefully handles vector service offline state.
  * 
  * @param {string} filePath - File path on disk
  * @param {string} mimeType - File MIME type or extension
@@ -53,8 +54,8 @@ export const processDocument = async (filePath, mimeType, documentId, userId) =>
     rawText = fs.readFileSync(filePath, 'utf-8');
   }
 
-  if (!rawText.trim()) {
-    throw new Error('Extracted text is empty');
+  if (!rawText || !rawText.trim()) {
+    throw new Error('Extracted text is empty or unreadable');
   }
 
   // 2. Clean Extracted Text
@@ -67,36 +68,38 @@ export const processDocument = async (filePath, mimeType, documentId, userId) =>
     throw new Error('No chunks generated from document text');
   }
 
-  // 4. Generate Embeddings for Chunks
-  const embeddedChunks = await generateBatchEmbeddings(chunks);
+  // 4. Try Vector Embedding Generation & ChromaDB Storage
+  let vectorized = false;
+  try {
+    const embeddedChunks = await generateBatchEmbeddings(chunks);
 
-  // 5. Prepare Qdrant Points with Payload Metadata
-  const points = embeddedChunks.map((item, index) => {
-    // Generate deterministic UUID/string point ID
-    const pointId = `${documentId}_${index}`;
+    const points = embeddedChunks.map((item, index) => {
+      const pointId = `${documentId}_${index}`;
+      return {
+        id: pointId,
+        vector: item.embedding,
+        payload: {
+          userId: userId.toString(),
+          documentId: documentId.toString(),
+          chunkIndex: item.chunkIndex,
+          text: item.text,
+          charCount: item.charCount,
+          createdAt: new Date().toISOString(),
+        },
+      };
+    });
 
-    return {
-      id: pointId,
-      vector: item.embedding,
-      payload: {
-        userId: userId.toString(),
-        documentId: documentId.toString(),
-        chunkIndex: item.chunkIndex,
-        text: item.text,
-        charCount: item.charCount,
-        createdAt: new Date().toISOString(),
-      },
-    };
-  });
-
-  // 6. Store Points in Qdrant
-  await upsertVectors(points);
-
-  console.log(`[DocumentProcessor] Successfully processed Document ${documentId} (${chunks.length} chunks indexed)`);
+    await upsertVectors(points);
+    vectorized = true;
+    console.log(`[DocumentProcessor] Successfully vectorized Document ${documentId} (${chunks.length} chunks)`);
+  } catch (vecErr) {
+    console.warn(`[DocumentProcessor] Vector embedding skipped for Document ${documentId} (${vecErr.message}). Text extraction & fallback Q&A available.`);
+  }
 
   return {
     success: true,
     documentId,
+    vectorized,
     totalChunks: chunks.length,
     totalCharacters: cleanedText.length,
   };
