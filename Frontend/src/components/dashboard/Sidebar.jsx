@@ -37,9 +37,9 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const user = userStr ? JSON.parse(userStr) : { name: 'Student', email: 'user@example.com' };
 
   // Fetch real documents from backend
-  const fetchDocuments = async () => {
+  const fetchDocuments = async (showLoading = true) => {
     try {
-      setIsLoadingDocs(true);
+      if (showLoading) setIsLoadingDocs(true);
       const res = await getMyDocumentsApi();
       if (res && res.documents) {
         setDocuments(res.documents);
@@ -47,13 +47,25 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
     } catch (err) {
       console.warn('Could not fetch uploaded documents:', err.message);
     } finally {
-      setIsLoadingDocs(false);
+      if (showLoading) setIsLoadingDocs(false);
     }
   };
 
   useEffect(() => {
     fetchDocuments();
   }, []);
+
+  // Automatically poll every 2.5 seconds while any document is in 'processing' status
+  useEffect(() => {
+    const hasProcessing = documents.some((doc) => doc.processingStatus === 'processing');
+    if (!hasProcessing) return;
+
+    const intervalId = setInterval(() => {
+      fetchDocuments(false);
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, [documents]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -63,7 +75,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   };
 
   const handleUploadSuccess = () => {
-    fetchDocuments();
+    fetchDocuments(false);
   };
 
   const handleOpenViewer = (item) => {
@@ -175,7 +187,14 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
                     <FileText size={16} className="content-icon" />
                     <div className="content-item-info">
                       <span className="content-title">{item.title}</span>
-                      <span className="content-subject-tag">{item.subject}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span className="content-subject-tag">{item.subject}</span>
+                        {item.processingStatus === 'processing' && (
+                          <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <Loader2 size={10} className="spinner" /> Processing...
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="content-item-actions">
@@ -245,7 +264,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
       {/* Document Viewer Modal */}
       <DocumentViewerModal
-        document={selectedDoc}
+        document={documents.find((d) => (d._id || d.id) === (selectedDoc?._id || selectedDoc?.id)) || selectedDoc}
         isOpen={isViewerOpen}
         onClose={() => {
           setIsViewerOpen(false);

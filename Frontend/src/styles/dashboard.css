@@ -1212,7 +1212,8 @@
 }
 
 .status-uploaded,
-.status-ready {
+.status-ready,
+.status-processed {
   background: rgba(16, 163, 127, 0.15);
   color: #6ee7b7;
   border: 1px solid rgba(16, 163, 127, 0.3);

@@ -11,7 +11,8 @@ import {
   Tag, 
   CheckCircle2, 
   Clock, 
-  AlertTriangle 
+  AlertTriangle,
+  Loader2 
 } from 'lucide-react';
 import { deleteDocumentApi } from '../../api/documentApi';
 
@@ -155,7 +156,11 @@ const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }
                 <div className="meta-content">
                   <span className="meta-label">Status</span>
                   <span className={`status-badge status-${doc.processingStatus || 'uploaded'}`}>
-                    <CheckCircle2 size={12} />
+                    {doc.processingStatus === 'processing' ? (
+                      <Loader2 size={12} className="spinner" />
+                    ) : (
+                      <CheckCircle2 size={12} />
+                    )}
                     {doc.processingStatus || 'uploaded'}
                   </span>
                 </div>
