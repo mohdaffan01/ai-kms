@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 import connectDB from './config/db.js';
 import { authRoutes, userRoutes } from './routes/user.routes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
@@ -22,6 +24,12 @@ app.use(
 );
 
 app.use(express.json());
+
+// Ensure uploads directory always exists on any machine
+const uploadDir = path.resolve('uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Makes files inside Backend/uploads publicly viewable/downloadable
 app.use("/uploads", express.static("uploads"));

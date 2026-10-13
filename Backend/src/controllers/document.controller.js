@@ -112,7 +112,11 @@ export const deleteDocument = async (req, res) => {
     // Attempt file system deletion if present
     if (document.filePath) {
       try {
-        const fullPath = path.resolve(document.filePath);
+        const fullPath = path.isAbsolute(document.filePath) && fs.existsSync(document.filePath)
+          ? document.filePath
+          : (fs.existsSync(path.resolve(process.cwd(), document.filePath))
+              ? path.resolve(process.cwd(), document.filePath)
+              : path.resolve(process.cwd(), 'Backend', document.filePath));
         if (fs.existsSync(fullPath)) {
           fs.unlinkSync(fullPath);
         }

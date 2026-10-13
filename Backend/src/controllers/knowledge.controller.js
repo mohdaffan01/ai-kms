@@ -34,8 +34,8 @@ export const processDocumentKnowledge = async (req, res) => {
     document.processingStatus = 'processing';
     await document.save();
 
-    // 4. Construct absolute path to stored file
-    const absoluteFilePath = path.resolve(document.filePath);
+    // 4. Construct absolute path to stored file (handles both Backend/ and root CWD)
+    const absoluteFilePath = getExistingFilePath(document.filePath);
 
     // 5. Run processing pipeline
     const summary = await processDocument(
@@ -155,6 +155,23 @@ const cleanPdfNoise = (raw) => {
 };
 
 /**
+ * Helper: Resolve existing file path regardless of whether CWD is Backend or project root
+ */
+export const getExistingFilePath = (filePath) => {
+  if (!filePath) return '';
+  if (path.isAbsolute(filePath) && fs.existsSync(filePath)) return filePath;
+  const p1 = path.resolve(process.cwd(), filePath);
+  if (fs.existsSync(p1)) return p1;
+  const p2 = path.resolve(process.cwd(), 'Backend', filePath);
+  if (fs.existsSync(p2)) return p2;
+  const p3 = path.resolve(process.cwd(), 'uploads', path.basename(filePath));
+  if (fs.existsSync(p3)) return p3;
+  const p4 = path.resolve(process.cwd(), 'Backend', 'uploads', path.basename(filePath));
+  if (fs.existsSync(p4)) return p4;
+  return p1;
+};
+
+/**
  * Helper: Call Google Gemini API with automatic model fallback
  */
 const callGemini = async (prompt, apiKey) => {
@@ -162,8 +179,7 @@ const callGemini = async (prompt, apiKey) => {
   const models = [
     process.env.GEMINI_MODEL,
     'gemini-1.5-flash',
-    'gemini-2.0-flash',
-    'gemini-2.5-flash',
+    'gemini-1.5-pro',
   ].filter(Boolean);
 
   for (const model of models) {
@@ -286,7 +302,7 @@ export const queryRagChat = async (req, res) => {
     }
 
     const latestDoc = userDocs[0];
-    const fullPath = path.resolve(latestDoc.filePath);
+    const fullPath = getExistingFilePath(latestDoc.filePath);
 
     // Extract raw text for intelligent text generation
     let rawDocText = '';
