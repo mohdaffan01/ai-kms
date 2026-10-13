@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Brain, User, FileText, Loader2, Volume2, VolumeX } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { speakText, stopSpeaking } from '../../utils/voice';
 
 const ChatWindow = ({ messages, isLoading }) => {
@@ -89,8 +90,12 @@ const ChatWindow = ({ messages, isLoading }) => {
                   )}
                 </div>
 
-                <div className="message-text" style={{ whiteSpace: 'pre-wrap' }}>
-                  {msg.text}
+                <div className={`message-text ${msg.sender === 'ai' ? 'markdown-content' : ''}`} style={msg.sender === 'user' ? { whiteSpace: 'pre-wrap' } : {}}>
+                  {msg.sender === 'ai' ? (
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  ) : (
+                    msg.text
+                  )}
                 </div>
 
                 {msg.sources && msg.sources.length > 0 && (

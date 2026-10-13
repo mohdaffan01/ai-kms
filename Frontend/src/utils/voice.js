@@ -37,7 +37,14 @@ export const speakText = (browserWindow = getBrowserWindow(), text = '', onEndCa
   }
 
   browserWindow.speechSynthesis.cancel();
-  const utterance = new browserWindow.SpeechSynthesisUtterance(text);
+  // Strip markdown characters so speech sounds completely natural
+  const cleanSpokenText = text
+    .replace(/[#*`_~]/g, '')
+    .replace(/\[(.*?)\]\(.*?\)/g, '$1')
+    .replace(/\n+/g, '. ')
+    .trim();
+
+  const utterance = new browserWindow.SpeechSynthesisUtterance(cleanSpokenText);
   
   if (typeof onEndCallback === 'function') {
     utterance.onend = onEndCallback;

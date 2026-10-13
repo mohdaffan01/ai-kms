@@ -155,6 +155,41 @@ const cleanPdfNoise = (raw) => {
 };
 
 /**
+ * Helper: Call Google Gemini API with automatic model fallback
+ */
+const callGemini = async (prompt, apiKey) => {
+  if (!apiKey) return null;
+  const models = [
+    process.env.GEMINI_MODEL,
+    'gemini-1.5-flash',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash',
+  ].filter(Boolean);
+
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) return text;
+      } else {
+        const err = await res.json().catch(() => ({}));
+        console.warn(`[Gemini] ${model} returned HTTP ${res.status}:`, err.error?.message || 'Error');
+      }
+    } catch (e) {
+      console.warn(`[Gemini] ${model} network error:`, e.message);
+    }
+  }
+  return null;
+};
+
+/**
  * Helper: Generate structured summary from PDF text
  */
 const generateDocumentSummary = (docTitle, rawText) => {
@@ -266,31 +301,14 @@ export const queryRagChat = async (req, res) => {
     // 3. Handle Summary Requests
     if (isSummaryRequest(userQuery) && rawDocText) {
       if (geminiApiKey) {
-        try {
-          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Provide a clear, comprehensive, beautifully structured summary (using headings, bold key terms, and bullet points) of the following study document.\n\nDOCUMENT CONTEXT ("${latestDoc.title}"):\n${rawDocText.substring(0, 15000)}`;
-
-          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: geminiPrompt }] }] }),
+        const geminiPrompt = `You are an expert AI Study Assistant and Tutor. Provide a comprehensive, beautifully structured summary (with clear headings, bold key concepts, and bullet points) of the following study document.\n\nDOCUMENT ("${latestDoc.title}"):\n${rawDocText.substring(0, 100000)}`;
+        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+        if (gAnswer) {
+          return res.status(200).json({
+            success: true,
+            answer: gAnswer,
+            sources: [latestDoc.title],
           });
-
-          if (gRes.ok) {
-            const gData = await gRes.json();
-            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (gAnswer) {
-              return res.status(200).json({
-                success: true,
-                answer: gAnswer,
-                sources: [latestDoc.title],
-              });
-            }
-          } else {
-            const errBody = await gRes.json();
-            console.warn(`[KnowledgeController] Gemini Summary Error (${gRes.status}):`, errBody.error?.message);
-          }
-        } catch (gErr) {
-          console.warn(`[KnowledgeController] Gemini API Summary fallback: ${gErr.message}`);
         }
       }
 
@@ -320,33 +338,26 @@ export const queryRagChat = async (req, res) => {
 
       // Attempt Gemini API if GEMINI_API_KEY exists
       if (geminiApiKey) {
-        try {
-          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Answer the user's question clearly, concisely, and accurately using ONLY the provided document context below. Use Markdown formatting (bold terms, bullet points, headings).\n\nDOCUMENT CONTEXT:\n${contextTexts}\n\nUSER QUESTION: ${userQuery}`;
+        const geminiPrompt = `You are an expert AI Study Tutor. Answer the user's question clearly, concisely, and accurately using the document context below.
 
-          const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: geminiPrompt }] }],
-            }),
+Format your answer like ChatGPT:
+- Use clean Markdown formatting (clear headings, bullet points, bold terms).
+- Provide a clear definition/explanation first.
+- Explain key concepts, issues, and solutions mentioned in the study material.
+
+DOCUMENT CONTEXT ("${sourceTitles[0] || latestDoc.title}"):
+${contextTexts}
+
+USER QUESTION:
+${userQuery}`;
+
+        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+        if (gAnswer) {
+          return res.status(200).json({
+            success: true,
+            answer: gAnswer,
+            sources: sourceTitles,
           });
-
-          if (geminiRes.ok) {
-            const gData = await geminiRes.json();
-            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (gAnswer) {
-              return res.status(200).json({
-                success: true,
-                answer: gAnswer,
-                sources: sourceTitles,
-              });
-            }
-          } else {
-            const errBody = await geminiRes.json();
-            console.warn(`[KnowledgeController] Gemini Vector Search Error (${geminiRes.status}):`, errBody.error?.message);
-          }
-        } catch (gErr) {
-          console.warn(`[KnowledgeController] Gemini API fallback:`, gErr.message);
         }
       }
 
@@ -392,31 +403,26 @@ export const queryRagChat = async (req, res) => {
     // 6. Direct Extraction Fallback (Supports Gemini API)
     if (rawDocText) {
       if (geminiApiKey) {
-        try {
-          const geminiPrompt = `You are an expert AI Study Assistant for AiKMS. Answer the user's question clearly, concisely, and accurately using ONLY the provided document context. Use Markdown formatting (bold terms, bullet points, headings).\n\nDOCUMENT CONTEXT FROM "${latestDoc.title}":\n${rawDocText.substring(0, 15000)}\n\nUSER QUESTION: ${userQuery}`;
+        const geminiPrompt = `You are an expert AI Study Tutor. Answer the user's question clearly, concisely, and accurately based on the document context provided below.
 
-          const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: geminiPrompt }] }] }),
+Format your answer like ChatGPT:
+- Use clean Markdown formatting (clear headings, bullet points, and bold terms).
+- Provide a clear definition/explanation first.
+- Break down key concepts, issues, and solutions mentioned in the document.
+
+DOCUMENT CONTEXT ("${latestDoc.title}"):
+${rawDocText.substring(0, 100000)}
+
+USER QUESTION:
+${userQuery}`;
+
+        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+        if (gAnswer) {
+          return res.status(200).json({
+            success: true,
+            answer: gAnswer,
+            sources: [latestDoc.title],
           });
-
-          if (gRes.ok) {
-            const gData = await gRes.json();
-            const gAnswer = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (gAnswer) {
-              return res.status(200).json({
-                success: true,
-                answer: gAnswer,
-                sources: [latestDoc.title],
-              });
-            }
-          } else {
-            const errBody = await gRes.json();
-            console.warn(`[KnowledgeController] Gemini Direct Extraction Error (${gRes.status}):`, errBody.error?.message);
-          }
-        } catch (gErr) {
-          console.warn(`[KnowledgeController] Gemini API Direct extraction fallback: ${gErr.message}`);
         }
       }
 
