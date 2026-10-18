@@ -79,12 +79,13 @@
           │
           ├──> HTTP POST /api/documents/upload (Multipart FormData with Bearer Token)
           │        ├──> Backend Multer saves file to Backend/uploads/
-          │        └──> Backend creates Document record in MongoDB
+          │        ├──> Backend creates Document record in MongoDB
+          │        └──> extractTopicsFromDocument automatically extracts hierarchical chapters & subtopics and syncs with Progress collection
           │
           └──> Modal shows success message -> Auto closes
                    │
                    v
-   [ Sidebar document list automatically refreshes via HTTP GET /api/documents/my-documents ]
+   [ Sidebar document list & Dashboard Subject Topics automatically refresh via GET /api/documents/my-documents and GET /api/progress/dashboard ]
 ```
 
 ---
@@ -127,12 +128,9 @@
           │
           ├──> User message appended immediately to ChatWindow stream
           │
-          ├──> Input textarea clears
+          ├──> Input textarea clears & sends query to RAG backend (POST /api/knowledge/chat)
           │
-          ├──> [ 600ms Timeout Simulation ]
-          │
-          └──> AI Assistant response bubble appended:
-               "This is a demo AI response. RAG-based answers will be added in the next module."
+          └──> Grounded AI Assistant response streamed back from ChromaDB chunks with TTS voice control
 ```
 
 ---
@@ -153,4 +151,58 @@
                    ├──> Enter New Password (min. 8 chars) & Confirm New Password
                    ├──> Click "Update Password"
                    └──> HTTP PUT /api/users/change-password -> Validates current password and hashes new password
+```
+
+---
+
+### 3.6 Learning Dashboard & Subject Progress Tracking Flow
+
+```
+[ User on /dashboard (Active tab: 'dashboard') ]
+          │
+          ├──> Initial Load: HTTP GET /api/progress/dashboard
+          │        ├──> Fetches user progress, subject cards, and stats
+          │        └──> Automatically cleans empty demo subjects & synchronizes uploaded docs
+          │
+          ├──> Overview KPI Cards:
+          │        Displays Total Subjects, Total Topics, Completed Topics, Overall Progress %, Documents
+          │
+          ├──> Subject Cards Grid:
+          │        ├──> Each card displays Subject Name, Code, Document Count Badge, Progress Bar
+          │        ├──> "Study with AI" button -> Switches to Chat tab scoped to subject
+          │        └──> Click anywhere on Card -> Launches Hierarchical SubjectDetailModal
+          │
+          └──> Quick Actions:
+                   ├──> "+ Add Subject" -> Opens CreateSubjectModal
+                   ├──> "Upload Notes" -> Opens UploadModal
+                   └──> "Reset Defaults" -> Restores default CS curriculum subjects
+```
+
+---
+
+### 3.7 Hierarchical Topic Checklist & Progress Tracking Flow
+
+```
+[ User opens SubjectDetailModal ]
+          │
+          ├──> Modal Header displays Subject Name, Progress Bar, Topic Completion Ratio, and Filter Pills
+          │
+          ├──> Accordion Chapters List:
+          │        ├──> Click Chevron / Chapter Row -> Expands/Collapses chapter to view child subtopics
+          │        ├──> Parent Completion Pill shows progress (e.g., "3 of 5 subtopics completed")
+          │        │
+          │        ├──> Toggle Child Subtopic Checkbox:
+          │        │        ├──> Instant optimistic UI strikethrough & progress recalculation
+          │        │        ├──> HTTP POST /api/progress/topic/toggle { subjectId, topicId, subtopicId, completed }
+          │        │        └──> Backend persists completion and appends to recentActivities
+          │        │
+          │        └──> Toggle Parent Chapter Checkbox:
+          │                 ├──> Toggles all nested child subtopics simultaneously
+          │                 └──> HTTP POST /api/progress/topic/toggle { subjectId, topicId, completed }
+          │
+          └──> Add Custom Topic / Subtopic:
+                   ├──> Click "+ Add Topic" inline form
+                   ├──> Select "Top-level Parent Chapter" or select an existing parent to nest as child subtopic
+                   ├──> Enter topic title and submit
+                   └──> HTTP POST /api/progress/topic/add { subjectId, name, parentTopicId }
 ```

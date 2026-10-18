@@ -10,9 +10,10 @@
 
 ## 2. Collections & Data Models
 
-The backend database contains **2 primary collections**:
+The backend database contains **3 primary collections**:
 1. `users` (managed by [user.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/user.model.js))
 2. `documents` (managed by [document.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/document.model.js))
+3. `progress` (managed by [progress.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
 
 ---
 
@@ -64,6 +65,59 @@ The backend database contains **2 primary collections**:
 
 ---
 
+### 2.3 Progress Collection (`progress`)
+
+**File Location**: [progress.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js)
+
+Tracks learning progress, subject cards, hierarchical topic and subtopic completion status, and real-time study activity logs.
+
+#### Root Schema Fields:
+| Field Name | Data Type | Required | Unique | Default Value | Description |
+|---|---|---|---|---|---|
+| `_id` | ObjectId | Auto | Yes | Auto ObjectId | Unique primary progress document identifier |
+| `userId` | ObjectId | Yes | Yes | None | Foreign key ref to `User._id` (indexed & unique) |
+| `subjects` | Array<Subject> | No | No | `DEFAULT_CS_SUBJECTS` | List of subject objects with hierarchical topics |
+| `recentActivities` | Array<Activity> | No | No | `[]` | List of recent learning & upload activity events |
+| `createdAt` | Date | Auto | No | Current timestamp | Creation timestamp |
+| `updatedAt` | Date | Auto | No | Current timestamp | Last updated timestamp |
+
+#### Subdocument Schemas:
+
+1. **Subtopic Schema (`subtopicSchema`)**:
+   - `id`: String (Unique subtopic identifier, e.g. `subtop-dbms-1-1`)
+   - `name`: String (Required, trimmed, e.g. `Key Features of DBMS`)
+   - `completed`: Boolean (Default: `false`)
+   - `completedAt`: Date (Default: `null`)
+
+2. **Topic / Chapter Schema (`topicSchema`)**:
+   - `id`: String (Unique parent topic identifier, e.g. `top-dbms-1`)
+   - `name`: String (Required, trimmed, e.g. `1. All about DBMS`)
+   - `completed`: Boolean (Default: `false`)
+   - `completedAt`: Date (Default: `null`)
+   - `isExtracted`: Boolean (Default: `false`, true when parsed from uploaded documents)
+   - `isUserCreated`: Boolean (Default: `false`, true when manually added by user)
+   - `subtopics`: Array of `subtopicSchema` (Hierarchical child topics nested under this chapter)
+
+3. **Subject Schema (`subjectSchema`)**:
+   - `id`: String (Unique subject identifier, e.g. `dbms`, `os`, `sub-custom-...`)
+   - `name`: String (Required, trimmed, e.g. `Database Management Systems`)
+   - `code`: String (Optional, e.g. `CS-301`)
+   - `description`: String (Subject summary description)
+   - `category`: String (Default: `'Computer Science'`)
+   - `icon`: String (Default: `'Database'`, `'BookOpen'`, etc.)
+   - `color`: String (Hex color code, e.g. `'#10a37f'`)
+   - `topics`: Array of `topicSchema`
+   - `createdAt`: Date (Default: `Date.now`)
+
+4. **Recent Activity Schema (`activitySchema`)**:
+   - `id`: String (Unique activity event ID)
+   - `type`: String (Enum: `'topic_completed'`, `'topic_uncompleted'`, `'subject_created'`, `'doc_uploaded'`, `'study_session'`)
+   - `title`: String (Human-readable description)
+   - `subject`: String (Subject name associated)
+   - `timestamp`: Date (Default: `Date.now`)
+
+---
+
 ## 3. Database Relationships
 
 ```
@@ -76,11 +130,25 @@ The backend database contains **2 primary collections**:
 | password: String (Hashed)      |                           | uploadedBy: Ref("User") <======  |
 | role: "student"|"teacher"|"admin"                          | processingStatus: String         |
 +--------------------------------+                           +----------------------------------+
+               │
+               │ 1 : 1
+               v
++-------------------------------------------------------+
+|                    Progress Model                     |
+|-------------------------------------------------------|
+| _id: ObjectId                                         |
+| userId: Ref("User") (Unique Index)                    |
+| subjects: [ { id, name, topics: [ { id, name,         |
+|             completed, subtopics: [ { id, name,       |
+|             completed } ] } ] } ]                     |
+| recentActivities: [ { id, type, title, timestamp } ]  |
++-------------------------------------------------------+
 ```
 
 - **User to Documents (1:N)**: One User can own multiple Documents.
-- **Reference Binding**: `Document.uploadedBy` holds the `mongoose.Schema.Types.ObjectId` referencing `User._id`.
-- **Authorization Enforcement**: Controllers verify ownership before accessing or deleting documents (`document.uploadedBy.toString() === req.user._id.toString()`).
+- **User to Progress (1:1)**: Each User has one unified Progress tracking record storing subject learning states and extracted topic hierarchies.
+- **Document to Progress Synchronization**: When a document is uploaded, `extractTopicsFromDocument` automatically updates `Progress.subjects` with extracted parent chapters and child subtopics.
+- **Reference Binding**: `Document.uploadedBy` and `Progress.userId` reference `User._id`.
 
 ---
 
@@ -113,6 +181,12 @@ The backend database contains **2 primary collections**:
 | Get User Profile | `getUserProfile` | `User.findById(req.user._id).select('-password')` | Logged-in User profile JSON |
 | Update Profile | `updateUserProfile` | `User.findById(...)`, `user.save()` | Updated User profile JSON |
 | Change Password | `changeUserPassword` | `User.findById(...)`, `user.save()` | Success message JSON |
-| Upload Document | `uploadDocument` | `Document.create(...)` | Created Document JSON |
+| Upload Document | `uploadDocument` | `Document.create(...)`, `extractTopicsFromDocument(...)`, `Progress.save()` | Created Document JSON |
 | Get My Documents | `getMyDocuments` | `Document.find({ uploadedBy, ...filters }).sort({ createdAt: -1 })` | Array of Document JSON objects |
 | Delete Document | `deleteDocument` | `Document.findById(id)`, `Document.findByIdAndDelete(id)` | Success message JSON |
+| Get Dashboard Data | `getDashboardData` | `Progress.findOne({ userId })`, sync with `Document.find({ uploadedBy })` | Dashboard stats, subjects with hierarchical topics & activities |
+| Toggle Topic / Subtopic | `toggleTopic` | `Progress.findOne({ userId })`, toggle topic/subtopic, recalculate stats | Updated subject JSON + recalculated stats |
+| Add Topic / Subtopic | `addTopicToSubject` | `Progress.findOne({ userId })`, push parent or nested subtopic | Updated subject JSON + recalculated stats |
+| Create Subject | `createSubject` | `Progress.findOne({ userId })`, push new subject object | Created subject JSON + stats |
+| Delete Subject | `deleteSubject` | `Progress.findOne({ userId })`, filter subject out | Success message JSON + stats |
+| Reset Default Subjects | `resetDefaultSubjects` | `Progress.findOne({ userId })`, restore default CS subjects | Reset subjects JSON + stats |

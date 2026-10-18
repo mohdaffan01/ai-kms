@@ -1,5 +1,25 @@
 import mongoose from 'mongoose';
 
+const subtopicSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  completed: {
+    type: Boolean,
+    default: false,
+  },
+  completedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
 const topicSchema = new mongoose.Schema({
   id: {
     type: String,
@@ -18,6 +38,15 @@ const topicSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  isUserCreated: {
+    type: Boolean,
+    default: false,
+  },
+  isExtracted: {
+    type: Boolean,
+    default: false,
+  },
+  subtopics: [subtopicSchema],
 });
 
 const subjectSchema = new mongoose.Schema({

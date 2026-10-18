@@ -26,8 +26,17 @@ const SubjectCard = ({
   onStudyWithAI,
 }) => {
   const topics = subject.topics || [];
-  const total = topics.length;
-  const completedCount = topics.filter((t) => t.completed).length;
+  let total = 0;
+  let completedCount = 0;
+  topics.forEach((top) => {
+    if (top.subtopics && top.subtopics.length > 0) {
+      total += top.subtopics.length;
+      completedCount += top.subtopics.filter((st) => st.completed).length;
+    } else {
+      total += 1;
+      if (top.completed) completedCount += 1;
+    }
+  });
   const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
   const docCount = subject.documentCount || 0;
 

@@ -10,9 +10,9 @@ import {
   CheckCircle2,
   BookOpen,
   ListChecks,
-  Trash2,
-  ExternalLink,
-  Layers
+  ChevronDown,
+  ChevronRight,
+  FolderOpen
 } from 'lucide-react';
 
 const SubjectDetailModal = ({
@@ -30,13 +30,27 @@ const SubjectDetailModal = ({
   const [activeTab, setActiveTab] = useState('topics'); // 'topics' | 'materials'
   const [searchQuery, setSearchQuery] = useState('');
   const [newTopicName, setNewTopicName] = useState('');
+  const [selectedParentId, setSelectedParentId] = useState('');
   const [isAddingTopic, setIsAddingTopic] = useState(false);
+  const [collapsedParents, setCollapsedParents] = useState({});
 
   if (!isOpen || !subject) return null;
 
   const topics = subject.topics || [];
-  const totalTopics = topics.length;
-  const completedTopics = topics.filter((t) => t.completed).length;
+
+  // Calculate total study items (subtopics or standalone topics)
+  let totalTopics = 0;
+  let completedTopics = 0;
+  topics.forEach((t) => {
+    if (t.subtopics && t.subtopics.length > 0) {
+      totalTopics += t.subtopics.length;
+      completedTopics += t.subtopics.filter((st) => st.completed).length;
+    } else {
+      totalTopics += 1;
+      if (t.completed) completedTopics += 1;
+    }
+  });
+
   const progressPercent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
   // Filter documents matching this subject
@@ -48,16 +62,42 @@ const SubjectDetailModal = ({
     );
   });
 
-  const filteredTopics = topics.filter((t) =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter topics and nested subtopics according to search query
+  const filteredTopics = topics
+    .map((t) => {
+      if (!searchQuery.trim()) return t;
+      const q = searchQuery.trim().toLowerCase();
+      const parentMatches = t.name.toLowerCase().includes(q);
+      const matchingSubs = (t.subtopics || []).filter((st) =>
+        st.name.toLowerCase().includes(q)
+      );
+
+      if (parentMatches) {
+        return t;
+      } else if (matchingSubs.length > 0) {
+        return {
+          ...t,
+          subtopics: matchingSubs,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  const toggleParentCollapse = (id) => {
+    setCollapsedParents((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const handleAddTopic = (e) => {
     e.preventDefault();
     if (!newTopicName.trim()) return;
     if (onAddTopic) {
-      onAddTopic(subject.id, newTopicName.trim());
+      onAddTopic(subject.id, newTopicName.trim(), selectedParentId || undefined);
       setNewTopicName('');
+      setSelectedParentId('');
       setIsAddingTopic(false);
     }
   };
@@ -79,7 +119,7 @@ const SubjectDetailModal = ({
             <Search size={14} className="search-icon" />
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder="Search chapters & subtopics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -125,7 +165,7 @@ const SubjectDetailModal = ({
               />
             </div>
             <span className="box-subtext">
-              {completedTopics} of {totalTopics} topics studied
+              {completedTopics} of {totalTopics} subtopics studied
             </span>
           </div>
 
@@ -164,7 +204,7 @@ const SubjectDetailModal = ({
                     {progressPercent}% Completed
                   </span>
                   <span className="stat-dot">•</span>
-                  <span>{completedTopics} of {totalTopics} topics studied</span>
+                  <span>{completedTopics} of {totalTopics} subtopics studied</span>
                   <span className="stat-dot">•</span>
                   <span>{subjectDocs.length} {subjectDocs.length === 1 ? 'PDF linked' : 'PDFs linked'}</span>
                 </div>
@@ -200,7 +240,9 @@ const SubjectDetailModal = ({
                   <div>
                     <h3 className="tab-heading">Topic Index & Study Progress</h3>
                     <p className="tab-subheading">
-                      Check off topics you have studied. Your progress percentage updates automatically.
+                      {subjectDocs.length > 0
+                        ? `Extracted from ${subjectDocs.length} uploaded ${subjectDocs.length === 1 ? 'document' : 'documents'}. Check off topics and subtopics as you study.`
+                        : 'Check off topics you have studied. Your progress percentage updates automatically.'}
                     </p>
                   </div>
 
@@ -216,15 +258,31 @@ const SubjectDetailModal = ({
 
                 {/* Add Topic Inline Form */}
                 {isAddingTopic && (
-                  <form onSubmit={handleAddTopic} className="modal-add-topic-form">
-                    <input
-                      type="text"
-                      placeholder="e.g. Relational Calculus, B-Trees..."
-                      value={newTopicName}
-                      onChange={(e) => setNewTopicName(e.target.value)}
-                      autoFocus
-                      required
-                    />
+                  <form onSubmit={handleAddTopic} className="modal-add-topic-form hierarchical-form">
+                    <div className="hierarchical-form-inputs">
+                      <input
+                        type="text"
+                        placeholder="e.g. Relational Calculus, B-Trees..."
+                        value={newTopicName}
+                        onChange={(e) => setNewTopicName(e.target.value)}
+                        autoFocus
+                        required
+                      />
+                      {topics.length > 0 && (
+                        <select
+                          value={selectedParentId}
+                          onChange={(e) => setSelectedParentId(e.target.value)}
+                          className="parent-topic-select"
+                        >
+                          <option value="">Add as Top-level Parent Topic / Chapter</option>
+                          {topics.map((t, idx) => (
+                            <option key={t.id} value={t.id}>
+                              Under: {idx + 1}. {t.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                     <div className="form-action-btns">
                       <button type="submit" className="btn-save-topic">Add</button>
                       <button
@@ -233,6 +291,7 @@ const SubjectDetailModal = ({
                         onClick={() => {
                           setIsAddingTopic(false);
                           setNewTopicName('');
+                          setSelectedParentId('');
                         }}
                       >
                         Cancel
@@ -243,41 +302,179 @@ const SubjectDetailModal = ({
 
                 {/* Topic Checklist */}
                 <div className="topics-index-list">
-                  {filteredTopics.length === 0 ? (
+                  {topics.length === 0 ? (
+                    <div className="empty-topics-card">
+                      <div className="empty-topics-icon">
+                        <FileText size={36} />
+                      </div>
+                      <h4>No Topics Generated Yet</h4>
+                      <p>
+                        Upload your study materials (PDF, TXT, or MD files) for {subject.name} to automatically extract and generate its study topics index, or add custom topics manually.
+                      </p>
+                      <div className="empty-actions-row">
+                        <button
+                          type="button"
+                          className="btn-empty-upload"
+                          onClick={() => {
+                            if (onUploadDocument) onUploadDocument();
+                          }}
+                        >
+                          <UploadCloud size={15} />
+                          <span>Upload {subject.name} Material</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-empty-add-topic"
+                          onClick={() => setIsAddingTopic(true)}
+                        >
+                          <Plus size={15} />
+                          <span>Add Topic Manually</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : filteredTopics.length === 0 ? (
                     <div className="empty-topics-search">
                       <p>No topics matching "{searchQuery}"</p>
                     </div>
                   ) : (
-                    filteredTopics.map((topic, index) => (
-                      <div
-                        key={topic.id}
-                        className={`topic-index-row ${topic.completed ? 'completed' : ''}`}
-                        onClick={() => onToggleTopic && onToggleTopic(subject.id, topic.id, !topic.completed)}
-                      >
-                        <div className="row-left">
-                          <button
-                            type="button"
-                            className={`index-checkbox ${topic.completed ? 'checked' : ''}`}
-                            aria-label={`Toggle ${topic.name}`}
-                          >
-                            {topic.completed && <Check size={14} strokeWidth={3} />}
-                          </button>
-                          <span className="topic-index-number">{index + 1}.</span>
-                          <span className="topic-index-title">{topic.name}</span>
-                        </div>
+                    filteredTopics.map((topic, index) => {
+                      const hasSubtopics = topic.subtopics && topic.subtopics.length > 0;
+                      const isCollapsed = Boolean(collapsedParents[topic.id]);
+                      const subCount = hasSubtopics ? topic.subtopics.length : 0;
+                      const subDone = hasSubtopics
+                        ? topic.subtopics.filter((st) => st.completed).length
+                        : 0;
+                      const isParentDone = hasSubtopics
+                        ? subCount > 0 && subDone === subCount
+                        : topic.completed;
 
-                        <div className="row-right">
-                          {topic.completed ? (
-                            <span className="status-badge-done">
-                              <CheckCircle2 size={12} />
-                              Studied
-                            </span>
-                          ) : (
-                            <span className="status-badge-pending">To Study</span>
+                      return (
+                        <div key={topic.id} className="hierarchical-topic-group">
+                          {/* Parent Chapter / Topic Row */}
+                          <div
+                            className={`parent-topic-row ${isParentDone ? 'completed' : ''}`}
+                            onClick={() => {
+                              if (hasSubtopics) {
+                                toggleParentCollapse(topic.id);
+                              }
+                            }}
+                          >
+                            <div className="parent-row-left">
+                              {hasSubtopics ? (
+                                <button
+                                  type="button"
+                                  className="btn-parent-expand"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleParentCollapse(topic.id);
+                                  }}
+                                  title={isCollapsed ? 'Expand child subtopics' : 'Collapse child subtopics'}
+                                >
+                                  {isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
+                                </button>
+                              ) : (
+                                <span className="expand-spacer" />
+                              )}
+
+                              <button
+                                type="button"
+                                className={`index-checkbox parent-checkbox ${isParentDone ? 'checked' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onToggleTopic) {
+                                    onToggleTopic(subject.id, topic.id, !isParentDone);
+                                  }
+                                }}
+                                aria-label={`Toggle all of ${topic.name}`}
+                              >
+                                {isParentDone && <Check size={14} strokeWidth={3} />}
+                              </button>
+
+                              <span className="topic-index-number">{index + 1}.</span>
+                              <span className="parent-topic-title">{topic.name}</span>
+                            </div>
+
+                            <div className="parent-row-right">
+                              {hasSubtopics ? (
+                                <span
+                                  className={`subtopics-counter-badge ${
+                                    isParentDone ? 'badge-all-done' : ''
+                                  }`}
+                                >
+                                  {isParentDone ? (
+                                    <>
+                                      <CheckCircle2 size={12} />
+                                      All {subCount} Studied
+                                    </>
+                                  ) : (
+                                    `${subDone} of ${subCount} subtopics`
+                                  )}
+                                </span>
+                              ) : isParentDone ? (
+                                <span className="status-badge-done">
+                                  <CheckCircle2 size={12} />
+                                  Studied
+                                </span>
+                              ) : (
+                                <span className="status-badge-pending">To Study</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Nested Child Subtopics */}
+                          {hasSubtopics && !isCollapsed && (
+                            <div className="child-subtopics-container">
+                              {topic.subtopics.map((subtopic, sIdx) => (
+                                <div
+                                  key={subtopic.id}
+                                  className={`child-subtopic-row ${
+                                    subtopic.completed ? 'completed' : ''
+                                  }`}
+                                  onClick={() => {
+                                    if (onToggleTopic) {
+                                      onToggleTopic(
+                                        subject.id,
+                                        topic.id,
+                                        subtopic.id,
+                                        !subtopic.completed
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <div className="child-row-left">
+                                    <span className="child-branch-line" />
+                                    <button
+                                      type="button"
+                                      className={`index-checkbox child-checkbox ${
+                                        subtopic.completed ? 'checked' : ''
+                                      }`}
+                                      aria-label={`Toggle ${subtopic.name}`}
+                                    >
+                                      {subtopic.completed && <Check size={12} strokeWidth={3} />}
+                                    </button>
+                                    <span className="child-index-number">
+                                      {index + 1}.{sIdx + 1}
+                                    </span>
+                                    <span className="child-topic-title">{subtopic.name}</span>
+                                  </div>
+
+                                  <div className="child-row-right">
+                                    {subtopic.completed ? (
+                                      <span className="status-badge-done">
+                                        <CheckCircle2 size={11} />
+                                        Studied
+                                      </span>
+                                    ) : (
+                                      <span className="status-badge-pending">To Study</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </div>

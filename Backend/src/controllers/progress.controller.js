@@ -1,5 +1,6 @@
 import Progress from '../models/progress.model.js';
 import Document from '../models/document.model.js';
+import { extractTopicsFromDocument } from '../services/topicExtractor.service.js';
 
 export const DEFAULT_CS_SUBJECTS = [
   {
@@ -10,15 +11,7 @@ export const DEFAULT_CS_SUBJECTS = [
     category: 'Computer Science',
     icon: 'Database',
     color: '#10a37f',
-    topics: [
-      { id: 'top-dbms-1', name: 'Relational Model & Constraints', completed: false },
-      { id: 'top-dbms-2', name: 'SQL Queries, Joins & Subqueries', completed: false },
-      { id: 'top-dbms-3', name: 'ER Modeling & Relational Schema', completed: false },
-      { id: 'top-dbms-4', name: 'Functional Dependencies & Normalization (1NF, 2NF, 3NF, BCNF)', completed: false },
-      { id: 'top-dbms-5', name: 'Transaction Management & ACID Properties', completed: false },
-      { id: 'top-dbms-6', name: 'Concurrency Control & Two-Phase Locking', completed: false },
-      { id: 'top-dbms-7', name: 'Indexing Techniques, B-Trees & Hashing', completed: false },
-    ],
+    topics: [],
   },
   {
     id: 'sub-os',
@@ -28,16 +21,7 @@ export const DEFAULT_CS_SUBJECTS = [
     category: 'Computer Science',
     icon: 'Cpu',
     color: '#0ea5e9',
-    topics: [
-      { id: 'top-os-1', name: 'OS Architecture, System Calls & Dual Mode', completed: false },
-      { id: 'top-os-2', name: 'Process State, PCB & Context Switching', completed: false },
-      { id: 'top-os-3', name: 'CPU Scheduling Algorithms (FCFS, SJF, Round Robin)', completed: false },
-      { id: 'top-os-4', name: 'Inter-Process Communication & Synchronization (Semaphores, Mutex)', completed: false },
-      { id: 'top-os-5', name: 'Deadlocks: Prevention, Avoidance & Banker Algorithm', completed: false },
-      { id: 'top-os-6', name: 'Memory Management, Paging & Segmentation', completed: false },
-      { id: 'top-os-7', name: 'Virtual Memory & Page Replacement (LRU, FIFO)', completed: false },
-      { id: 'top-os-8', name: 'File Systems & Disk Scheduling (SCAN, C-LOOK)', completed: false },
-    ],
+    topics: [],
   },
   {
     id: 'sub-cn',
@@ -47,16 +31,7 @@ export const DEFAULT_CS_SUBJECTS = [
     category: 'Computer Science',
     icon: 'Network',
     color: '#8b5cf6',
-    topics: [
-      { id: 'top-cn-1', name: 'OSI 7-Layer & TCP/IP Architecture', completed: false },
-      { id: 'top-cn-2', name: 'Data Link Layer Framing, Flow & Error Control (CRC)', completed: false },
-      { id: 'top-cn-3', name: 'Medium Access Control (CSMA/CD & Ethernet)', completed: false },
-      { id: 'top-cn-4', name: 'IPv4/IPv6 Addressing, Subnetting & CIDR', completed: false },
-      { id: 'top-cn-5', name: 'Routing Algorithms (Dijkstra, Distance Vector, BGP)', completed: false },
-      { id: 'top-cn-6', name: 'Transport Layer: TCP 3-Way Handshake vs UDP', completed: false },
-      { id: 'top-cn-7', name: 'TCP Flow Control & Congestion Control', completed: false },
-      { id: 'top-cn-8', name: 'Application Protocols: DNS, HTTP/HTTPS, DHCP', completed: false },
-    ],
+    topics: [],
   },
   {
     id: 'sub-ds',
@@ -66,16 +41,7 @@ export const DEFAULT_CS_SUBJECTS = [
     category: 'Computer Science',
     icon: 'Layers',
     color: '#f59e0b',
-    topics: [
-      { id: 'top-ds-1', name: 'Arrays, Matrices & Pointer Arithmetic', completed: false },
-      { id: 'top-ds-2', name: 'Singly, Doubly & Circular Linked Lists', completed: false },
-      { id: 'top-ds-3', name: 'Stacks (Infix to Postfix) & Queues (Circular/Deque)', completed: false },
-      { id: 'top-ds-4', name: 'Binary Trees & Binary Search Trees (BST)', completed: false },
-      { id: 'top-ds-5', name: 'Balanced Search Trees (AVL & Red-Black)', completed: false },
-      { id: 'top-ds-6', name: 'Heaps, Priority Queues & Heap Sort', completed: false },
-      { id: 'top-ds-7', name: 'Graph Traversals: BFS, DFS & Topological Sort', completed: false },
-      { id: 'top-ds-8', name: 'Shortest Path (Dijkstra) & Minimum Spanning Trees (Kruskal, Prim)', completed: false },
-    ],
+    topics: [],
   },
   {
     id: 'sub-se',
@@ -85,15 +51,7 @@ export const DEFAULT_CS_SUBJECTS = [
     category: 'Computer Science',
     icon: 'Boxes',
     color: '#ec4899',
-    topics: [
-      { id: 'top-se-1', name: 'Software Development Life Cycle (SDLC) Models', completed: false },
-      { id: 'top-se-2', name: 'Agile Frameworks, Scrum & User Stories', completed: false },
-      { id: 'top-se-3', name: 'Requirements Engineering, SRS & Feasibility Study', completed: false },
-      { id: 'top-se-4', name: 'System Design & Unified Modeling Language (UML)', completed: false },
-      { id: 'top-se-5', name: 'Software Architecture & Design Patterns (Singleton, Factory, MVC)', completed: false },
-      { id: 'top-se-6', name: 'Software Testing: Unit, Integration, Black & White Box', completed: false },
-      { id: 'top-se-7', name: 'Code Quality, Refactoring & CI/CD Pipelines', completed: false },
-    ],
+    topics: [],
   },
 ];
 
@@ -104,9 +62,15 @@ const calculateStats = (subjects = [], documentsCount = 0) => {
   let completedTopics = 0;
 
   subjects.forEach((subj) => {
-    const topics = subj.topics || [];
-    totalTopics += topics.length;
-    completedTopics += topics.filter((t) => t.completed).length;
+    (subj.topics || []).forEach((top) => {
+      if (top.subtopics && top.subtopics.length > 0) {
+        totalTopics += top.subtopics.length;
+        completedTopics += top.subtopics.filter((st) => st.completed).length;
+      } else {
+        totalTopics += 1;
+        if (top.completed) completedTopics += 1;
+      }
+    });
   });
 
   const overallProgress = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
@@ -140,7 +104,7 @@ export const getDashboardData = async (req, res) => {
           {
             id: 'act-init-1',
             type: 'subject_created',
-            title: 'Welcome to AIKMS! Curriculum loaded with 5 core subjects.',
+            title: 'Welcome to AIKMS! Curriculum loaded.',
             subject: 'System',
             timestamp: new Date(),
           },
@@ -151,11 +115,140 @@ export const getDashboardData = async (req, res) => {
     // 2. Fetch user's real documents from MongoDB
     const userDocs = await Document.find({ uploadedBy: userId }).sort({ createdAt: -1 });
 
-    // 3. Compute stats
+    // 3. Dynamically sync hierarchical topics from actual uploaded documents (PDF, TXT, MD, Notes)
+    // No random or demo topics allowed!
+    let progressModified = false;
+
+    // A. Ensure any custom subject present in userDocs exists in progress.subjects
+    const existingSubjectNames = new Set(progress.subjects.map((s) => s.name.trim().toLowerCase()));
+    for (const doc of userDocs) {
+      if (doc.subject && doc.subject.trim()) {
+        const docSubjName = doc.subject.trim();
+        if (!existingSubjectNames.has(docSubjName.toLowerCase())) {
+          existingSubjectNames.add(docSubjName.toLowerCase());
+          const newSubjId = `sub-custom-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`;
+          progress.subjects.push({
+            id: newSubjId,
+            name: docSubjName,
+            code: '',
+            description: `Subject generated from uploaded ${doc.title}`,
+            category: 'Coursework',
+            icon: 'BookOpen',
+            color: '#6366f1',
+            topics: [],
+            createdAt: new Date(),
+          });
+          progressModified = true;
+        }
+      }
+    }
+
+    // B. For every subject, sync its topics with the matching uploaded documents
+    for (const subj of progress.subjects) {
+      const matchingDocs = userDocs.filter(
+        (d) => d.subject && d.subject.trim().toLowerCase() === subj.name.trim().toLowerCase()
+      );
+
+      if (matchingDocs.length === 0) {
+        // If subject has NO uploaded documents: remove any old demo topics!
+        // Only keep user manually added topics (if any)
+        const userManualTopics = (subj.topics || []).filter(
+          (t) => !/^top-(dbms|os|cn|ds|se)-\d+$/.test(t.id) && t.isUserCreated
+        );
+        if ((subj.topics || []).length !== userManualTopics.length) {
+          subj.topics = userManualTopics;
+          progressModified = true;
+        }
+      } else {
+        // Subject HAS uploaded documents! Extract hierarchical topics from the files
+        const hierarchicalChapters = [];
+        for (const doc of matchingDocs) {
+          const extracted = await extractTopicsFromDocument(doc);
+          hierarchicalChapters.push(...extracted);
+        }
+
+        // Map existing topics to retain completion state of both parents and subtopics
+        const existingParentMap = new Map();
+        (subj.topics || []).forEach((t) => {
+          if (!/^top-(dbms|os|cn|ds|se)-\d+$/.test(t.id)) {
+            existingParentMap.set(t.name.trim().toLowerCase(), t);
+          }
+        });
+
+        const synchronizedTopics = [];
+        const seenParentNames = new Set();
+
+        hierarchicalChapters.forEach((chapter, pIdx) => {
+          const lowerName = chapter.name.trim().toLowerCase();
+          if (!seenParentNames.has(lowerName)) {
+            seenParentNames.add(lowerName);
+            const existingParent = existingParentMap.get(lowerName);
+
+            const existingSubMap = new Map();
+            if (existingParent && existingParent.subtopics) {
+              existingParent.subtopics.forEach((st) => {
+                existingSubMap.set(st.name.trim().toLowerCase(), st);
+              });
+            }
+
+            const synchronizedSubtopics = [];
+            (chapter.subtopics || []).forEach((subName, sIdx) => {
+              const subLower = subName.trim().toLowerCase();
+              if (existingSubMap.has(subLower)) {
+                synchronizedSubtopics.push(existingSubMap.get(subLower));
+              } else {
+                synchronizedSubtopics.push({
+                  id: `subtop-${subj.id}-${pIdx + 1}-${sIdx + 1}`,
+                  name: subName.trim(),
+                  completed: false,
+                  completedAt: null,
+                });
+              }
+            });
+
+            // Parent completion: if it has subtopics, completed when all subtopics are completed
+            const allCompleted = synchronizedSubtopics.length > 0
+              ? synchronizedSubtopics.every((st) => st.completed)
+              : (existingParent ? existingParent.completed : false);
+
+            synchronizedTopics.push({
+              id: existingParent?.id || `top-${subj.id}-${pIdx + 1}`,
+              name: chapter.name.trim(),
+              completed: allCompleted,
+              completedAt: allCompleted ? (existingParent?.completedAt || new Date()) : null,
+              isExtracted: true,
+              subtopics: synchronizedSubtopics,
+            });
+          }
+        });
+
+        // Retain any user manually added topics
+        (subj.topics || []).forEach((t) => {
+          if (t.isUserCreated && !seenParentNames.has(t.name.trim().toLowerCase())) {
+            seenParentNames.add(t.name.trim().toLowerCase());
+            synchronizedTopics.push(t);
+          }
+        });
+
+        // Determine if signature changed
+        const currentSig = (subj.topics || []).map((t) => `${t.id}:${t.completed}:${(t.subtopics || []).length}`).join('|');
+        const newSig = synchronizedTopics.map((t) => `${t.id}:${t.completed}:${(t.subtopics || []).length}`).join('|');
+
+        if (currentSig !== newSig) {
+          subj.topics = synchronizedTopics;
+          progressModified = true;
+        }
+      }
+    }
+
+    if (progressModified) {
+      await progress.save();
+    }
+
+    // 4. Compute stats
     const stats = calculateStats(progress.subjects, userDocs.length);
 
-    // 4. Construct synthesized activity feed:
-    // Combine recentActivities with recent document uploads
+    // 5. Construct synthesized activity feed:
     const combinedActivities = [...(progress.recentActivities || [])];
 
     userDocs.slice(0, 10).forEach((doc) => {
@@ -172,11 +265,22 @@ export const getDashboardData = async (req, res) => {
     combinedActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const recentActivity = combinedActivities.slice(0, 15);
 
-    // 5. Subject cards with progress calculations
+    // 6. Subject cards with progress calculations
     const subjectCards = progress.subjects.map((subj) => {
       const topics = subj.topics || [];
-      const total = topics.length;
-      const completed = topics.filter((t) => t.completed).length;
+      let total = 0;
+      let completed = 0;
+
+      topics.forEach((top) => {
+        if (top.subtopics && top.subtopics.length > 0) {
+          total += top.subtopics.length;
+          completed += top.subtopics.filter((st) => st.completed).length;
+        } else {
+          total += 1;
+          if (top.completed) completed += 1;
+        }
+      });
+
       const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
 
       // Find if user has uploaded any documents matching this subject
@@ -228,14 +332,14 @@ export const getDashboardData = async (req, res) => {
 };
 
 /**
- * @desc    Toggle topic completion status (updates progress automatically & logs activity)
+ * @desc    Toggle topic or subtopic completion status (updates progress automatically & logs activity)
  * @route   PUT /api/progress/toggle-topic
  * @access  Private
  */
 export const toggleTopic = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const { subjectId, topicId, completed } = req.body;
+    const { subjectId, topicId, subtopicId, completed } = req.body;
 
     if (!subjectId || !topicId) {
       return res.status(400).json({
@@ -246,11 +350,7 @@ export const toggleTopic = async (req, res) => {
 
     let progress = await Progress.findOne({ userId });
     if (!progress) {
-      progress = await Progress.create({
-        userId,
-        subjects: DEFAULT_CS_SUBJECTS,
-        recentActivities: [],
-      });
+      return res.status(404).json({ success: false, message: 'Progress not found.' });
     }
 
     const subject = progress.subjects.find((s) => s.id === subjectId);
@@ -269,23 +369,57 @@ export const toggleTopic = async (req, res) => {
       });
     }
 
-    const newCompletedState = typeof completed === 'boolean' ? completed : !topic.completed;
-    topic.completed = newCompletedState;
-    topic.completedAt = newCompletedState ? new Date() : null;
+    let activityTitle = '';
+    let newCompletedState = false;
+
+    // Case 1: Toggling a specific subtopic
+    if (subtopicId) {
+      const subtopic = (topic.subtopics || []).find((st) => st.id === subtopicId);
+      if (!subtopic) {
+        return res.status(404).json({ success: false, message: 'Subtopic not found.' });
+      }
+
+      newCompletedState = typeof completed === 'boolean' ? completed : !subtopic.completed;
+      subtopic.completed = newCompletedState;
+      subtopic.completedAt = newCompletedState ? new Date() : null;
+
+      // Update parent topic completion state (true if all subtopics completed)
+      const allDone = topic.subtopics.length > 0 && topic.subtopics.every((st) => st.completed);
+      topic.completed = allDone;
+      topic.completedAt = allDone ? new Date() : null;
+
+      activityTitle = newCompletedState
+        ? `Studied "${subtopic.name}" under ${topic.name}`
+        : `Marked incomplete: "${subtopic.name}"`;
+    } else {
+      // Case 2: Toggling the parent topic
+      newCompletedState = typeof completed === 'boolean' ? completed : !topic.completed;
+      topic.completed = newCompletedState;
+      topic.completedAt = newCompletedState ? new Date() : null;
+
+      // If parent has subtopics, toggle all subtopics to match
+      if (topic.subtopics && topic.subtopics.length > 0) {
+        topic.subtopics.forEach((st) => {
+          st.completed = newCompletedState;
+          st.completedAt = newCompletedState ? new Date() : null;
+        });
+      }
+
+      activityTitle = newCompletedState
+        ? `Completed chapter/topic: "${topic.name}"`
+        : `Marked incomplete: "${topic.name}"`;
+    }
 
     // Log recent activity
     const activityItem = {
       id: `act-top-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       type: newCompletedState ? 'topic_completed' : 'topic_uncompleted',
-      title: newCompletedState
-        ? `Completed topic: "${topic.name}"`
-        : `Marked incomplete: "${topic.name}"`,
+      title: activityTitle,
       subject: subject.name,
       timestamp: new Date(),
     };
 
     progress.recentActivities.unshift(activityItem);
-    // Keep max 50 activity items in DB
     if (progress.recentActivities.length > 50) {
       progress.recentActivities = progress.recentActivities.slice(0, 50);
     }
@@ -296,14 +430,22 @@ export const toggleTopic = async (req, res) => {
     const userDocs = await Document.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
-    // Subject statistics
-    const total = subject.topics.length;
-    const completedCount = subject.topics.filter((t) => t.completed).length;
+    let total = 0;
+    let completedCount = 0;
+    subject.topics.forEach((top) => {
+      if (top.subtopics && top.subtopics.length > 0) {
+        total += top.subtopics.length;
+        completedCount += top.subtopics.filter((st) => st.completed).length;
+      } else {
+        total += 1;
+        if (top.completed) completedCount += 1;
+      }
+    });
     const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
     return res.status(200).json({
       success: true,
-      message: `Topic marked as ${newCompletedState ? 'completed' : 'incomplete'}`,
+      message: `Status updated`,
       subject: {
         id: subject.id,
         name: subject.name,
@@ -368,12 +510,8 @@ export const createSubject = async (req, res) => {
           };
         });
     } else {
-      // Default placeholder topics if none entered
-      formattedTopics = [
-        { id: `top-${cleanSubjectId}-1`, name: 'Introduction & Core Concepts', completed: false },
-        { id: `top-${cleanSubjectId}-2`, name: 'Fundamental Principles', completed: false },
-        { id: `top-${cleanSubjectId}-3`, name: 'Advanced Methodologies & Applications', completed: false },
-      ];
+      // Start with empty topics; topics will be automatically extracted when a document is uploaded for this subject
+      formattedTopics = [];
     }
 
     const newSubject = {
@@ -477,7 +615,7 @@ export const addTopicToSubject = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const { subjectId } = req.params;
-    const { name } = req.body;
+    const { name, parentTopicId } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ success: false, message: 'Topic name is required.' });
@@ -493,27 +631,56 @@ export const addTopicToSubject = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Subject not found' });
     }
 
-    const newTopic = {
-      id: `top-${subjectId}-${Date.now()}`,
-      name: name.trim(),
-      completed: false,
-      completedAt: null,
-    };
+    let createdItem = null;
+    if (parentTopicId) {
+      const parentTopic = subject.topics.find((t) => t.id === parentTopicId);
+      if (!parentTopic) {
+        return res.status(404).json({ success: false, message: 'Parent topic not found' });
+      }
+      if (!parentTopic.subtopics) parentTopic.subtopics = [];
+      createdItem = {
+        id: `subtop-${subjectId}-${Date.now()}`,
+        name: name.trim(),
+        completed: false,
+        completedAt: null,
+      };
+      parentTopic.subtopics.push(createdItem);
+      parentTopic.completed = false;
+    } else {
+      createdItem = {
+        id: `top-${subjectId}-${Date.now()}`,
+        name: name.trim(),
+        completed: false,
+        completedAt: null,
+        isUserCreated: true,
+        isExtracted: false,
+        subtopics: [],
+      };
+      subject.topics.push(createdItem);
+    }
 
-    subject.topics.push(newTopic);
     await progress.save();
 
     const userDocs = await Document.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
-    const total = subject.topics.length;
-    const completedCount = subject.topics.filter((t) => t.completed).length;
+    let total = 0;
+    let completedCount = 0;
+    subject.topics.forEach((top) => {
+      if (top.subtopics && top.subtopics.length > 0) {
+        total += top.subtopics.length;
+        completedCount += top.subtopics.filter((st) => st.completed).length;
+      } else {
+        total += 1;
+        if (top.completed) completedCount += 1;
+      }
+    });
     const progressPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
 
     return res.status(201).json({
       success: true,
-      message: 'Topic added successfully',
-      topic: newTopic,
+      message: parentTopicId ? 'Subtopic added successfully' : 'Topic added successfully',
+      topic: createdItem,
       subject: {
         id: subject.id,
         name: subject.name,

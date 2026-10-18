@@ -2,9 +2,12 @@
 
 ## 1. Project Completion Overview
 
-The **AI-KMS** repository has successfully established its foundational architecture (Phase 1). The core infrastructure—including user authentication, database persistence, document upload capabilities, responsive UI workspace, and document management—is 100% completed and fully functional.
+The **AI-KMS** repository has successfully completed:
+- **Phase 1**: Foundational Architecture (Auth, File Ingestion, Workspace Layout) — **100% Completed**
+- **Phase 2**: Document Processing, Vector Embeddings, ChromaDB Indexing & Grounded RAG AI Chat (`gemini-2.5-flash`) — **100% Completed**
+- **Curriculum & Learning Dashboard**: Real-time stats, Subject cards, Hierarchical Topic Extractor engine, Accordion study progress checklist — **100% Completed**
 
-The project is currently positioned at the transition point to **Phase 2: Document Processing, Vector Indexing & RAG Semantic Search Engine**.
+The project is currently positioned at the transition point to **Phase 3: Knowledge Graph Construction & Visual Graph Canvas**.
 
 ---
 
@@ -20,23 +23,18 @@ The project is currently positioned at the transition point to **Phase 2: Docume
   - Server disk storage (`Backend/uploads`) and Mongoose database model ([document.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/document.model.js)).
   - Document retrieval API with subject/topic/folder query filtering ([getMyDocuments](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/document.controller.js#L58-L87)).
   - Document deletion endpoint cleaning up both disk storage files and database records ([deleteDocument](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/document.controller.js#L90-L139)).
-- **UI Workspace & Interactivity**:
-  - Responsive dark-mode layout with collapsible sidebar drawer and mobile menu button.
-  - Interactive upload modal with drag-and-drop file target ([UploadModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UploadModal.jsx)).
-  - Document preview viewer modal supporting PDF iframe preview, download, and external tab opening ([DocumentViewerModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DocumentViewerModal.jsx)).
-  - Conversational chat interface layout with auto-scrolling message feed ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx)).
+- **Document Vectorization & RAG Engine**:
+  - `pdf-parse` text extraction pipeline with semantic chunking & cleaning.
+  - ChromaDB vector store integration with embedding indexing.
+  - `/api/knowledge/chat` endpoint powered by Gemini 2.5 Flash for context-grounded Q&A.
+- **Learning Dashboard & Hierarchical Topic Tracking**:
+  - MongoDB `Progress` model storing subjects, parent topics, and nested subtopics.
+  - `topicExtractor.service.js` automatically parses uploaded notes into parent chapters and child subtopics.
+  - Comprehensive Dashboard with KPI cards, Subject cards, Hierarchical Accordion modal, and optimistic checkbox completion sync.
 
-### 2.2 Partially Completed Features
-- **AI Conversational Interface**:
-  - **Completed**: Chat input component, keyboard handlers, state management, message stream UI.
-  - **Missing**: Backend LLM integration; currently responds with a 600ms dummy timeout message ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx#L25-L32)).
-
-### 2.3 Features Not Started (Missing Functionality)
-- **Document Text Extraction Pipeline**: Extracting raw text from PDFs, Word docs, PowerPoint presentations, and Markdown files.
-- **Vector Embedding & Indexing Engine**: Splitting text into semantic chunks and indexing them in a vector database.
-- **Retrieval-Augmented Generation (RAG) Query API**: Processing user chat queries, retrieving relevant document chunks via vector similarity, and generating context-grounded AI answers.
-- **Knowledge Graph Construction & Visualization**: Extracting key concepts/entities and rendering an interactive visual graph.
-- **Knowledge Gap Detection & Analytics**: Analyzing user queries/quizzes to detect knowledge gaps and rendering progress charts on the Dashboard page.
+### 2.2 Features in Planning & Next Phases
+- **Knowledge Graph Construction & Visualization**: Extracting key concepts/entities and rendering an interactive visual graph (Phase 3).
+- **Knowledge Gap Detection & Adaptive Quizzes**: Analyzing user queries/quizzes to detect knowledge gaps (Phase 4).
 
 ---
 
@@ -44,22 +42,27 @@ The project is currently positioned at the transition point to **Phase 2: Docume
 
 ```
 +-----------------------------------------------------------------------------------+
-| PHASE 1: Core Foundation, Auth & Document Upload (COMPLETED)                      |
+| PHASE 1: Core Foundation, Auth & Document Upload (COMPLETED - 100%)               |
 +-----------------------------------------------------------------------------------+
                                           │
                                           v
 +-----------------------------------------------------------------------------------+
-| PHASE 2: Document Processing, Vector Embeddings & RAG Search Engine (NEXT STEP)  |
+| PHASE 2: Document Processing, ChromaDB & Grounded RAG Chat (COMPLETED - 100%)     |
 +-----------------------------------------------------------------------------------+
                                           │
                                           v
 +-----------------------------------------------------------------------------------+
-| PHASE 3: Knowledge Graph Construction & Visual Graph Canvas                       |
+| LEARNING DASHBOARD & HIERARCHICAL TOPIC TRACKER (COMPLETED - 100%)                |
 +-----------------------------------------------------------------------------------+
                                           │
                                           v
 +-----------------------------------------------------------------------------------+
-| PHASE 4: Knowledge Gap Detection & Analytics Dashboard                            |
+| PHASE 3: Knowledge Graph Construction & Visual Graph Canvas (NEXT STEP)           |
++-----------------------------------------------------------------------------------+
+                                          │
+                                          v
++-----------------------------------------------------------------------------------+
+| PHASE 4: Knowledge Gap Detection & Adaptive Quizzing                              |
 +-----------------------------------------------------------------------------------+
 ```
 

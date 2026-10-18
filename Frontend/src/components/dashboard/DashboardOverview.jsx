@@ -88,11 +88,21 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
     fetchDashboard(false);
   };
 
-  // Optimistic Topic Toggle
-  const handleToggleTopic = async (subjectId, topicId, newCompleted) => {
+  // Optimistic Topic or Subtopic Toggle
+  const handleToggleTopic = async (subjectId, topicId, subtopicIdOrCompleted, explicitCompleted) => {
+    let subtopicId = null;
+    let newCompleted = false;
+
+    if (typeof subtopicIdOrCompleted === 'boolean') {
+      newCompleted = subtopicIdOrCompleted;
+    } else {
+      subtopicId = subtopicIdOrCompleted;
+      newCompleted = typeof explicitCompleted === 'boolean' ? explicitCompleted : true;
+    }
+
     // 1. Optimistically update local state for instantaneous feedback
     setDashboardData((prev) => {
-      let topicName = '';
+      let itemName = '';
       let subjectName = '';
 
       const updatedSubjects = prev.subjects.map((subj) => {
@@ -101,17 +111,55 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
 
         const updatedTopics = (subj.topics || []).map((t) => {
           if (t.id !== topicId) return t;
-          topicName = t.name;
-          return { ...t, completed: newCompleted, completedAt: newCompleted ? new Date() : null };
+
+          if (subtopicId) {
+            // Toggling specific child subtopic
+            const updatedSubtopics = (t.subtopics || []).map((st) => {
+              if (st.id !== subtopicId) return st;
+              itemName = st.name;
+              return { ...st, completed: newCompleted, completedAt: newCompleted ? new Date() : null };
+            });
+            const allSubsDone = updatedSubtopics.length > 0 && updatedSubtopics.every((st) => st.completed);
+            return {
+              ...t,
+              completed: allSubsDone,
+              completedAt: allSubsDone ? new Date() : null,
+              subtopics: updatedSubtopics,
+            };
+          } else {
+            // Toggling parent topic
+            itemName = t.name;
+            const updatedSubtopics = (t.subtopics || []).map((st) => ({
+              ...st,
+              completed: newCompleted,
+              completedAt: newCompleted ? new Date() : null,
+            }));
+            return {
+              ...t,
+              completed: newCompleted,
+              completedAt: newCompleted ? new Date() : null,
+              subtopics: updatedSubtopics,
+            };
+          }
         });
 
-        const total = updatedTopics.length;
-        const completed = updatedTopics.filter((t) => t.completed).length;
+        let total = 0;
+        let completed = 0;
+        updatedTopics.forEach((top) => {
+          if (top.subtopics && top.subtopics.length > 0) {
+            total += top.subtopics.length;
+            completed += top.subtopics.filter((st) => st.completed).length;
+          } else {
+            total += 1;
+            if (top.completed) completed += 1;
+          }
+        });
         const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
         return {
           ...subj,
           topics: updatedTopics,
+          totalTopics: total,
           completedTopics: completed,
           progress,
         };
@@ -121,17 +169,23 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       let totalTopics = 0;
       let completedTopics = 0;
       updatedSubjects.forEach((s) => {
-        totalTopics += (s.topics || []).length;
-        completedTopics += (s.topics || []).filter((t) => t.completed).length;
+        (s.topics || []).forEach((top) => {
+          if (top.subtopics && top.subtopics.length > 0) {
+            totalTopics += top.subtopics.length;
+            completedTopics += top.subtopics.filter((st) => st.completed).length;
+          } else {
+            totalTopics += 1;
+            if (top.completed) completedTopics += 1;
+          }
+        });
       });
 
       const overallProgress = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-      // Optimistically push activity item
       const optimisticActivity = {
         id: `opt-act-${Date.now()}`,
         type: newCompleted ? 'topic_completed' : 'topic_uncompleted',
-        title: newCompleted ? `Completed topic: "${topicName}"` : `Marked incomplete: "${topicName}"`,
+        title: newCompleted ? `Completed: "${itemName}"` : `Marked incomplete: "${itemName}"`,
         subject: subjectName,
         timestamp: new Date(),
       };
@@ -151,18 +205,24 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
 
     // 2. Persist to MongoDB backend
     try {
-      await toggleTopicApi(subjectId, topicId, newCompleted);
+      const res = await toggleTopicApi(subjectId, topicId, subtopicId, newCompleted);
+      if (res && res.subject) {
+        setDashboardData((prev) => ({
+          ...prev,
+          stats: res.stats || prev.stats,
+          subjects: prev.subjects.map((s) => (s.id === subjectId ? { ...s, ...res.subject } : s)),
+        }));
+      }
     } catch (err) {
       console.error('Failed to sync topic status with backend:', err);
-      // Re-fetch to restore ground truth on error
       fetchDashboard(false);
     }
   };
 
-  // Add Topic to Subject
-  const handleAddTopic = async (subjectId, name) => {
+  // Add Topic or Subtopic to Subject
+  const handleAddTopic = async (subjectId, name, parentTopicId) => {
     try {
-      const res = await addTopicApi(subjectId, name);
+      const res = await addTopicApi(subjectId, name, parentTopicId);
       if (res && res.subject) {
         setDashboardData((prev) => ({
           ...prev,

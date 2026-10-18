@@ -23,10 +23,12 @@
   - **User Badge**: Circular user avatar image with fallback error handling, displaying user first name.
   - **Logout Button**: Red/muted icon button triggering session cleanup and redirecting to `/login`.
 
-### 2.2 Dashboard Layout ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+### 2.2 Workspace Layout ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - **Structure**: Split-screen two-column layout.
-- **Left Column**: Collapsible navigation sidebar ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)) containing document list and upload triggers.
-- **Right Column**: Main chat main area ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx) and [ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)) or placeholder view when switched to Dashboard tab.
+- **Left Column**: Collapsible navigation sidebar ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)) containing document list, subject links, and upload triggers.
+- **Right Column**: Dynamically renders active tab content:
+  - **AI Chat Workspace**: Conversational RAG interface ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx) + [ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)).
+  - **Learning Dashboard**: Comprehensive curriculum and progress overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx)) featuring Overview KPI stats, Subject cards, Hierarchical Topic & Subtopic Progress Accordions, Learning Progress breakdown, and Recent Study Activity feeds.
 
 ---
 
@@ -82,6 +84,61 @@
 - Accent submit buttons with loading spinner during submission.
 - Alert error banners with `AlertCircle` icons.
 
+### 3.7 Learning Dashboard Overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx))
+- **Hero & Quick Actions**: Top header displaying active curriculum status, "+ Add Subject", "Upload Notes", "Reset Defaults", and "Refresh" quick action triggers.
+- **KPI Overview Cards ([OverviewStats.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/OverviewStats.jsx))**:
+  - Total Subjects counter with folder badge.
+  - Total Topics & Subtopics indexed.
+  - Completed Topics count with checkmark.
+  - Overall Learning Progress % with visual progress indicator.
+  - Uploaded Documents count.
+- **Learning Progress Distribution ([LearningProgressSection.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/LearningProgressSection.jsx))**:
+  - Horizontal multi-colored progress bar depicting proportional completion across subjects.
+  - Subject breakdown legend with completion percentages.
+- **Recent Activity Section ([RecentActivitySection.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/RecentActivitySection.jsx))**:
+  - Chronological activity timeline with event type icons (`CheckCircle2`, `BookOpen`, `UploadCloud`).
+  - Relative humanized timestamps (e.g. "Just now", "2 hours ago").
+
+### 3.8 Subject Cards Grid ([SubjectCard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectCard.jsx))
+- **Card Design**: Clean obsidian card with subtle glowing colored accent border and icon pill.
+- **Card Content**:
+  - Subject Name & Course Code.
+  - Document count badge tag (e.g. `1 document`, `0 documents`).
+  - Progress percentage and completion fraction (`X / Y topics completed`).
+  - Custom CSS progress bar filled with the subject's theme color.
+  - "Study with AI" button that launches the RAG chat workspace scoped to this subject.
+  - Entire card click triggers the Subject Detail Modal.
+
+### 3.9 Hierarchical Subject Detail Modal ([SubjectDetailModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx))
+- **Header Section**:
+  - Subject Title, theme color pill, and Course Code.
+  - Large progress bar with completed topic counter and percentage.
+  - Filter toggle tabs: All Topics, Pending, and Completed.
+  - Action buttons: "Upload Notes" and "Study with AI".
+- **Hierarchical Accordion Structure**:
+  - **Parent Chapter Rows**:
+    - Expand / Collapse chevron toggle (`ChevronDown` / `ChevronRight`).
+    - Chapter Title (e.g., `1. All about DBMS`, `2. Database Architecture`).
+    - Completion pill showing child progress (e.g., `3 of 5 subtopics completed`).
+    - Parent checkbox that toggles all child subtopics simultaneously.
+  - **Child Subtopic Rows**:
+    - Indented subtopic list connected by a subtle visual vertical line guide.
+    - Custom square checkbox with checkmark animation.
+    - Subtopic name (e.g., `Key Features of DBMS`, `Database Languages`).
+    - Strikethrough and muted text style when completed.
+    - Real-time optimistic update and backend sync on click.
+- **Inline Topic Builder**:
+  - Expandable form with "+ Add Topic" button.
+  - Topic type selector dropdown: "Top-level Parent Chapter" or select an existing chapter to nest the new topic as a "Child Subtopic".
+  - Text input for topic name with submit button.
+
+### 3.10 Create Subject Modal ([CreateSubjectModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/CreateSubjectModal.jsx))
+- Subject Name (Required).
+- Course Code & Description (Optional).
+- Theme Color Picker with 5 curated presets (`Emerald`, `Sky`, `Purple`, `Amber`, `Rose`).
+- Optional custom topics chip list.
+- Automatically initializes with zero dummy topics, ready for automatic document extraction.
+
 ---
 
 ## 4. Forms & Interactive Elements
@@ -93,6 +150,8 @@
 | `UploadModal` | Drag-and-drop & file picker | Validates file extension whitelist and 20MB max size; autofills title |
 | `Profile` | Name & Avatar picker | Supports 5 preset avatar selection buttons or custom URL string |
 | `Profile` (Security) | Password update fields | Verifies non-empty fields, min 8 length, and password match |
+| `CreateSubjectModal` | Subject name, color presets, syllabus topics | Requires subject name; validates non-duplicate topics |
+| `SubjectDetailModal` | Accordion toggles, Parent/Child checkboxes | Optimistic checkbox toggle with instant stats calculation; filters by All/Pending/Completed |
 
 ---
 

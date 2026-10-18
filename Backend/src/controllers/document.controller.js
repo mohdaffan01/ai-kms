@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import Document from "../models/document.model.js";
+import Progress from "../models/progress.model.js";
+import { extractTopicsFromDocument } from "../services/topicExtractor.service.js";
 
 //----------------upload document--------------------
 export const uploadDocument = async (req, res) => {
@@ -22,6 +24,8 @@ export const uploadDocument = async (req, res) => {
       });
     }
 
+    const userId = req.user._id || req.user.id;
+
     const document = await Document.create({
       title,
       contentType: "file",
@@ -34,10 +38,104 @@ export const uploadDocument = async (req, res) => {
       folder: folder || "General",
 
       // This comes from your JWT auth middleware
-      uploadedBy: req.user._id || req.user.id,
+      uploadedBy: userId,
 
       processingStatus: "uploaded",
     });
+
+    // Auto-extract study topics from uploaded document into Progress index
+    try {
+      const extractedChapters = await extractTopicsFromDocument(document);
+      let progress = await Progress.findOne({ userId });
+
+      if (progress) {
+        let subj = progress.subjects.find(
+          (s) => s.name.trim().toLowerCase() === subject.trim().toLowerCase()
+        );
+
+        if (!subj) {
+          subj = {
+            id: `sub-${Date.now().toString(36)}`,
+            name: subject.trim(),
+            code: "",
+            description: `Generated from ${title}`,
+            category: "Coursework",
+            icon: "BookOpen",
+            color: "#10a37f",
+            topics: [],
+            createdAt: new Date(),
+          };
+          progress.subjects.push(subj);
+        }
+
+        const existingParentNames = new Set((subj.topics || []).map((t) => t.name.toLowerCase()));
+        let totalItemsAdded = 0;
+
+        extractedChapters.forEach((chap, pIdx) => {
+          const chapName = typeof chap === "string" ? chap.trim() : (chap.name ? chap.name.trim() : "");
+          if (!chapName) return;
+
+          const chapLower = chapName.toLowerCase();
+          const subNames = Array.isArray(chap.subtopics) ? chap.subtopics : [];
+
+          if (!existingParentNames.has(chapLower)) {
+            existingParentNames.add(chapLower);
+
+            const formattedSubtopics = subNames.map((sName, sIdx) => ({
+              id: `subtop-${subj.id}-${pIdx + 1}-${sIdx + 1}-${Date.now().toString(36)}`,
+              name: typeof sName === "string" ? sName.trim() : sName.name,
+              completed: false,
+              completedAt: null,
+            }));
+
+            subj.topics.push({
+              id: `top-${subj.id}-${Date.now().toString(36)}-${pIdx}`,
+              name: chapName,
+              completed: false,
+              completedAt: null,
+              isExtracted: true,
+              subtopics: formattedSubtopics,
+            });
+
+            totalItemsAdded += formattedSubtopics.length > 0 ? formattedSubtopics.length : 1;
+          } else {
+            // Chapter exists, merge any new subtopics
+            const existingParent = subj.topics.find((t) => t.name.toLowerCase() === chapLower);
+            if (existingParent) {
+              if (!existingParent.subtopics) existingParent.subtopics = [];
+              const existingSubNames = new Set(existingParent.subtopics.map((st) => st.name.toLowerCase()));
+
+              subNames.forEach((sName, sIdx) => {
+                const cleanSName = typeof sName === "string" ? sName.trim() : sName.name;
+                if (cleanSName && !existingSubNames.has(cleanSName.toLowerCase())) {
+                  existingSubNames.add(cleanSName.toLowerCase());
+                  existingParent.subtopics.push({
+                    id: `subtop-${subj.id}-${Date.now().toString(36)}-${sIdx}`,
+                    name: cleanSName,
+                    completed: false,
+                    completedAt: null,
+                  });
+                  totalItemsAdded++;
+                }
+              });
+            }
+          }
+        });
+
+        // Add recent activity
+        progress.recentActivities.unshift({
+          id: `act-doc-${Date.now()}`,
+          type: "doc_uploaded",
+          title: `Uploaded "${title}" (${totalItemsAdded} study topics indexed for ${subject})`,
+          subject: subject.trim(),
+          timestamp: new Date(),
+        });
+
+        await progress.save();
+      }
+    } catch (extractErr) {
+      console.warn("[UploadDocument] Automatic topic extraction warning:", extractErr.message);
+    }
 
     return res.status(201).json({
       success: true,

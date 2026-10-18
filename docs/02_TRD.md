@@ -105,7 +105,9 @@ The application follows a standard **Client-Server (REST API)** architecture.
 Frontend/src/
 ├── api/
 │   ├── authApi.js           # Axios instance with request interceptor
-│   └── documentApi.js       # Endpoints for document upload, retrieval, & deletion
+│   ├── documentApi.js       # Endpoints for document upload, retrieval, & deletion
+│   ├── knowledgeApi.js      # Endpoints for RAG processing, vector search, and chat
+│   └── progressApi.js       # Endpoints for dashboard data, topic toggle, subject management
 ├── components/
 │   ├── auth/
 │   │   ├── AuthLayout.jsx   # Shell for auth forms with brand header
@@ -118,20 +120,29 @@ Frontend/src/
 │   └── dashboard/
 │       ├── ChatInput.jsx    # Chat textarea input box
 │       ├── ChatWindow.jsx   # Message stream display & welcome view
+│       ├── CreateSubjectModal.jsx # Modal to create custom subject
+│       ├── DashboardOverview.jsx  # Main Learning Dashboard container
 │       ├── DocumentViewerModal.jsx # PDF preview & document metadata modal
+│       ├── LearningProgressSection.jsx # Progress distribution visualizer
+│       ├── OverviewStats.jsx       # KPI stats cards
+│       ├── QuickActionsBar.jsx     # Quick action buttons bar
+│       ├── RecentActivitySection.jsx # Chronological activity log
 │       ├── Sidebar.jsx      # Left sidebar navigation & document drawer
+│       ├── SubjectCard.jsx  # Subject card with progress bar & study button
+│       ├── SubjectDetailModal.jsx  # Hierarchical topic accordion checklist
 │       └── UploadModal.jsx  # Drag & drop document upload modal
 ├── context/
 │   └── AuthContext.jsx      # Authentication provider state management
 ├── pages/
-│   ├── Dashboard.jsx        # Main chat workspace page
+│   ├── Dashboard.jsx        # Main workspace page (toggling Chat vs Dashboard)
 │   ├── Login.jsx            # Login page view
 │   ├── Profile.jsx          # User settings & security page
 │   ├── Register.jsx         # Standalone registration page view
 │   └── Signup.jsx           # Signup wrapper page view
 └── styles/
     ├── auth.css             # Authentication styling
-    ├── dashboard.css        # Dashboard & modal layout styling
+    ├── dashboard.css        # Workspace layout styling
+    ├── dashboard-view.css   # Dark-mode Learning Dashboard & Accordion styling
     └── index.css            # Base design tokens & CSS resets
 ```
 
@@ -144,6 +155,8 @@ Backend/
     │   └── db.js            # MongoDB connection logic via Mongoose
     ├── controllers/
     │   ├── document.controller.js # Upload, fetch, and delete logic
+    │   ├── knowledge.controller.js # Document processing, search, and chat logic
+    │   ├── progress.controller.js # Dashboard stats, topic toggle, subject management
     │   └── user.Controller.js    # Register, login, profile, password logic
     ├── middleware/
     │   ├── authMiddleware.js     # Bearer token verification middleware
@@ -151,10 +164,20 @@ Backend/
     │   └── uploadMiddleware.js   # Multer diskStorage & file filter config
     ├── models/
     │   ├── document.model.js     # Mongoose Document schema definition
+    │   ├── progress.model.js     # Mongoose Progress schema definition
     │   └── user.model.js         # Mongoose User schema definition with password hash hook
     ├── routes/
     │   ├── document.routes.js    # Express router for /api/documents
+    │   ├── knowledge.routes.js   # Express router for /api/knowledge
+    │   ├── progress.routes.js    # Express router for /api/progress
     │   └── user.routes.js        # Express routers for /api/auth & /api/users
+    ├── services/
+    │   ├── chromaService.js      # ChromaDB client & vector operations
+    │   ├── documentProcessor.js  # PDF/text file parsing
+    │   ├── embeddingService.js   # Vector embeddings generation
+    │   ├── textChunker.js        # Semantic text chunking
+    │   ├── textCleaner.js        # Text normalization & cleaning
+    │   └── topicExtractor.service.js # Hierarchical Parent & Subtopic extraction
     ├── utils/
     │   └── generateToken.js      # JWT signing helper utility
     └── index.js                  # Main Express app initialization & server entry point
@@ -202,7 +225,25 @@ Backend/
 | GET | `/api/documents/my-documents` | Private | `getMyDocuments` | Fetch documents uploaded by user with optional query filters (`subject`, `topic`, `folder`) |
 | DELETE | `/api/documents/:id` | Private | `deleteDocument` | Verify ownership, delete file from `/uploads` directory, delete DB document record |
 
-### 7.4 System Routes
+### 7.4 Knowledge & RAG Routes (`/api/knowledge`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| POST | `/api/knowledge/process/:documentId` | Private | `processDocument` | Extract, clean, chunk, embed, and store document in ChromaDB |
+| POST | `/api/knowledge/search` | Private | `searchKnowledge` | Semantic vector search scoped to authenticated user |
+| POST | `/api/knowledge/chat` | Private | `chatWithKnowledge` | Grounded RAG conversational Q&A using Gemini 2.5 Flash |
+| DELETE | `/api/knowledge/:documentId` | Private | `deleteDocumentKnowledge` | Delete document embeddings and chunks from ChromaDB |
+
+### 7.5 Progress & Dashboard Routes (`/api/progress`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| GET | `/api/progress/dashboard` | Private | `getDashboardData` | Fetch synchronized dashboard KPI stats, subject cards, and recent activities |
+| POST | `/api/progress/topic/toggle` | Private | `toggleTopic` | Toggle chapter or individual subtopic completion state and recalculate progress |
+| POST | `/api/progress/topic/add` | Private | `addTopicToSubject` | Add custom parent chapter or nested child subtopic |
+| POST | `/api/progress/subject/create` | Private | `createSubject` | Create new subject with custom color and optional topics |
+| DELETE | `/api/progress/subject/:subjectId` | Private | `deleteSubject` | Remove subject from user curriculum |
+| POST | `/api/progress/reset-defaults` | Private | `resetDefaultSubjects` | Restore default CS curriculum subjects |
+
+### 7.6 System Routes
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | GET | `/` | Public | Healthcheck endpoint returning `{ message: 'AiKMS API Server is running smoothly' }` |

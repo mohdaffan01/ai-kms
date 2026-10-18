@@ -9,16 +9,27 @@ export const getDashboardDataApi = async () => {
 };
 
 /**
- * Toggle topic completion status
+ * Toggle topic or subtopic completion status
  * @param {string} subjectId - Subject ID
  * @param {string} topicId - Topic ID
+ * @param {string|boolean} [subtopicId] - Optional subtopic ID or boolean completed
  * @param {boolean} [completed] - Optional explicit boolean state
  */
-export const toggleTopicApi = async (subjectId, topicId, completed) => {
+export const toggleTopicApi = async (subjectId, topicId, subtopicId, completed) => {
+  let actualSubtopicId = null;
+  let actualCompleted = completed;
+
+  if (typeof subtopicId === 'boolean') {
+    actualCompleted = subtopicId;
+  } else if (subtopicId) {
+    actualSubtopicId = subtopicId;
+  }
+
   const response = await authApi.put('/progress/toggle-topic', {
     subjectId,
     topicId,
-    completed,
+    subtopicId: actualSubtopicId,
+    completed: actualCompleted,
   });
   return response.data;
 };
@@ -42,12 +53,13 @@ export const deleteSubjectApi = async (subjectId) => {
 };
 
 /**
- * Add a new topic to an existing subject
+ * Add a new topic or child subtopic to an existing subject
  * @param {string} subjectId - Subject ID
- * @param {string} name - Topic name
+ * @param {string} name - Topic or Subtopic name
+ * @param {string} [parentTopicId] - Optional parent topic ID to add subtopic under
  */
-export const addTopicApi = async (subjectId, name) => {
-  const response = await authApi.post(`/progress/subject/${subjectId}/topic`, { name });
+export const addTopicApi = async (subjectId, name, parentTopicId) => {
+  const response = await authApi.post(`/progress/subject/${subjectId}/topic`, { name, parentTopicId });
   return response.data;
 };
 

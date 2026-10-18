@@ -68,17 +68,17 @@ Learners and students face significant challenges in managing learning materials
 | FR-07 | Docs | Delete document (disk file & database record) | Completed | [document.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/document.controller.js#L90-L139) |
 | FR-08 | Docs | PDF & Document preview modal | Completed | [DocumentViewerModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DocumentViewerModal.jsx) |
 | FR-09 | UI | Responsive dashboard layout with sidebar & chat area | Completed | [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx) |
+| FR-10 | AI / RAG | Document text extraction (PDF, DOCX, PPTX, MD) & Hierarchical Topic Extraction | Completed | [documentProcessor.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [topicExtractor.service.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js) |
+| FR-11 | AI / RAG | Vector embedding generation & ChromaDB vector storage | Completed | [embeddingService.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [chromaService.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/chromaService.js) |
+| FR-12 | AI / RAG | Semantic search & context-grounded AI QA engine | Completed | [knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js) |
+| FR-16 | Analytics | Comprehensive learning progress dashboard with hierarchical chapters & subtopics | Completed | [DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx), [progress.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js) |
 
 ### 6.2 Planned Functional Requirements
 | ID | Module | Feature Description | Status | Target Milestone |
 |---|---|---|---|---|
-| FR-10 | AI / RAG | Document text extraction (PDF, DOCX, PPTX, MD) | Not Started | Module 2 / Phase 2 |
-| FR-11 | AI / RAG | Vector embedding generation & vector DB storage | Not Started | Module 2 / Phase 2 |
-| FR-12 | AI / RAG | Semantic search & context-grounded AI QA engine | Not Started | Module 2 / Phase 2 |
 | FR-13 | Graph | Concept extraction & Knowledge Graph construction | Not Started | Module 3 / Phase 3 |
 | FR-14 | Graph | Interactive Knowledge Graph visualization canvas | Not Started | Module 3 / Phase 3 |
 | FR-15 | Gap | Knowledge gap detection & study recommendations | Not Started | Module 4 / Phase 4 |
-| FR-16 | Analytics | Comprehensive learning progress dashboard | Not Started | Module 4 / Phase 4 |
 
 ---
 
