@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, 
@@ -35,6 +35,12 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   // Get user info from localStorage
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : { name: 'Student', email: 'user@example.com' };
+  const folders = [...new Set(documents.map((item) => item.folder?.trim() || 'General'))]
+    .sort((first, second) => first.localeCompare(second));
+  const documentsByFolder = folders.map((folder) => ({
+    folder,
+    items: documents.filter((item) => (item.folder?.trim() || 'General') === folder),
+  }));
 
   // Fetch real documents from backend
   const fetchDocuments = async (showLoading = true) => {
@@ -173,58 +179,67 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
                 <p>No documents uploaded yet.</p>
               </div>
             ) : (
-              documents.map((item) => {
-                const docId = item._id || item.id;
-                const isDeleting = deletingId === docId;
-
-                return (
-                  <div 
-                    key={docId} 
-                    className="content-item" 
-                    title={`Click to view ${item.title} (${item.subject})`}
-                    onClick={() => handleOpenViewer(item)}
-                  >
-                    <FileText size={16} className="content-icon" />
-                    <div className="content-item-info">
-                      <span className="content-title">{item.title}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span className="content-subject-tag">{item.subject}</span>
-                        {item.processingStatus === 'processing' && (
-                          <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                            <Loader2 size={10} className="spinner" /> Processing...
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="content-item-actions">
-                      <button
-                        className="btn-view-doc"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenViewer(item);
-                        }}
-                        title="View Document"
-                      >
-                        <Eye size={14} />
-                      </button>
-
-                      <button
-                        className="btn-delete-doc"
-                        onClick={(e) => handleDeleteDocument(e, docId)}
-                        title="Delete Document"
-                        disabled={isDeleting}
-                      >
-                        {isDeleting ? (
-                          <Loader2 size={14} className="spinner" />
-                        ) : (
-                          <Trash2 size={14} />
-                        )}
-                      </button>
-                    </div>
+              documentsByFolder.map(({ folder, items }) => (
+                <section className="content-folder-group" key={folder}>
+                  <div className="content-folder-heading">
+                    <Folder size={14} />
+                    <span className="content-folder-name">{folder}</span>
+                    <span className="content-folder-count">{items.length}</span>
                   </div>
-                );
-              })
+                  {items.map((item) => {
+                    const docId = item._id || item.id;
+                    const isDeleting = deletingId === docId;
+
+                    return (
+                      <div
+                        key={docId}
+                        className="content-item"
+                        title={`Click to view ${item.title} (${item.subject})`}
+                        onClick={() => handleOpenViewer(item)}
+                      >
+                        <FileText size={16} className="content-icon" />
+                        <div className="content-item-info">
+                          <span className="content-title">{item.title}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <span className="content-subject-tag">{item.subject}</span>
+                            {item.processingStatus === 'processing' && (
+                              <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                                <Loader2 size={10} className="spinner" /> Processing...
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="content-item-actions">
+                          <button
+                            className="btn-view-doc"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenViewer(item);
+                            }}
+                            title="View Document"
+                          >
+                            <Eye size={14} />
+                          </button>
+
+                          <button
+                            className="btn-delete-doc"
+                            onClick={(e) => handleDeleteDocument(e, docId)}
+                            title="Delete Document"
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? (
+                              <Loader2 size={14} className="spinner" />
+                            ) : (
+                              <Trash2 size={14} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </section>
+              ))
             )}
           </div>
 
@@ -260,6 +275,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
         isOpen={isUploadModalOpen} 
         onClose={() => setIsUploadModalOpen(false)} 
         onUploadSuccess={handleUploadSuccess}
+        folders={folders}
       />
 
       {/* Document Viewer Modal */}

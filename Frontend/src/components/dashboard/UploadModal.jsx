@@ -1,16 +1,18 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { X, UploadCloud, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { uploadDocumentApi } from '../../api/documentApi';
 import { processDocumentKnowledgeApi } from '../../api/knowledgeApi';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.txt', '.md'];
+const NEW_FOLDER_OPTION = '__create_new__';
 
-const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
+const UploadModal = ({ isOpen, onClose, onUploadSuccess, folders = [] }) => {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
-  const [folder, setFolder] = useState('General');
+  const [folderSelection, setFolderSelection] = useState('General');
+  const [newFolderName, setNewFolderName] = useState('');
 
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -18,6 +20,8 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
   const [success, setSuccess] = useState('');
 
   const fileInputRef = useRef(null);
+  const folderOptions = [...new Set(['General', ...folders.map((name) => name.trim()).filter(Boolean)])]
+    .sort((first, second) => first.localeCompare(second));
 
   if (!isOpen) return null;
 
@@ -26,7 +30,8 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
     setTitle('');
     setSubject('');
     setTopic('');
-    setFolder('General');
+    setFolderSelection('General');
+    setNewFolderName('');
     setError('');
     setSuccess('');
     setIsUploading(false);
@@ -112,6 +117,14 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
       return;
     }
 
+    const targetFolder = folderSelection === NEW_FOLDER_OPTION
+      ? newFolderName.trim()
+      : folderSelection.trim();
+    if (!targetFolder) {
+      setError('Please choose a folder or enter a folder name.');
+      return;
+    }
+
     try {
       setIsUploading(true);
 
@@ -120,7 +133,7 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
       formData.append('title', title.trim());
       formData.append('subject', subject.trim());
       if (topic.trim()) formData.append('topic', topic.trim());
-      if (folder.trim()) formData.append('folder', folder.trim());
+      formData.append('folder', targetFolder);
 
       const response = await uploadDocumentApi(formData);
       const uploadedDoc = response.document || response;
@@ -270,14 +283,30 @@ const UploadModal = ({ isOpen, onClose, onUploadSuccess }) => {
             </div>
 
             <div className="upload-field">
-              <label htmlFor="doc-folder">Folder (Optional)</label>
-              <input
+              <label htmlFor="doc-folder">Folder</label>
+              <select
                 id="doc-folder"
-                type="text"
-                placeholder="e.g. General, Assignments"
-                value={folder}
-                onChange={(e) => setFolder(e.target.value)}
-              />
+                value={folderSelection}
+                onChange={(e) => setFolderSelection(e.target.value)}
+                disabled={isUploading}
+              >
+                {folderOptions.map((folderName) => (
+                  <option key={folderName} value={folderName}>{folderName}</option>
+                ))}
+                <option value={NEW_FOLDER_OPTION}>Create new folder...</option>
+              </select>
+              {folderSelection === NEW_FOLDER_OPTION && (
+                <input
+                  id="new-folder-name"
+                  type="text"
+                  placeholder="Enter folder name"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  maxLength={80}
+                  required
+                  disabled={isUploading}
+                />
+              )}
             </div>
           </div>
 
