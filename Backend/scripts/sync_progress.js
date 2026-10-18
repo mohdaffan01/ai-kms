@@ -16,15 +16,16 @@ async function syncAllUsers() {
     const userDocs = await Document.find({ uploadedBy: userId });
     console.log(`User ${userId} has ${userDocs.length} uploaded docs.`);
 
-    // Reset default subjects with 0 topics
-    const cleanSubjects = DEFAULT_CS_SUBJECTS.map((s) => ({
-      id: s.id,
-      name: s.name,
-      code: s.code,
-      description: s.description,
-      category: s.category,
-      icon: s.icon,
-      color: s.color,
+    // Gather unique subject names from user documents
+    const docSubjects = [...new Set(userDocs.map((d) => (d.subject || '').trim()).filter(Boolean))];
+    const cleanSubjects = docSubjects.map((name, idx) => ({
+      id: `sub-sync-${idx + 1}`,
+      name,
+      code: '',
+      description: `Subject from uploaded study materials`,
+      category: 'Coursework',
+      icon: 'BookOpen',
+      color: '#10a37f',
       topics: [],
     }));
 

@@ -29,7 +29,6 @@ import {
   createSubjectApi,
   deleteSubjectApi,
   addTopicApi,
-  resetDefaultSubjectsApi,
 } from '../../api/progressApi';
 
 const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
@@ -266,25 +265,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
     }
   };
 
-  // Reset Default CS Curriculum
-  const handleResetDefaults = async () => {
-    if (
-      !window.confirm(
-        'Reset curriculum back to default subjects (DBMS, Operating Systems, Computer Networks, Data Structures, Software Engineering)?'
-      )
-    ) {
-      return;
-    }
-    try {
-      setIsRefreshing(true);
-      await resetDefaultSubjectsApi();
-      await fetchDashboard(false);
-    } catch (err) {
-      console.error('Failed to reset default subjects:', err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+
 
   // Upload modal success callback
   const handleUploadSuccess = () => {
@@ -354,24 +335,24 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
                 <BookOpen size={48} className="empty-subjects-icon" />
                 <h3 className="empty-subjects-title">No Subjects in Your Curriculum</h3>
                 <p className="empty-subjects-desc">
-                  You haven't configured any subjects yet. Create your first subject or restore the default
-                  Computer Science curriculum (DBMS, Operating Systems, Computer Networks, Data Structures, and Software Engineering).
+                  You haven't added any subjects yet. Upload learning materials (PDF, DOC, TXT) or create a custom subject to automatically generate your curriculum.
                 </p>
                 <div className="empty-subjects-actions">
                   <button
                     type="button"
                     className="btn-empty-primary"
-                    onClick={() => setIsCreateSubjectOpen(true)}
+                    onClick={() => setIsUploadModalOpen(true)}
                   >
-                    <FolderPlus size={16} />
-                    <span>Create Custom Subject</span>
+                    <UploadCloud size={16} />
+                    <span>Upload Study Material</span>
                   </button>
                   <button
                     type="button"
                     className="btn-empty-secondary"
-                    onClick={handleResetDefaults}
+                    onClick={() => setIsCreateSubjectOpen(true)}
                   >
-                    <span>Restore Standard CS Curriculum</span>
+                    <FolderPlus size={16} />
+                    <span>Create Custom Subject</span>
                   </button>
                 </div>
               </div>

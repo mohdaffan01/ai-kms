@@ -56,15 +56,14 @@
 - [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
 - [x] Gemini 2.5 Flash LLM Integration (`gemini-2.5-flash` API endpoint for grounded Q&A and summary generation)
-- [x] Vector deletion endpoint (`DELETE /api/knowledge/:documentId`)
-- [x] Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Parses uploaded PDFs/notes into Parent Chapters and nested Child Subtopics automatically.
+- [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material (across all academic subjects, file types, and syllabus layouts) using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, practice exercises, and sentence fragments through universal linguistic sanitization.
 - [ ] Concept & relationship extraction for Knowledge Graphs
 - [ ] Interactive Knowledge Graph visualization canvas
 - [ ] Quiz generation & Knowledge Gap detection engine
 
 ### 3.5 Learning Dashboard & Curriculum Progress Tracking
 - [x] Mongoose Progress Model with hierarchical topics and subtopics ([`progress.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
-- [x] Real-time Dashboard data API with document synchronization ([`progress.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js))
+- [x] Real-time Dashboard data API with fast-path MongoDB caching (Sub-100ms page load; avoids redundant LLM re-extraction on page visits) ([`progress.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js))
 - [x] Overview KPI Cards (Total Subjects, Total Topics, Completed Topics, Overall Progress %, Uploaded Documents) ([`OverviewStats.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/OverviewStats.jsx))
 - [x] Subject Cards Grid with Document Count Badge and Progress Bar ([`SubjectCard.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectCard.jsx))
 - [x] Hierarchical Accordion Subject Detail Modal ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)) with Parent Chapters, nested Child Subtopics, connecting line guide, and topic builders

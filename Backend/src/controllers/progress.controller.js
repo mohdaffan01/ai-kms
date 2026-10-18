@@ -2,58 +2,8 @@ import Progress from '../models/progress.model.js';
 import Document from '../models/document.model.js';
 import { extractTopicsFromDocument } from '../services/topicExtractor.service.js';
 
-export const DEFAULT_CS_SUBJECTS = [
-  {
-    id: 'sub-dbms',
-    name: 'DBMS',
-    code: 'CS-301',
-    description: 'Database Management Systems, relational design, SQL & transactions',
-    category: 'Computer Science',
-    icon: 'Database',
-    color: '#10a37f',
-    topics: [],
-  },
-  {
-    id: 'sub-os',
-    name: 'Operating Systems',
-    code: 'CS-302',
-    description: 'Process management, concurrency, memory allocation & file systems',
-    category: 'Computer Science',
-    icon: 'Cpu',
-    color: '#0ea5e9',
-    topics: [],
-  },
-  {
-    id: 'sub-cn',
-    name: 'Computer Networks',
-    code: 'CS-303',
-    description: 'OSI/TCP-IP models, routing protocols, subnetting & transport layer',
-    category: 'Computer Science',
-    icon: 'Network',
-    color: '#8b5cf6',
-    topics: [],
-  },
-  {
-    id: 'sub-ds',
-    name: 'Data Structures',
-    code: 'CS-201',
-    description: 'Fundamental data structures, trees, graphs, sorting & algorithm complexity',
-    category: 'Computer Science',
-    icon: 'Layers',
-    color: '#f59e0b',
-    topics: [],
-  },
-  {
-    id: 'sub-se',
-    name: 'Software Engineering',
-    code: 'CS-401',
-    description: 'SDLC methodologies, Agile, UML design, testing & deployment pipelines',
-    category: 'Computer Science',
-    icon: 'Boxes',
-    color: '#ec4899',
-    topics: [],
-  },
-];
+// Empty default subjects array: subjects are generated dynamically from uploaded documents or user creation
+export const DEFAULT_CS_SUBJECTS = [];
 
 // Helper to calculate statistics
 const calculateStats = (subjects = [], documentsCount = 0) => {
@@ -93,18 +43,18 @@ export const getDashboardData = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    // 1. Fetch user's progress record from MongoDB or initialize with default CS subjects
+    // 1. Fetch user's progress record from MongoDB or initialize with empty subjects
     let progress = await Progress.findOne({ userId });
 
     if (!progress) {
       progress = await Progress.create({
         userId,
-        subjects: DEFAULT_CS_SUBJECTS,
+        subjects: [],
         recentActivities: [
           {
             id: 'act-init-1',
             type: 'subject_created',
-            title: 'Welcome to AIKMS! Curriculum loaded.',
+            title: 'Welcome to AIKMS! Study workspace ready.',
             subject: 'System',
             timestamp: new Date(),
           },
@@ -160,7 +110,16 @@ export const getDashboardData = async (req, res) => {
           progressModified = true;
         }
       } else {
-        // Subject HAS uploaded documents! Extract hierarchical topics from the files
+        // Fast-path: If subject already has extracted topics saved in DB, use them directly!
+        // Do NOT block dashboard loading by re-calling Gemini on every page load.
+        const hasExtractedTopics = (subj.topics || []).some((t) => t.isExtracted);
+        const forceRefresh = req.query?.force === 'true';
+
+        if (!forceRefresh && hasExtractedTopics && (subj.topics || []).length > 0) {
+          continue;
+        }
+
+        // First-time extraction (or forced refresh): extract hierarchical topics from files
         const hierarchicalChapters = [];
         for (const doc of matchingDocs) {
           const extracted = await extractTopicsFromDocument(doc);
@@ -239,6 +198,22 @@ export const getDashboardData = async (req, res) => {
           progressModified = true;
         }
       }
+    }
+
+    // C. Remove any demo or placeholder subjects with NO content (0 uploaded documents AND 0 topics)
+    const activeSubjects = progress.subjects.filter((subj) => {
+      const matchingDocs = userDocs.filter(
+        (d) => d.subject && d.subject.trim().toLowerCase() === subj.name.trim().toLowerCase()
+      );
+      const hasDocs = matchingDocs.length > 0;
+      const hasTopics = Array.isArray(subj.topics) && subj.topics.length > 0;
+      const isCustomUserSubject = subj.isUserCreated === true && !/^sub-(dbms|os|cn|ds|se)$/.test(subj.id);
+      return hasDocs || hasTopics || isCustomUserSubject;
+    });
+
+    if (activeSubjects.length !== progress.subjects.length) {
+      progress.subjects = activeSubjects;
+      progressModified = true;
     }
 
     if (progressModified) {
@@ -488,7 +463,7 @@ export const createSubject = async (req, res) => {
     if (!progress) {
       progress = await Progress.create({
         userId,
-        subjects: DEFAULT_CS_SUBJECTS,
+        subjects: [],
         recentActivities: [],
       });
     }
@@ -523,6 +498,7 @@ export const createSubject = async (req, res) => {
       icon: icon || 'BookOpen',
       color: color || '#10a37f',
       topics: formattedTopics,
+      isUserCreated: true,
       createdAt: new Date(),
     };
 
@@ -715,23 +691,31 @@ export const resetDefaultSubjects = async (req, res) => {
       progress = new Progress({ userId });
     }
 
-    progress.subjects = DEFAULT_CS_SUBJECTS;
+    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocSubjects = new Set(userDocs.map((d) => (d.subject || '').trim().toLowerCase()));
+
+    // Filter out subjects with no matching documents and no topics
+    progress.subjects = progress.subjects.filter((subj) => {
+      const hasDocs = userDocSubjects.has(subj.name.trim().toLowerCase());
+      const hasTopics = Array.isArray(subj.topics) && subj.topics.length > 0;
+      return hasDocs || hasTopics;
+    });
+
     progress.recentActivities.unshift({
       id: `act-reset-${Date.now()}`,
       type: 'subject_created',
-      title: 'Restored default Computer Science curriculum subjects',
+      title: 'Cleaned curriculum to active study materials',
       subject: 'System',
       timestamp: new Date(),
     });
 
     await progress.save();
 
-    const userDocs = await Document.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(200).json({
       success: true,
-      message: 'Default CS curriculum subjects restored',
+      message: 'Curriculum cleaned to active subjects',
       subjects: progress.subjects,
       stats,
     });

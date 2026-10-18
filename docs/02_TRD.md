@@ -177,7 +177,7 @@ Backend/
     │   ├── embeddingService.js   # Vector embeddings generation
     │   ├── textChunker.js        # Semantic text chunking
     │   ├── textCleaner.js        # Text normalization & cleaning
-    │   └── topicExtractor.service.js # Hierarchical Parent & Subtopic extraction
+    │   └── topicExtractor.service.js # Universal AI-Powered (Gemini) dynamic curriculum & topic hierarchy extraction with heuristic fallback
     ├── utils/
     │   └── generateToken.js      # JWT signing helper utility
     └── index.js                  # Main Express app initialization & server entry point

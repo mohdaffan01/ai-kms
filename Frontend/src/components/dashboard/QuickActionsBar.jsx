@@ -1,11 +1,10 @@
 import React from 'react';
-import { PlusCircle, UploadCloud, Bot, RotateCcw, Sparkles } from 'lucide-react';
+import { PlusCircle, UploadCloud, Bot, Sparkles } from 'lucide-react';
 
 const QuickActionsBar = ({
   onCreateSubject,
   onUploadMaterial,
   onOpenChat,
-  onResetDefaults,
 }) => {
   return (
     <div className="quick-actions-card">
@@ -63,20 +62,6 @@ const QuickActionsBar = ({
           </div>
         </button>
       </div>
-
-      {onResetDefaults && (
-        <div className="quick-actions-reset-row">
-          <button
-            type="button"
-            className="btn-reset-curriculum"
-            onClick={onResetDefaults}
-            title="Restore standard Computer Science curriculum (DBMS, OS, CN, DS, SE)"
-          >
-            <RotateCcw size={13} />
-            <span>Restore Standard CS Curriculum</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 };
