@@ -178,8 +178,10 @@ const callGemini = async (prompt, apiKey) => {
   if (!apiKey) return null;
   const models = [
     process.env.GEMINI_MODEL,
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
+    'gemini-2.5-flash',
+    'gemini-flash-latest',
+    'gemini-2.5-pro',
+    'gemini-pro-latest',
   ].filter(Boolean);
 
   for (const model of models) {
@@ -227,7 +229,7 @@ const generateStructuredConceptAnswer = (docTitle, userQuery, rawText) => {
   const keywords = queryLower
     .split(/\s+/)
     .map((w) => w.replace(/[^\w]/g, ''))
-    .filter((w) => w.length > 2 && !['what', 'is', 'the', 'how', 'explain', 'tell', 'about', 'can', 'you', 'give', 'does', 'with', 'from', 'for'].includes(w));
+    .filter((w) => w.length > 2 && !['what', 'is', 'the', 'how', 'explain', 'tell', 'about', 'can', 'you', 'give', 'does', 'with', 'from', 'for', 'advantage', 'advantages', 'over'].includes(w));
 
   // Rank paragraphs by keyword matches
   const scored = paragraphs.map((p) => {
@@ -240,14 +242,16 @@ const generateStructuredConceptAnswer = (docTitle, userQuery, rawText) => {
   });
 
   scored.sort((a, b) => b.score - a.score);
-  const topMatches = scored.filter((s) => s.score > 0).slice(0, 3);
+  const bestMatch = scored.find((s) => s.score > 0) || scored[0];
 
-  if (topMatches.length > 0) {
-    const matchedText = topMatches.map((m) => m.paragraph).join('\n\n');
-    return `### 📌 Answer from "${docTitle}"\n\n${matchedText}`;
+  if (bestMatch && bestMatch.paragraph) {
+    // Truncate to clean concise sentences
+    const sentences = bestMatch.paragraph.split(/(?<=[.?!])\s+/).slice(0, 4);
+    const summary = sentences.join(' ').substring(0, 600);
+    return `### Key Takeaway from "${docTitle}":\n\n${summary}`;
   }
 
-  return `### 📌 Context from "${docTitle}"\n\n${paragraphs.slice(0, 2).join('\n\n')}`;
+  return `### Key Takeaway from "${docTitle}":\n\nCould not locate an exact match for "${userQuery}" in this document.`;
 };
 
 /**
