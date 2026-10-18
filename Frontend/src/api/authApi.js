@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  `${window.location.protocol}//${window.location.hostname}:3000/api`;
 
 const authApi = axios.create({
   baseURL: API_BASE_URL,
@@ -28,6 +30,16 @@ export const registerApi = async (userData) => {
 
 export const loginApi = async (credentials) => {
   const response = await authApi.post('/auth/login', credentials);
+  return response.data;
+};
+
+export const requestPasswordResetApi = async (email) => {
+  const response = await authApi.post('/auth/forgot-password', { email });
+  return response.data;
+};
+
+export const resetPasswordApi = async (token, passwordData) => {
+  const response = await authApi.post(`/auth/reset-password/${token}`, passwordData);
   return response.data;
 };
 

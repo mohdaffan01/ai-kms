@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { loginApi } from '../../api/authApi';
@@ -108,6 +108,12 @@ const LoginForm = () => {
           )}
         </button>
       </form>
+
+      <div className="auth-forgot-link">
+        <Link to="/forgot-password" className="auth-link">
+          Forgot password?
+        </Link>
+      </div>
 
       <div className="auth-footer">
         <span>Don't have an account? </span>
