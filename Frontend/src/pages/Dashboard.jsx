@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from '../components/dashboard/Sidebar';
 import ChatWindow from '../components/dashboard/ChatWindow';
 import ChatInput from '../components/dashboard/ChatInput';
+import DashboardOverview from '../components/dashboard/DashboardOverview';
+import DocumentViewerModal from '../components/dashboard/DocumentViewerModal';
 import { queryKnowledgeChatApi } from '../api/knowledgeApi';
-import { speakText } from '../utils/voice';
+import '../styles/dashboard-view.css';
 
 const Dashboard = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'chat' ? 'chat' : 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat'
   const [messages, setMessages] = useState([]);
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat' | 'dashboard'
   const [isLoading, setIsLoading] = useState(false);
+  const [viewerDoc, setViewerDoc] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +25,11 @@ const Dashboard = () => {
       navigate('/login');
     }
   }, [navigate]);
+
+  const handleSelectTab = (tab) => {
+    setActiveTab(tab);
+    setSearchParams(tab === 'chat' ? { tab: 'chat' } : {});
+  };
 
   const handleSendMessage = async (userText) => {
     if (!userText || !userText.trim() || isLoading) return;
@@ -54,6 +65,12 @@ const Dashboard = () => {
 
   const handleNewChat = () => {
     setMessages([]);
+    handleSelectTab('chat');
+  };
+
+  const handleOpenDocumentViewer = (doc) => {
+    setViewerDoc(doc);
+    setIsViewerOpen(true);
   };
 
   return (
@@ -61,13 +78,14 @@ const Dashboard = () => {
       <Sidebar 
         onNewChat={handleNewChat} 
         activeTab={activeTab} 
-        onSelectTab={(tab) => setActiveTab(tab)} 
+        onSelectTab={handleSelectTab} 
       />
       <main className="chat-main-area">
         {activeTab === 'dashboard' ? (
-          <div className="dashboard-placeholder-container">
-            <h1 className="dashboard-placeholder-title">DASHBOARD</h1>
-          </div>
+          <DashboardOverview 
+            onSelectTab={handleSelectTab} 
+            onOpenDocumentViewer={handleOpenDocumentViewer}
+          />
         ) : (
           <>
             <ChatWindow messages={messages} isLoading={isLoading} />
@@ -75,8 +93,22 @@ const Dashboard = () => {
           </>
         )}
       </main>
+
+      <DocumentViewerModal
+        document={viewerDoc}
+        isOpen={isViewerOpen}
+        onClose={() => {
+          setIsViewerOpen(false);
+          setViewerDoc(null);
+        }}
+        onDeleteSuccess={() => {
+          setIsViewerOpen(false);
+          setViewerDoc(null);
+        }}
+      />
     </div>
   );
 };
 
 export default Dashboard;
+

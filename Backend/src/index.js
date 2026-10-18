@@ -8,6 +8,7 @@ import { authRoutes, userRoutes } from './routes/user.routes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import documentRoutes from "./routes/document.routes.js";
 import knowledgeRoutes from "./routes/knowledge.routes.js";
+import progressRoutes from "./routes/progress.routes.js";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/knowledge", knowledgeRoutes);
+app.use("/api/progress", progressRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
