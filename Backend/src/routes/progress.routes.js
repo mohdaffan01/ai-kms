@@ -4,6 +4,7 @@ import {
   getDashboardData,
   toggleTopic,
   createSubject,
+  updateSubject,
   deleteSubject,
   addTopicToSubject,
   resetDefaultSubjects,
@@ -19,6 +20,7 @@ progressRoutes.put('/toggle-topic', protect, toggleTopic);
 
 // Subject management
 progressRoutes.post('/subject', protect, createSubject);
+progressRoutes.put('/subject/:subjectId', protect, updateSubject);
 progressRoutes.delete('/subject/:subjectId', protect, deleteSubject);
 progressRoutes.post('/subject/:subjectId/topic', protect, addTopicToSubject);
 progressRoutes.post('/reset-defaults', protect, resetDefaultSubjects);

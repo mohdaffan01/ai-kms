@@ -238,10 +238,10 @@ Backend/
 |---|---|---|---|---|
 | GET | `/api/progress/dashboard` | Private | `getDashboardData` | Fetch synchronized dashboard KPI stats, subject cards, and recent activities |
 | POST | `/api/progress/topic/toggle` | Private | `toggleTopic` | Toggle chapter or individual subtopic completion state and recalculate progress |
-| POST | `/api/progress/topic/add` | Private | `addTopicToSubject` | Add custom parent chapter or nested child subtopic |
-| POST | `/api/progress/subject/create` | Private | `createSubject` | Create new subject with custom color and optional topics |
-| DELETE | `/api/progress/subject/:subjectId` | Private | `deleteSubject` | Remove subject from user curriculum |
-| POST | `/api/progress/reset-defaults` | Private | `resetDefaultSubjects` | Restore default CS curriculum subjects |
+| POST | `/api/progress/subject` | Private | `createSubject` | Create new subject with custom color and optional topics |
+| PUT | `/api/progress/subject/:subjectId` | Private | `updateSubject` | Rename or update subject metadata with document auto-sync |
+| DELETE | `/api/progress/subject/:subjectId` | Private | `deleteSubject` | Remove subject from user curriculum and unlink documents |
+| POST | `/api/progress/reset-defaults` | Private | `resetDefaultSubjects` | Clean curriculum to active study materials |
 
 ### 7.6 System Routes
 | Method | Endpoint | Access | Description |

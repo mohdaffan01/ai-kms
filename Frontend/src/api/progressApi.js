@@ -44,6 +44,16 @@ export const createSubjectApi = async (subjectData) => {
 };
 
 /**
+ * Update an existing subject (name, code, description, color, etc.)
+ * @param {string} subjectId - Subject ID
+ * @param {Object} updateData - { name, code, description, color, icon, category }
+ */
+export const updateSubjectApi = async (subjectId, updateData) => {
+  const response = await authApi.put(`/progress/subject/${subjectId}`, updateData);
+  return response.data;
+};
+
+/**
  * Delete a subject
  * @param {string} subjectId - Subject ID
  */

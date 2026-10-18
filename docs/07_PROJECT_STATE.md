@@ -64,9 +64,12 @@
 ### 3.5 Learning Dashboard & Curriculum Progress Tracking
 - [x] Mongoose Progress Model with hierarchical topics and subtopics ([`progress.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
 - [x] Real-time Dashboard data API with fast-path MongoDB caching (Sub-100ms page load; avoids redundant LLM re-extraction on page visits) ([`progress.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js))
+- [x] Pure Document-Driven & Dynamic Subjects: Empty demo/placeholder CS subjects purged; workspace starts cleanly and automatically generates subjects from uploaded study materials or user creation.
 - [x] Overview KPI Cards (Total Subjects, Total Topics, Completed Topics, Overall Progress %, Uploaded Documents) ([`OverviewStats.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/OverviewStats.jsx))
 - [x] Subject Cards Grid with Document Count Badge and Progress Bar ([`SubjectCard.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectCard.jsx))
 - [x] Hierarchical Accordion Subject Detail Modal ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)) with Parent Chapters, nested Child Subtopics, connecting line guide, and topic builders
+- [x] Inline Subject Renaming ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): Instant inline title editing with Pencil button, Enter/Save controls, and automatic synchronization across all associated documents and dashboard cards (`PUT /api/progress/subject/:subjectId`).
+- [x] GitHub-Style Subject Deletion Modal ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): High-safety confirmation dialog requiring the user to type the exact subject name before the destructive delete button activates; unlinks documents to prevent auto-recreation (`DELETE /api/progress/subject/:subjectId`).
 - [x] Real-time optimistic Checkbox updates & backend persistence for both chapters and subtopics (`POST /api/progress/topic/toggle`)
 - [x] Dynamic Subject Creation Modal ([`CreateSubjectModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/CreateSubjectModal.jsx)) with color palette presets
 - [x] Visual Learning Progress Distribution bar & Recent Activity stream ([`LearningProgressSection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/LearningProgressSection.jsx), [`RecentActivitySection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/RecentActivitySection.jsx))
@@ -100,7 +103,7 @@
   - `knowledge_chunks`: ChromaDB collection storing text chunks & vector embeddings with metadata payload (`userId`, `documentId`, `chunkIndex`).
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 19 active endpoints.
+- **Total Operational Endpoints**: 20 active endpoints.
   1. `GET /`: Healthcheck response
   2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
   3. `POST /api/auth/login`: Public login
@@ -117,9 +120,10 @@
   14. `GET /api/progress/dashboard`: Fetch full learning dashboard state, synced subjects, and stats
   15. `POST /api/progress/topic/toggle`: Toggle chapter or individual subtopic completion state
   16. `POST /api/progress/topic/add`: Add custom parent chapter or child subtopic
-  17. `POST /api/progress/subject/create`: Create new academic subject
-  18. `DELETE /api/progress/subject/:subjectId`: Delete custom subject
-  19. `POST /api/progress/reset-defaults`: Reset default computer science curriculum subjects
+  17. `POST /api/progress/subject`: Create new academic subject
+  18. `PUT /api/progress/subject/:subjectId`: Update subject name & metadata with automatic document resynchronization
+  19. `DELETE /api/progress/subject/:subjectId`: Delete subject from user curriculum
+  20. `POST /api/progress/reset-defaults`: Clean curriculum to active study materials
 
 ---
 

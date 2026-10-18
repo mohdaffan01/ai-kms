@@ -562,6 +562,24 @@ export const deleteSubject = async (req, res) => {
     const removedSubject = progress.subjects[subjectIndex];
     progress.subjects.splice(subjectIndex, 1);
 
+    // Unlink / clean subject reference from documents so subject does not auto-regenerate on next reload
+    await Document.updateMany(
+      {
+        uploadedBy: userId,
+        subject: { $regex: new RegExp(`^${removedSubject.name.trim()}$`, 'i') },
+      },
+      { $set: { subject: 'General' } }
+    );
+
+    // Log recent activity
+    progress.recentActivities.unshift({
+      id: `act-del-sub-${Date.now()}`,
+      type: 'subject_created',
+      title: `Deleted subject: "${removedSubject.name}"`,
+      subject: 'System',
+      timestamp: new Date(),
+    });
+
     await progress.save();
 
     const userDocs = await Document.find({ uploadedBy: userId });
@@ -577,6 +595,82 @@ export const deleteSubject = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to delete subject',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Update a subject's name and details
+ * @route   PUT /api/progress/subject/:subjectId
+ * @access  Private
+ */
+export const updateSubject = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const { subjectId } = req.params;
+    const { name, code, description, category, color, icon } = req.body;
+
+    if (name !== undefined && !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Subject name cannot be empty.' });
+    }
+
+    const progress = await Progress.findOne({ userId });
+    if (!progress) {
+      return res.status(404).json({ success: false, message: 'Progress record not found' });
+    }
+
+    const subject = progress.subjects.find((s) => s.id === subjectId);
+    if (!subject) {
+      return res.status(404).json({ success: false, message: 'Subject not found' });
+    }
+
+    const oldName = subject.name;
+    const newName = name ? name.trim() : oldName;
+
+    if (name) subject.name = newName;
+    if (code !== undefined) subject.code = code.trim();
+    if (description !== undefined) subject.description = description.trim();
+    if (category !== undefined) subject.category = category.trim();
+    if (color !== undefined) subject.color = color;
+    if (icon !== undefined) subject.icon = icon;
+
+    // If subject name changed, also update matching user documents so they stay linked
+    if (name && oldName.trim().toLowerCase() !== newName.trim().toLowerCase()) {
+      await Document.updateMany(
+        {
+          uploadedBy: userId,
+          subject: { $regex: new RegExp(`^${oldName.trim()}$`, 'i') },
+        },
+        { $set: { subject: newName } }
+      );
+    }
+
+    // Log activity
+    progress.recentActivities.unshift({
+      id: `act-ren-${Date.now()}`,
+      type: 'subject_created',
+      title: `Renamed subject from "${oldName}" to "${newName}"`,
+      subject: newName,
+      timestamp: new Date(),
+    });
+
+    await progress.save();
+
+    const userDocs = await Document.find({ uploadedBy: userId });
+    const stats = calculateStats(progress.subjects, userDocs.length);
+
+    return res.status(200).json({
+      success: true,
+      message: `Subject updated successfully`,
+      subject,
+      stats,
+    });
+  } catch (error) {
+    console.error('[ProgressController] updateSubject error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update subject',
       error: error.message,
     });
   }

@@ -76,7 +76,7 @@ Tracks learning progress, subject cards, hierarchical topic and subtopic complet
 |---|---|---|---|---|---|
 | `_id` | ObjectId | Auto | Yes | Auto ObjectId | Unique primary progress document identifier |
 | `userId` | ObjectId | Yes | Yes | None | Foreign key ref to `User._id` (indexed & unique) |
-| `subjects` | Array<Subject> | No | No | `DEFAULT_CS_SUBJECTS` | List of subject objects with hierarchical topics |
+| `subjects` | Array<Subject> | No | No | `[]` | List of subject objects with hierarchical topics (dynamically generated from uploaded materials or user creation) |
 | `recentActivities` | Array<Activity> | No | No | `[]` | List of recent learning & upload activity events |
 | `createdAt` | Date | Auto | No | Current timestamp | Creation timestamp |
 | `updatedAt` | Date | Auto | No | Current timestamp | Last updated timestamp |

@@ -12,7 +12,11 @@ import {
   ListChecks,
   ChevronDown,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  Pencil,
 } from 'lucide-react';
 
 const SubjectDetailModal = ({
@@ -23,6 +27,7 @@ const SubjectDetailModal = ({
   onToggleTopic,
   onAddTopic,
   onDeleteSubject,
+  onUpdateSubject,
   onStudyWithAI,
   onUploadDocument,
   onOpenDocumentViewer,
@@ -33,6 +38,20 @@ const SubjectDetailModal = ({
   const [selectedParentId, setSelectedParentId] = useState('');
   const [isAddingTopic, setIsAddingTopic] = useState(false);
   const [collapsedParents, setCollapsedParents] = useState({});
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deleteInput, setDeleteInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedSubjectName, setEditedSubjectName] = useState(subject ? subject.name : '');
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  // Sync editedSubjectName when subject changes
+  React.useEffect(() => {
+    if (subject) {
+      setEditedSubjectName(subject.name);
+      setIsEditingName(false);
+    }
+  }, [subject?.id, subject?.name]);
 
   if (!isOpen || !subject) return null;
 
@@ -110,6 +129,55 @@ const SubjectDetailModal = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
+  const isDeleteMatch = deleteInput.trim().toLowerCase() === subject.name.trim().toLowerCase();
+
+  const handleConfirmDelete = async () => {
+    if (!isDeleteMatch || isDeleting) return;
+    try {
+      setIsDeleting(true);
+      if (onDeleteSubject) {
+        await onDeleteSubject(subject.id);
+      }
+      setIsDeleteConfirmOpen(false);
+      onClose();
+    } catch (err) {
+      console.error('Failed to delete subject:', err);
+      alert('Failed to delete subject. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteConfirmOpen(false);
+    setDeleteInput('');
+  };
+
+  const handleSaveName = async () => {
+    if (!editedSubjectName.trim() || isSavingName) return;
+    if (editedSubjectName.trim() === subject.name.trim()) {
+      setIsEditingName(false);
+      return;
+    }
+    try {
+      setIsSavingName(true);
+      if (onUpdateSubject) {
+        await onUpdateSubject(subject.id, { name: editedSubjectName.trim() });
+      }
+      setIsEditingName(false);
+    } catch (err) {
+      console.error('Failed to update subject name:', err);
+      alert('Could not update subject name. Please try again.');
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
+  const handleCancelEditName = () => {
+    setEditedSubjectName(subject.name);
+    setIsEditingName(false);
+  };
+
   return (
     <div className="subject-modal-backdrop" onClick={onClose}>
       <div className="subject-modal-dialog" onClick={(e) => e.stopPropagation()}>
@@ -181,6 +249,20 @@ const SubjectDetailModal = ({
             <Sparkles size={14} />
             <span>Study {subject.name} with AI</span>
           </button>
+
+          {/* Delete Subject Button below Study with AI */}
+          <button
+            type="button"
+            className="sidebar-delete-subject-btn"
+            onClick={() => {
+              setDeleteInput('');
+              setIsDeleteConfirmOpen(true);
+            }}
+            title={`Delete ${subject.name}`}
+          >
+            <Trash2 size={14} />
+            <span>Delete Subject</span>
+          </button>
         </div>
 
         {/* Right Main Content Panel */}
@@ -198,7 +280,55 @@ const SubjectDetailModal = ({
                 <BookOpen size={20} />
               </div>
               <div className="main-title-meta">
-                <h2>{subject.name}</h2>
+                {isEditingName ? (
+                  <div className="inline-edit-subject-form">
+                    <input
+                      type="text"
+                      className="edit-subject-input"
+                      value={editedSubjectName}
+                      onChange={(e) => setEditedSubjectName(e.target.value)}
+                      autoFocus
+                      placeholder="Enter subject name..."
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName();
+                        if (e.key === 'Escape') handleCancelEditName();
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-save-subject-title"
+                      onClick={handleSaveName}
+                      disabled={!editedSubjectName.trim() || isSavingName}
+                      title="Save name"
+                    >
+                      {isSavingName ? <Loader2 size={13} className="spinner" /> : <Check size={14} />}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-cancel-subject-title"
+                      onClick={handleCancelEditName}
+                      disabled={isSavingName}
+                      title="Cancel"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="main-title-heading-row">
+                    <h2>{subject.name}</h2>
+                    <button
+                      type="button"
+                      className="btn-edit-subject-title"
+                      onClick={() => {
+                        setEditedSubjectName(subject.name);
+                        setIsEditingName(true);
+                      }}
+                      title="Edit subject name"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  </div>
+                )}
                 <div className="subject-stat-line">
                   <span className="stat-highlight" style={{ color: subject.color || '#10a37f' }}>
                     {progressPercent}% Completed
@@ -550,6 +680,83 @@ const SubjectDetailModal = ({
           </div>
         </div>
       </div>
+
+      {/* GitHub-style Delete Subject Confirmation Mini Modal */}
+      {isDeleteConfirmOpen && (
+        <div className="delete-confirm-overlay" onClick={handleCancelDelete}>
+          <div className="delete-confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-confirm-header">
+              <div className="delete-confirm-title-group">
+                <div className="delete-confirm-icon-box">
+                  <AlertTriangle size={18} />
+                </div>
+                <h3 className="delete-confirm-title">Delete Subject</h3>
+              </div>
+              <button
+                type="button"
+                className="delete-confirm-close-btn"
+                onClick={handleCancelDelete}
+                aria-label="Cancel deletion"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="delete-confirm-body">
+              <div className="delete-warning-banner">
+                <strong>Warning:</strong> This action <strong>cannot</strong> be undone. This will permanently delete the <strong>{subject.name}</strong> curriculum, all {totalTopics} chapters & subtopics, and reset your study progress.
+              </div>
+
+              <p className="delete-prompt-text">
+                To confirm deletion, please type <span className="delete-target-name">{subject.name}</span> in the box below:
+              </p>
+
+              <input
+                type="text"
+                className={`delete-confirm-input ${isDeleteMatch ? 'matched' : ''}`}
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                placeholder={`Type "${subject.name}" to confirm`}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && isDeleteMatch && !isDeleting) {
+                    handleConfirmDelete();
+                  }
+                }}
+              />
+            </div>
+
+            <div className="delete-confirm-actions">
+              <button
+                type="button"
+                className="btn-cancel-delete"
+                onClick={handleCancelDelete}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-confirm-delete-danger"
+                onClick={handleConfirmDelete}
+                disabled={!isDeleteMatch || isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 size={15} className="spinner" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={15} />
+                    <span>I understand, delete this subject</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

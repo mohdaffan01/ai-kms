@@ -27,6 +27,7 @@ import {
   getDashboardDataApi,
   toggleTopicApi,
   createSubjectApi,
+  updateSubjectApi,
   deleteSubjectApi,
   addTopicApi,
 } from '../../api/progressApi';
@@ -265,6 +266,27 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
     }
   };
 
+  // Update Subject (e.g. rename)
+  const handleUpdateSubject = async (subjectId, updateData) => {
+    try {
+      const res = await updateSubjectApi(subjectId, updateData);
+      if (res && res.subject) {
+        setDashboardData((prev) => ({
+          ...prev,
+          stats: res.stats || prev.stats,
+          subjects: prev.subjects.map((s) =>
+            s.id === subjectId ? { ...s, ...res.subject } : s
+          ),
+        }));
+        await fetchDashboard(false);
+        return res.subject;
+      }
+    } catch (err) {
+      console.error('Failed to update subject:', err);
+      throw err;
+    }
+  };
+
 
 
   // Upload modal success callback
@@ -488,6 +510,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         onToggleTopic={handleToggleTopic}
         onAddTopic={handleAddTopic}
         onDeleteSubject={handleDeleteSubject}
+        onUpdateSubject={handleUpdateSubject}
         onStudyWithAI={handleStudyWithAI}
         onUploadDocument={() => setIsUploadModalOpen(true)}
         onOpenDocumentViewer={onOpenDocumentViewer}

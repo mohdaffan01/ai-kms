@@ -111,10 +111,18 @@
 
 ### 3.9 Hierarchical Subject Detail Modal ([SubjectDetailModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx))
 - **Header Section**:
-  - Subject Title, theme color pill, and Course Code.
-  - Large progress bar with completed topic counter and percentage.
-  - Filter toggle tabs: All Topics, Pending, and Completed.
-  - Action buttons: "Upload Notes" and "Study with AI".
+  - Subject Title with inline rename pencil button (`Pencil` icon); clicking switches to an inline text input with checkmark save and X cancel buttons, persisting to the backend and updating all linked documents and dashboard cards.
+  - Theme color pill, percentage completed highlight, and linked document counter.
+  - High-precision progress bar header filled with the subject's theme color.
+- **Sidebar Actions**:
+  - "Study with AI" primary call-to-action button (`Sparkles` icon).
+  - "Delete Subject" danger action button (`Trash2` icon) placed directly below the "Study with AI" button.
+- **GitHub-Style Delete Confirmation Modal**:
+  - When "Delete Subject" is clicked, an isolated high-safety mini confirmation modal opens with a blurred backdrop.
+  - Displays a warning banner: *"Warning: This action cannot be undone. This will permanently delete the curriculum and reset your study progress."*
+  - Requires the user to type the exact subject name (e.g. `General` or `DBMS`) into a focused input box.
+  - The destructive "I understand, delete this subject" button remains disabled until the typed text strictly matches the subject name.
+  - Upon deletion, unlinks associated documents to prevent automatic subject re-creation and closes the modal cleanly.
 - **Hierarchical Accordion Structure**:
   - **Parent Chapter Rows**:
     - Expand / Collapse chevron toggle (`ChevronDown` / `ChevronRight`).
