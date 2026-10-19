@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Loader2,
   Pencil,
+  Layers
 } from 'lucide-react';
 
 const SubjectDetailModal = ({
@@ -29,6 +30,7 @@ const SubjectDetailModal = ({
   onDeleteSubject,
   onUpdateSubject,
   onStudyWithAI,
+  onStudyFlashcards,
   onUploadDocument,
   onOpenDocumentViewer,
 }) => {
@@ -248,6 +250,25 @@ const SubjectDetailModal = ({
           >
             <Sparkles size={14} />
             <span>Study {subject.name} with AI</span>
+          </button>
+
+          {/* Practice Flashcards CTA */}
+          <button
+            type="button"
+            className="sidebar-ai-cta"
+            style={{
+              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(79, 70, 229, 0.22) 100%)',
+              borderColor: 'rgba(99, 102, 241, 0.4)',
+              color: '#c7d2fe',
+              marginTop: '0.45rem',
+            }}
+            onClick={() => {
+              if (onStudyFlashcards) onStudyFlashcards(subject.name);
+              onClose();
+            }}
+          >
+            <Layers size={14} />
+            <span>Practice Flashcards</span>
           </button>
 
           {/* Delete Subject Button below Study with AI */}

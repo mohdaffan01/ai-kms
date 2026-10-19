@@ -74,6 +74,16 @@
 - [x] Dynamic Subject Creation Modal ([`CreateSubjectModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/CreateSubjectModal.jsx)) with color palette presets
 - [x] Visual Learning Progress Distribution bar & Recent Activity stream ([`LearningProgressSection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/LearningProgressSection.jsx), [`RecentActivitySection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/RecentActivitySection.jsx))
 
+### 3.6 Smart Flashcards & Spaced Revision Module
+- [x] Mongoose Flashcard Schema with compound indexes, mastery flags, and difficulty ratings ([`flashcard.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/flashcard.model.js))
+- [x] AI-Powered Flashcard Generator ([`flashcard.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/flashcard.controller.js)): Intelligently inspects user's `Progress` model for completed topics in a subject, extracts relevant sections from uploaded PDFs, and prompts Gemini LLM (with heuristic definition extractor fallback) to generate curriculum-aligned revision cards.
+- [x] Interactive 3D Flip Card Study Deck ([`FlashcardsView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with CSS 3D perspective transforms, card hints, progress bar, and completion summary screen.
+- [x] Full Keyboard Shortcut Navigation (`Space` to flip, `ArrowLeft`/`ArrowRight` to navigate, `1` for practice, `2` for mastered).
+- [x] All Cards Deck Grid Mode with real-time text search, difficulty pills, and delete actions.
+- [x] Manual Card Creator Modal for adding custom study prompts and definitions.
+- [x] Sidebar Quick Action Grid ([`Sidebar.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)): 2-button layout featuring Quiz (left, future placeholder with badge) and Flashcards (right, active tab switch).
+- [x] Subject Detail Modal Flashcards CTA ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): Direct bridge from subject overview into targeted flashcards revision.
+
 ---
 
 ## 4. Current Component & Subsystem Status
@@ -85,7 +95,7 @@
   - `/login`: Public auth login page ([Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx))
   - `/signup`: Public auth registration page ([Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx))
   - `/register`: Standalone registration page with validation ([Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx))
-  - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between AI Chat Workspace and Learning Dashboard
+  - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between Learning Dashboard, AI Chat, and Smart Flashcards
   - `/profile`: Protected profile & security management ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
 
 ### 4.2 Backend Status
@@ -100,10 +110,11 @@
   - `users`: User profiles, credentials, role, timestamps.
   - `documents`: Document records, file metadata, ownership relation to `users`, processing status.
   - `progress`: User learning progress, subjects, hierarchical chapters and child subtopics, recent activity stream.
+  - `flashcards`: Study flashcards with questions, answers, hints, mastery tracking, and source linkage.
   - `knowledge_chunks`: ChromaDB collection storing text chunks & vector embeddings with metadata payload (`userId`, `documentId`, `chunkIndex`).
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 20 active endpoints.
+- **Total Operational Endpoints**: 26 active endpoints.
   1. `GET /`: Healthcheck response
   2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
   3. `POST /api/auth/login`: Public login
@@ -124,6 +135,12 @@
   18. `PUT /api/progress/subject/:subjectId`: Update subject name & metadata with automatic document resynchronization
   19. `DELETE /api/progress/subject/:subjectId`: Delete subject from user curriculum
   20. `POST /api/progress/reset-defaults`: Clean curriculum to active study materials
+  21. `GET /api/flashcards`: Fetch user's flashcards with subject, topic, mastery filters and deck statistics
+  22. `POST /api/flashcards/generate`: Generate AI flashcards based on completed topics & uploaded reference notes
+  23. `POST /api/flashcards`: Manually create a custom flashcard
+  24. `PATCH /api/flashcards/:id/master`: Toggle flashcard mastery status & increment review count
+  25. `DELETE /api/flashcards/:id`: Delete a single flashcard
+  26. `POST /api/flashcards/reset-mastery`: Reset mastery for all cards in a subject deck to practice again
 
 ---
 

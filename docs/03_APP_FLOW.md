@@ -206,3 +206,38 @@
                    ├──> Enter topic title and submit
                    └──> HTTP POST /api/progress/topic/add { subjectId, name, parentTopicId }
 ```
+
+---
+
+### 3.8 Smart Flashcards & 3D Interactive Revision Deck Flow
+
+```
+[ User on /dashboard (Active tab: 'flashcards') ]
+          │
+          ├──> Access via Sidebar "Flashcards" square button OR "Practice Flashcards" CTA in SubjectDetailModal
+          │
+          ├──> Initial Load: HTTP GET /api/flashcards?subject=...&filter=...
+          │        ├──> Fetches user's flashcards, deck stats (Total, Mastered, Needs Practice), and topic list
+          │        └──> Calculates mastery percentage bar
+          │
+          ├──> Study Mode (3D Interactive Flip Deck):
+          │        ├──> Front Face: Displays Concept/Question prompt, subject/topic badges, difficulty pill, and hint
+          │        ├──> Click Card or press Spacebar -> 3D flip animation revealing back face with detailed explanation
+          │        ├──> Press "Mark as Mastered" (or Key '2') -> HTTP PATCH /api/flashcards/:id/master { isMastered: true }
+          │        ├──> Press "Needs Practice" (or Key '1') -> HTTP PATCH /api/flashcards/:id/master { isMastered: false }
+          │        ├──> Press Left/Right arrow keys -> Instant card navigation
+          │        ├──> Shuffle button -> Randomizes card array for enhanced active recall
+          │        └──> Deck Completion -> Celebratory summary card with score & restart/shuffle actions
+          │
+          ├──> Deck Grid Mode:
+          │        ├──> Switch tab to "All Cards" -> Responsive grid of all flashcards
+          │        ├──> Real-time search filter by question or explanation text
+          │        └──> Direct deletion and mastery toggles
+          │
+          └──> AI Flashcard Generation:
+                   ├──> Click "✨ Generate with AI" button -> Opens AI Generator Modal
+                   ├──> Displays green checkmark badges for all Completed Topics in that subject (from Progress DB)
+                   ├──> Select "All Completed Topics" or "Specific Topic", and choose count (2-15)
+                   ├──> HTTP POST /api/flashcards/generate { subject, topic, count }
+                   └──> Gemini LLM analyzes reference PDF text & completed topics -> Returns and saves new cards to deck
+```

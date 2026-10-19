@@ -5,13 +5,15 @@ import ChatWindow from '../components/dashboard/ChatWindow';
 import ChatInput from '../components/dashboard/ChatInput';
 import DashboardOverview from '../components/dashboard/DashboardOverview';
 import DocumentViewerModal from '../components/dashboard/DocumentViewerModal';
+import FlashcardsView from '../components/dashboard/FlashcardsView';
 import { queryKnowledgeChatApi } from '../api/knowledgeApi';
 import '../styles/dashboard-view.css';
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') === 'chat' ? 'chat' : 'dashboard';
-  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat'
+  const tabParam = searchParams.get('tab');
+  const initialTab = ['chat', 'flashcards', 'dashboard'].includes(tabParam) ? tabParam : 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat' | 'flashcards'
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [viewerDoc, setViewerDoc] = useState(null);
@@ -26,9 +28,13 @@ const Dashboard = () => {
     }
   }, [navigate]);
 
-  const handleSelectTab = (tab) => {
+  const handleSelectTab = (tab, extraParams = {}) => {
     setActiveTab(tab);
-    setSearchParams(tab === 'chat' ? { tab: 'chat' } : {});
+    if (tab === 'dashboard') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab, ...extraParams });
+    }
   };
 
   const handleSendMessage = async (userText) => {
@@ -86,6 +92,8 @@ const Dashboard = () => {
             onSelectTab={handleSelectTab} 
             onOpenDocumentViewer={handleOpenDocumentViewer}
           />
+        ) : activeTab === 'flashcards' ? (
+          <FlashcardsView initialSubject={searchParams.get('subject') || ''} />
         ) : (
           <>
             <ChatWindow messages={messages} isLoading={isLoading} />

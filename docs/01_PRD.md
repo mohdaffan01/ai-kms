@@ -72,6 +72,7 @@ Learners and students face significant challenges in managing learning materials
 | FR-11 | AI / RAG | Vector embedding generation & ChromaDB vector storage | Completed | [embeddingService.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [chromaService.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/chromaService.js) |
 | FR-12 | AI / RAG | Semantic search & context-grounded AI QA engine | Completed | [knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js) |
 | FR-16 | Analytics | Comprehensive learning progress dashboard with hierarchical chapters & subtopics | Completed | [DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx), [progress.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js) |
+| FR-17 | Revision | Smart 3D Flashcards & Spaced Revision deck with completed-topics AI generation | Completed | [FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx), [flashcard.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/flashcard.controller.js) |
 
 ### 6.2 Planned Functional Requirements
 | ID | Module | Feature Description | Status | Target Milestone |
@@ -79,6 +80,7 @@ Learners and students face significant challenges in managing learning materials
 | FR-13 | Graph | Concept extraction & Knowledge Graph construction | Not Started | Module 3 / Phase 3 |
 | FR-14 | Graph | Interactive Knowledge Graph visualization canvas | Not Started | Module 3 / Phase 3 |
 | FR-15 | Gap | Knowledge gap detection & study recommendations | Not Started | Module 4 / Phase 4 |
+| FR-18 | Assessment | Quiz Generation & Practice Assessments | In Pipeline (UI Button Added) | Module 5 / Phase 5 |
 
 ---
 

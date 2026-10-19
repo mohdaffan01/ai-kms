@@ -13,7 +13,9 @@ import {
   Trash2,
   Eye,
   Loader2,
-  LayoutDashboard
+  LayoutDashboard,
+  Layers,
+  HelpCircle
 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import DocumentViewerModal from './DocumentViewerModal';
@@ -193,6 +195,35 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
           </button>
+
+          {/* Quick Modules: Quiz (Left, Future) & Flashcards (Right, Active) */}
+          <div className="sidebar-action-grid">
+            <button
+              type="button"
+              className="btn-sidebar-square btn-quiz-placeholder"
+              title="Quiz & Practice Assessments (Coming Soon)"
+              onClick={() => {
+                alert('Quiz & Practice Assessment module is coming soon in the next update!');
+              }}
+            >
+              <HelpCircle size={18} />
+              <span>Quiz</span>
+              <span className="badge-soon">Soon</span>
+            </button>
+
+            <button
+              type="button"
+              className={`btn-sidebar-square btn-flashcards-nav ${activeTab === 'flashcards' ? 'active' : ''}`}
+              title="Study & Revise Flashcards"
+              onClick={() => {
+                if (onSelectTab) onSelectTab('flashcards');
+                setIsOpen(false);
+              }}
+            >
+              <Layers size={18} />
+              <span>Flashcards</span>
+            </button>
+          </div>
 
           <button 
             className={`btn-new-chat ${activeTab === 'chat' ? 'active' : ''}`}

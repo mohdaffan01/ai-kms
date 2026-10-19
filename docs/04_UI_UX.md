@@ -29,6 +29,7 @@
 - **Right Column**: Dynamically renders active tab content:
   - **AI Chat Workspace**: Conversational RAG interface ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx) + [ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)).
   - **Learning Dashboard**: Comprehensive curriculum and progress overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx)) featuring Overview KPI stats, Subject cards, Hierarchical Topic & Subtopic Progress Accordions, Learning Progress breakdown, and Recent Study Activity feeds.
+  - **Smart Flashcards Workspace**: 3D interactive revision card deck ([FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with AI generation from completed topics, deck grid search, and keyboard shortcut navigation.
 
 ---
 
@@ -37,8 +38,11 @@
 ### 3.1 Sidebar Component ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - **Brand Header**: Compact logo displaying "AiKMS".
 - **Navigation Action Buttons**:
-  - **Dashboard Button**: Switches main view to high-level Dashboard header.
-  - **New Chat Button**: Clears current message stream.
+  - **Dashboard Button**: Full-width button switching view to Learning Dashboard.
+  - **Quick Action Grid**: 2-column square button container:
+    - **Quiz Button (Left)**: Square button with HelpCircle icon and glowing golden `SOON` badge for upcoming assessment modules.
+    - **Flashcards Button (Right)**: Square button with Layers icon, active glowing state, launching Flashcards workspace.
+  - **New Chat Button**: Full-width button clearing current chat stream.
 - **Content Section**:
   - Displays count badge of uploaded documents.
   - Scrollable document list item cards featuring file title, subject tag, quick view eye icon button, and delete garbage bin button.
@@ -146,6 +150,22 @@
 - Theme Color Picker with 5 curated presets (`Emerald`, `Sky`, `Purple`, `Amber`, `Rose`).
 - Optional custom topics chip list.
 - Automatically initializes with zero dummy topics, ready for automatic document extraction.
+
+### 3.11 Smart Flashcards Component ([FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx))
+- **Study Mode (3D Interactive Flip Deck)**:
+  - 3D card flipping scene with CSS `perspective: 1200px` and `preserve-3d` transforms.
+  - Front face displaying question prompt, subject/topic badges, difficulty tag (`Easy` / `Medium` / `Hard`), and collapsible hint box.
+  - Back face displaying comprehensive conceptual explanation, key formulas, and terms.
+  - Controls bar: Previous card, Flip card, Next card, Shuffle deck, Mark as Mastered (green accent), and Mark as Learning (amber accent).
+  - Keyboard navigation: `Space` (flip), `←`/`→` (navigate), `1` (needs practice), `2` (mastered).
+  - Deck completion celebration screen displaying mastery score with restart options.
+- **Deck Grid Mode**:
+  - Filterable card grid view with real-time text search.
+  - Quick-action buttons for delete and mastery state toggle.
+- **AI Generator Modal**:
+  - Automatically loads and highlights completed topics from user's `Progress` document.
+  - Options to generate cards from "All Completed Topics" or a "Specific Topic".
+  - Generates 2-15 flashcards via Gemini LLM with automatic text fallback.
 
 ---
 

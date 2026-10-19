@@ -243,7 +243,17 @@ Backend/
 | DELETE | `/api/progress/subject/:subjectId` | Private | `deleteSubject` | Remove subject from user curriculum and unlink documents |
 | POST | `/api/progress/reset-defaults` | Private | `resetDefaultSubjects` | Clean curriculum to active study materials |
 
-### 7.6 System Routes
+### 7.6 Flashcards & Spaced Revision Routes (`/api/flashcards`)
+| Method | Endpoint | Access | Controller Function | Description |
+|---|---|---|---|---|
+| GET | `/api/flashcards` | Private | `getFlashcards` | Fetch user flashcards with subject/topic/mastery filters & deck stats |
+| POST | `/api/flashcards/generate` | Private | `generateFlashcards` | Inspect completed topics, extract PDF text, and generate revision cards with Gemini LLM |
+| POST | `/api/flashcards` | Private | `createManualFlashcard` | Create a custom flashcard with front/back/hint/difficulty |
+| PATCH | `/api/flashcards/:id/master` | Private | `toggleFlashcardMastered` | Toggle card mastery state (`isMastered: true/false`) and increment review count |
+| DELETE | `/api/flashcards/:id` | Private | `deleteFlashcard` | Remove flashcard from database |
+| POST | `/api/flashcards/reset-mastery` | Private | `resetDeckMastery` | Reset mastery status for all cards in a subject to practice again |
+
+### 7.7 System Routes
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
 | GET | `/` | Public | Healthcheck endpoint returning `{ message: 'AiKMS API Server is running smoothly' }` |

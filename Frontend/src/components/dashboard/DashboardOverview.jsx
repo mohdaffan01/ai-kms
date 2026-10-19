@@ -642,6 +642,9 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         onDeleteSubject={handleDeleteSubject}
         onUpdateSubject={handleUpdateSubject}
         onStudyWithAI={handleStudyWithAI}
+        onStudyFlashcards={(subName) => {
+          if (onSelectTab) onSelectTab('flashcards', { subject: subName });
+        }}
         onUploadDocument={(subName) => {
           const prefill = subName || (dashboardData.subjects.find((s) => s.id === selectedSubjectId)?.name) || '';
           setUploadPreselectedSubject(prefill);

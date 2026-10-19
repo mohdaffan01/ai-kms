@@ -9,6 +9,7 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import documentRoutes from "./routes/document.routes.js";
 import knowledgeRoutes from "./routes/knowledge.routes.js";
 import progressRoutes from "./routes/progress.routes.js";
+import flashcardRoutes from "./routes/flashcard.routes.js";
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/users', userRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/knowledge", knowledgeRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/flashcards", flashcardRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
