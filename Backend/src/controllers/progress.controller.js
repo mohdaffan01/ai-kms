@@ -285,7 +285,7 @@ export const getDashboardData = async (req, res) => {
       stats,
       subjects: subjectCards,
       recentActivity,
-      recentDocuments: userDocs.slice(0, 6).map((d) => ({
+      recentDocuments: userDocs.map((d) => ({
         id: d._id,
         title: d.title,
         subject: d.subject,

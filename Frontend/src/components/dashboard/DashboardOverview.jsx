@@ -53,6 +53,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
   // Modals state
   const [isCreateSubjectOpen, setIsCreateSubjectOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadPreselectedSubject, setUploadPreselectedSubject] = useState('');
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [isSubjectDetailOpen, setIsSubjectDetailOpen] = useState(false);
 
@@ -79,8 +80,129 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
     }
   };
 
+  // Instant optimistic update for newly uploaded documents so cards appear in 0ms without reload
+  const applyOptimisticDocument = (newDoc) => {
+    if (!newDoc) return;
+    setDashboardData((prev) => {
+      const docId = newDoc._id || newDoc.id || `doc-${Date.now()}`;
+      const docSubject = (newDoc.subject || 'General').trim();
+      const docTitle = newDoc.title || newDoc.originalFileName || 'Untitled Document';
+
+      const formattedDoc = {
+        id: docId,
+        _id: docId,
+        title: docTitle,
+        subject: docSubject,
+        topic: newDoc.topic || '',
+        contentType: newDoc.contentType || 'file',
+        fileSize: newDoc.fileSize || 0,
+        processingStatus: newDoc.processingStatus || 'uploaded',
+        createdAt: newDoc.createdAt || new Date().toISOString(),
+      };
+
+      const existingDocIndex = (prev.recentDocuments || []).findIndex(
+        (d) => (d.id || d._id) === docId
+      );
+      const updatedRecentDocs = existingDocIndex >= 0
+        ? prev.recentDocuments.map((d, i) => (i === existingDocIndex ? formattedDoc : d))
+        : [formattedDoc, ...(prev.recentDocuments || [])];
+
+      let subjectFound = false;
+      const updatedSubjects = (prev.subjects || []).map((subj) => {
+        if (subj.name && subj.name.trim().toLowerCase() === docSubject.toLowerCase()) {
+          subjectFound = true;
+          return {
+            ...subj,
+            documentCount: (subj.documentCount || 0) + 1,
+          };
+        }
+        return subj;
+      });
+
+      if (!subjectFound && docSubject) {
+        updatedSubjects.push({
+          id: `sub-opt-${Date.now().toString(36)}`,
+          name: docSubject,
+          code: '',
+          description: `Generated from ${docTitle}`,
+          category: 'Coursework',
+          icon: 'BookOpen',
+          color: '#10a37f',
+          totalTopics: 0,
+          completedTopics: 0,
+          progress: 0,
+          topics: [],
+          documentCount: 1,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      const updatedStats = {
+        ...prev.stats,
+        uploadedDocuments: (prev.stats?.uploadedDocuments || 0) + 1,
+        totalSubjects: updatedSubjects.length,
+      };
+
+      const newActivity = {
+        id: `act-opt-${Date.now()}`,
+        type: 'doc_uploaded',
+        title: `Uploaded document: "${docTitle}"`,
+        subject: docSubject,
+        timestamp: new Date().toISOString(),
+      };
+
+      return {
+        ...prev,
+        stats: updatedStats,
+        subjects: updatedSubjects,
+        recentDocuments: updatedRecentDocs,
+        recentActivity: [newActivity, ...(prev.recentActivity || [])].slice(0, 15),
+      };
+    });
+  };
+
   useEffect(() => {
     fetchDashboard(true);
+
+    const handleDocUploaded = (event) => {
+      const doc = event.detail;
+      if (doc) {
+        applyOptimisticDocument(doc);
+      }
+      fetchDashboard(false);
+      // Secondary background checks to sync AI extracted topics
+      setTimeout(() => fetchDashboard(false), 2500);
+      setTimeout(() => fetchDashboard(false), 5500);
+    };
+
+    const handleDocDeleted = (event) => {
+      const deletedId = event.detail?.id;
+      if (deletedId) {
+        setDashboardData((prev) => ({
+          ...prev,
+          recentDocuments: (prev.recentDocuments || []).filter(
+            (d) => (d.id || d._id) !== deletedId
+          ),
+          stats: {
+            ...prev.stats,
+            uploadedDocuments: Math.max(0, (prev.stats?.uploadedDocuments || 1) - 1),
+          },
+        }));
+      }
+      fetchDashboard(false);
+    };
+
+    const handleRefreshEvent = () => fetchDashboard(false);
+
+    window.addEventListener('aikms:document-uploaded', handleDocUploaded);
+    window.addEventListener('aikms:document-deleted', handleDocDeleted);
+    window.addEventListener('aikms:refresh-dashboard', handleRefreshEvent);
+
+    return () => {
+      window.removeEventListener('aikms:document-uploaded', handleDocUploaded);
+      window.removeEventListener('aikms:document-deleted', handleDocDeleted);
+      window.removeEventListener('aikms:refresh-dashboard', handleRefreshEvent);
+    };
   }, []);
 
   const handleRefresh = () => {
@@ -290,7 +412,10 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
 
 
   // Upload modal success callback
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (uploadedDoc) => {
+    if (uploadedDoc) {
+      applyOptimisticDocument(uploadedDoc);
+    }
     fetchDashboard(false);
   };
 
@@ -450,9 +575,9 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
                     </div>
                   ) : (
                     <div className="docs-mini-list">
-                      {dashboardData.recentDocuments.map((doc) => (
+                      {dashboardData.recentDocuments.slice(0, 8).map((doc) => (
                         <div
-                          key={doc.id}
+                          key={doc.id || doc._id}
                           className="doc-mini-item"
                           onClick={() => {
                             if (onOpenDocumentViewer) onOpenDocumentViewer(doc);
@@ -494,8 +619,13 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       {/* Upload Study Material Modal */}
       <UploadModal
         isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          setUploadPreselectedSubject('');
+        }}
         onUploadSuccess={handleUploadSuccess}
+        subjects={dashboardData.subjects}
+        initialSubject={uploadPreselectedSubject}
       />
 
       {/* Subject Study Progress & Topics Detail Modal */}
@@ -512,7 +642,11 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         onDeleteSubject={handleDeleteSubject}
         onUpdateSubject={handleUpdateSubject}
         onStudyWithAI={handleStudyWithAI}
-        onUploadDocument={() => setIsUploadModalOpen(true)}
+        onUploadDocument={(subName) => {
+          const prefill = subName || (dashboardData.subjects.find((s) => s.id === selectedSubjectId)?.name) || '';
+          setUploadPreselectedSubject(prefill);
+          setIsUploadModalOpen(true);
+        }}
         onOpenDocumentViewer={onOpenDocumentViewer}
       />
     </div>

@@ -15,10 +15,14 @@ import {
   Loader2 
 } from 'lucide-react';
 import { deleteDocumentApi } from '../../api/documentApi';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const API_STATIC_BASE = 'http://localhost:3000';
 
 const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }) => {
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   if (!isOpen || !doc) return null;
 
   const fileUrl = doc.filePath ? `${API_STATIC_BASE}/${doc.filePath.replace(/^\/+/, '')}` : '#';
@@ -48,16 +52,24 @@ const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete "${doc.title}"?`)) {
-      return;
-    }
+  const handleDelete = () => {
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
+      setIsDeleting(true);
       await deleteDocumentApi(doc._id || doc.id);
+      window.dispatchEvent(
+        new CustomEvent('aikms:document-deleted', { detail: { id: doc._id || doc.id } })
+      );
       if (onDeleteSuccess) onDeleteSuccess(doc._id || doc.id);
+      setIsDeleteConfirmOpen(false);
       onClose();
     } catch (err) {
       alert(err.response?.data?.message || 'Could not delete document.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -190,6 +202,20 @@ const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }
           </div>
         </div>
       </div>
+
+      {/* Delete Document Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => {
+          if (!isDeleting) setIsDeleteConfirmOpen(false);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Document"
+        itemName={doc.title}
+        itemSubject={doc.subject}
+        warningMessage="Are you sure you want to delete this document? This will permanently remove the file and all associated study notes from MongoDB."
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

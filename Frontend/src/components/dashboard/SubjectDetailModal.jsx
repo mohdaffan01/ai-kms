@@ -446,7 +446,7 @@ const SubjectDetailModal = ({
                           type="button"
                           className="btn-empty-upload"
                           onClick={() => {
-                            if (onUploadDocument) onUploadDocument();
+                            if (onUploadDocument) onUploadDocument(subject?.name);
                           }}
                         >
                           <UploadCloud size={15} />
@@ -622,7 +622,7 @@ const SubjectDetailModal = ({
                     type="button"
                     className="btn-add-topic-inline"
                     onClick={() => {
-                      if (onUploadDocument) onUploadDocument();
+                      if (onUploadDocument) onUploadDocument(subject?.name);
                     }}
                   >
                     <UploadCloud size={14} />
@@ -641,7 +641,7 @@ const SubjectDetailModal = ({
                       type="button"
                       className="btn-upload-subject-doc"
                       onClick={() => {
-                        if (onUploadDocument) onUploadDocument();
+                        if (onUploadDocument) onUploadDocument(subject?.name);
                       }}
                     >
                       <UploadCloud size={16} />

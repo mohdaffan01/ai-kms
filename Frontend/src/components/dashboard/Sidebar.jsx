@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import DocumentViewerModal from './DocumentViewerModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 import { getMyDocumentsApi, deleteDocumentApi } from '../../api/documentApi';
 
 const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
@@ -24,7 +25,8 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [docToDelete, setDocToDelete] = useState(null);
+  const [isDeletingDoc, setIsDeletingDoc] = useState(false);
 
   // Document Viewer Modal state
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -37,6 +39,9 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const user = userStr ? JSON.parse(userStr) : { name: 'Student', email: 'user@example.com' };
   const folders = [...new Set(documents.map((item) => item.folder?.trim() || 'General'))]
     .sort((first, second) => first.localeCompare(second));
+  const existingSubjectNames = [
+    ...new Set(documents.map((item) => item.subject?.trim()).filter(Boolean))
+  ].sort((first, second) => first.localeCompare(second));
   const documentsByFolder = folders.map((folder) => ({
     folder,
     items: documents.filter((item) => (item.folder?.trim() || 'General') === folder),
@@ -59,6 +64,38 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
   useEffect(() => {
     fetchDocuments();
+
+    const handleDocUploaded = (event) => {
+      const newDoc = event.detail;
+      if (newDoc) {
+        setDocuments((prev) => {
+          const docId = newDoc._id || newDoc.id;
+          if (prev.some((d) => (d._id || d.id) === docId)) return prev;
+          return [newDoc, ...prev];
+        });
+      }
+      fetchDocuments(false);
+    };
+
+    const handleDocDeleted = (event) => {
+      const deletedId = event.detail?.id;
+      if (deletedId) {
+        setDocuments((prev) => prev.filter((d) => (d._id || d.id) !== deletedId));
+      }
+      fetchDocuments(false);
+    };
+
+    const handleRefresh = () => fetchDocuments(false);
+
+    window.addEventListener('aikms:document-uploaded', handleDocUploaded);
+    window.addEventListener('aikms:document-deleted', handleDocDeleted);
+    window.addEventListener('aikms:refresh-dashboard', handleRefresh);
+
+    return () => {
+      window.removeEventListener('aikms:document-uploaded', handleDocUploaded);
+      window.removeEventListener('aikms:document-deleted', handleDocDeleted);
+      window.removeEventListener('aikms:refresh-dashboard', handleRefresh);
+    };
   }, []);
 
   // Automatically poll every 2.5 seconds while any document is in 'processing' status
@@ -80,7 +117,14 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
     navigate('/login');
   };
 
-  const handleUploadSuccess = () => {
+  const handleUploadSuccess = (uploadedDoc) => {
+    if (uploadedDoc) {
+      setDocuments((prev) => {
+        const docId = uploadedDoc._id || uploadedDoc.id;
+        if (prev.some((d) => (d._id || d.id) === docId)) return prev;
+        return [uploadedDoc, ...prev];
+      });
+    }
     fetchDocuments(false);
   };
 
@@ -89,25 +133,27 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
     setIsViewerOpen(true);
   };
 
-  const handleDeleteDocument = async (e, docId) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this document from MongoDB?')) {
-      return;
-    }
+  const handleConfirmDeleteDoc = async () => {
+    if (!docToDelete) return;
+    const docId = docToDelete._id || docToDelete.id;
+
     try {
-      setDeletingId(docId);
+      setIsDeletingDoc(true);
       await deleteDocumentApi(docId);
       setDocuments((prev) => prev.filter((d) => (d._id || d.id) !== docId));
+      window.dispatchEvent(new CustomEvent('aikms:document-deleted', { detail: { id: docId } }));
+      setDocToDelete(null);
     } catch (err) {
       console.error('Delete doc error:', err);
       alert(err.response?.data?.message || 'Could not delete document.');
     } finally {
-      setDeletingId(null);
+      setIsDeletingDoc(false);
     }
   };
 
   const handleViewerDeleteSuccess = (deletedDocId) => {
     setDocuments((prev) => prev.filter((d) => (d._id || d.id) !== deletedDocId));
+    window.dispatchEvent(new CustomEvent('aikms:document-deleted', { detail: { id: deletedDocId } }));
   };
 
   return (
@@ -188,7 +234,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
                   </div>
                   {items.map((item) => {
                     const docId = item._id || item.id;
-                    const isDeleting = deletingId === docId;
+                    const isDeleting = isDeletingDoc && (docToDelete?._id || docToDelete?.id) === docId;
 
                     return (
                       <div
@@ -224,7 +270,10 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
                           <button
                             className="btn-delete-doc"
-                            onClick={(e) => handleDeleteDocument(e, docId)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDocToDelete(item);
+                            }}
                             title="Delete Document"
                             disabled={isDeleting}
                           >
@@ -276,6 +325,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
         onClose={() => setIsUploadModalOpen(false)} 
         onUploadSuccess={handleUploadSuccess}
         folders={folders}
+        subjects={existingSubjectNames}
       />
 
       {/* Document Viewer Modal */}
@@ -287,6 +337,20 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
           setSelectedDoc(null);
         }}
         onDeleteSuccess={handleViewerDeleteSuccess}
+      />
+
+      {/* Delete Document Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(docToDelete)}
+        onClose={() => {
+          if (!isDeletingDoc) setDocToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteDoc}
+        title="Delete Document"
+        itemName={docToDelete?.title}
+        itemSubject={docToDelete?.subject}
+        warningMessage="Are you sure you want to delete this document? This will permanently remove the file and all associated study notes from MongoDB."
+        isDeleting={isDeletingDoc}
       />
     </>
   );
