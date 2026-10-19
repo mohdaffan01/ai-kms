@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Layers,
+  Brain,
   Sparkles,
   Plus,
   RotateCw,
@@ -205,18 +206,39 @@ const FlashcardsView = ({ initialSubject = '' }) => {
     }
   };
 
-  // Delete card
+  // Delete card directly without confirmation popup
   const handleDeleteCard = async (cardId, e) => {
     if (e) e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this flashcard?')) return;
+    const cardToDelete = cards.find((c) => c._id === cardId);
+
+    // Optimistically update UI immediately
+    setCards((prev) => prev.filter((c) => c._id !== cardId));
+    if (currentIndex >= cards.length - 1 && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+    if (cardToDelete) {
+      setDeckStats((prev) => {
+        const wasMastered = cardToDelete.isMastered;
+        const total = Math.max(0, (prev.totalCards || cards.length) - 1);
+        const mastered = wasMastered ? Math.max(0, prev.masteredCards - 1) : prev.masteredCards;
+        return {
+          ...prev,
+          totalCards: total,
+          masteredCards: mastered,
+          learningCards: Math.max(0, total - mastered),
+          masteryPercentage: total > 0 ? Math.round((mastered / total) * 100) : 0,
+        };
+      });
+    }
+
     try {
       await deleteFlashcardApi(cardId);
-      setCards((prev) => prev.filter((c) => c._id !== cardId));
-      if (currentIndex >= cards.length - 1 && currentIndex > 0) {
-        setCurrentIndex((prev) => prev - 1);
-      }
     } catch (err) {
-      alert('Could not delete flashcard.');
+      console.error('Delete flashcard error:', err);
+      // Revert on failure
+      if (cardToDelete) {
+        setCards((prev) => [cardToDelete, ...prev]);
+      }
     }
   };
 
@@ -424,7 +446,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
               setIsGenModalOpen(true);
             }}
           >
-            <Sparkles size={16} />
+            <Brain size={16} />
             <span>Generate with AI</span>
           </button>
         </div>
@@ -513,7 +535,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                 setIsGenModalOpen(true);
               }}
             >
-              <Sparkles size={16} />
+              <Brain size={16} />
               <span>Generate with AI</span>
             </button>
             <button
@@ -611,25 +633,6 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                     <div className="fc-card-content">
                       <span className="fc-card-side-label">Prompt / Concept</span>
                       <p className="fc-card-text">{currentCard.front}</p>
-
-                      {currentCard.hint && (
-                        <div
-                          className="fc-card-hint-box"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowHint(!showHint);
-                          }}
-                        >
-                          <Lightbulb size={14} style={{ display: 'inline', marginRight: '4px' }} />
-                          {showHint ? (
-                            <span>{currentCard.hint}</span>
-                          ) : (
-                            <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>
-                              Need a hint? Click here
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
 
                     <div className="fc-card-bottom-prompt">
@@ -807,7 +810,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
           <div className="fc-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="fc-modal-header">
               <div className="fc-modal-title-wrap">
-                <Sparkles size={18} style={{ color: 'var(--accent-green)' }} />
+                <Brain size={18} style={{ color: 'var(--accent-green)' }} />
                 <h3 className="fc-modal-title">Generate Flashcards with AI</h3>
               </div>
               <button
@@ -957,7 +960,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                     </>
                   ) : (
                     <>
-                      <Sparkles size={16} />
+                      <Brain size={16} />
                       <span>Generate Deck</span>
                     </>
                   )}
@@ -1033,17 +1036,6 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                     value={manualForm.back}
                     onChange={(e) => setManualForm({ ...manualForm, back: e.target.value })}
                     required
-                  />
-                </div>
-
-                <div className="fc-form-group">
-                  <label htmlFor="manual-hint">Memory Hint (Optional)</label>
-                  <input
-                    id="manual-hint"
-                    type="text"
-                    placeholder="Quick clue if you get stuck"
-                    value={manualForm.hint}
-                    onChange={(e) => setManualForm({ ...manualForm, hint: e.target.value })}
                   />
                 </div>
 

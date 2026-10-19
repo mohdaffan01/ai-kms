@@ -200,15 +200,15 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
           <div className="sidebar-action-grid">
             <button
               type="button"
-              className="btn-sidebar-square btn-quiz-placeholder"
-              title="Quiz & Practice Assessments (Coming Soon)"
+              className={`btn-sidebar-square btn-quiz-nav ${activeTab === 'quiz' ? 'active' : ''}`}
+              title="Practice AI Quizzes & Assessments"
               onClick={() => {
-                alert('Quiz & Practice Assessment module is coming soon in the next update!');
+                if (onSelectTab) onSelectTab('quiz');
+                setIsOpen(false);
               }}
             >
               <HelpCircle size={18} />
               <span>Quiz</span>
-              <span className="badge-soon">Soon</span>
             </button>
 
             <button

@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   Loader2,
   Pencil,
-  Layers
+  Layers,
+  HelpCircle
 } from 'lucide-react';
 
 const SubjectDetailModal = ({
@@ -31,6 +32,7 @@ const SubjectDetailModal = ({
   onUpdateSubject,
   onStudyWithAI,
   onStudyFlashcards,
+  onTakeQuiz,
   onUploadDocument,
   onOpenDocumentViewer,
 }) => {
@@ -269,6 +271,25 @@ const SubjectDetailModal = ({
           >
             <Layers size={14} />
             <span>Practice Flashcards</span>
+          </button>
+
+          {/* Take AI Quiz CTA */}
+          <button
+            type="button"
+            className="sidebar-ai-cta"
+            style={{
+              background: 'linear-gradient(135deg, rgba(16, 163, 127, 0.18) 0%, rgba(13, 138, 107, 0.22) 100%)',
+              borderColor: 'rgba(16, 163, 127, 0.4)',
+              color: '#6ee7b7',
+              marginTop: '0.45rem',
+            }}
+            onClick={() => {
+              if (onTakeQuiz) onTakeQuiz(subject.name);
+              onClose();
+            }}
+          >
+            <HelpCircle size={14} />
+            <span>Take AI Quiz</span>
           </button>
 
           {/* Delete Subject Button below Study with AI */}

@@ -116,7 +116,8 @@
 }
 
 .btn-sidebar-square.active,
-.btn-flashcards-nav.active {
+.btn-flashcards-nav.active,
+.btn-quiz-nav.active {
   background: rgba(16, 163, 127, 0.15);
   border-color: var(--accent-green);
   color: var(--accent-green);

@@ -6,14 +6,15 @@ import ChatInput from '../components/dashboard/ChatInput';
 import DashboardOverview from '../components/dashboard/DashboardOverview';
 import DocumentViewerModal from '../components/dashboard/DocumentViewerModal';
 import FlashcardsView from '../components/dashboard/FlashcardsView';
+import QuizView from '../components/dashboard/QuizView';
 import { queryKnowledgeChatApi } from '../api/knowledgeApi';
 import '../styles/dashboard-view.css';
 
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const initialTab = ['chat', 'flashcards', 'dashboard'].includes(tabParam) ? tabParam : 'dashboard';
-  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat' | 'flashcards'
+  const initialTab = ['chat', 'flashcards', 'quiz', 'dashboard'].includes(tabParam) ? tabParam : 'dashboard';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat' | 'flashcards' | 'quiz'
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [viewerDoc, setViewerDoc] = useState(null);
@@ -94,6 +95,8 @@ const Dashboard = () => {
           />
         ) : activeTab === 'flashcards' ? (
           <FlashcardsView initialSubject={searchParams.get('subject') || ''} />
+        ) : activeTab === 'quiz' ? (
+          <QuizView initialSubject={searchParams.get('subject') || ''} />
         ) : (
           <>
             <ChatWindow messages={messages} isLoading={isLoading} />

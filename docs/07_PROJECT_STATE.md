@@ -59,7 +59,7 @@
 - [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material (across all academic subjects, file types, and syllabus layouts) using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, practice exercises, and sentence fragments through universal linguistic sanitization.
 - [ ] Concept & relationship extraction for Knowledge Graphs
 - [ ] Interactive Knowledge Graph visualization canvas
-- [ ] Quiz generation & Knowledge Gap detection engine
+- [x] AI Quiz Generation & Assessment Engine ([`quiz.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/quiz.controller.js), [`QuizView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx))
 
 ### 3.5 Learning Dashboard & Curriculum Progress Tracking
 - [x] Mongoose Progress Model with hierarchical topics and subtopics ([`progress.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
@@ -77,12 +77,19 @@
 ### 3.6 Smart Flashcards & Spaced Revision Module
 - [x] Mongoose Flashcard Schema with compound indexes, mastery flags, and difficulty ratings ([`flashcard.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/flashcard.model.js))
 - [x] AI-Powered Flashcard Generator ([`flashcard.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/flashcard.controller.js)): Intelligently inspects user's `Progress` model for completed topics in a subject, extracts relevant sections from uploaded PDFs, and prompts Gemini LLM (with heuristic definition extractor fallback) to generate curriculum-aligned revision cards.
-- [x] Interactive 3D Flip Card Study Deck ([`FlashcardsView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with CSS 3D perspective transforms, card hints, progress bar, and completion summary screen.
+- [x] Interactive 3D Flip Card Study Deck ([`FlashcardsView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with CSS 3D perspective transforms, progress bar, and completion summary screen.
 - [x] Full Keyboard Shortcut Navigation (`Space` to flip, `ArrowLeft`/`ArrowRight` to navigate, `1` for practice, `2` for mastered).
-- [x] All Cards Deck Grid Mode with real-time text search, difficulty pills, and delete actions.
+- [x] All Cards Deck Grid Mode with real-time text search, difficulty pills, and direct delete actions (no alert popups).
 - [x] Manual Card Creator Modal for adding custom study prompts and definitions.
-- [x] Sidebar Quick Action Grid ([`Sidebar.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)): 2-button layout featuring Quiz (left, future placeholder with badge) and Flashcards (right, active tab switch).
 - [x] Subject Detail Modal Flashcards CTA ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): Direct bridge from subject overview into targeted flashcards revision.
+
+### 3.7 AI Assessment & Interactive Quiz Module
+- [x] Mongoose Quiz Schema ([`quiz.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/quiz.model.js)): Questions with 4 options, 0-based correctAnswer, explanations, difficulty, topic tags, attempt records, bestScore, and bestPercentage.
+- [x] AI Quiz Generator ([`quiz.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/quiz.controller.js)): Generates rigorous 4-option MCQs from user's completed topics in `Progress` and uploaded document notes via Gemini LLM with heuristic fallback.
+- [x] Interactive Quiz Player ([`QuizView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx)): Live timer, question counter, progress bar, instant option selection, green correct / red wrong feedback, and detailed conceptual explanation drawer.
+- [x] Scoring & Attempt Analytics: Calculates percentage score, updates best score, logs activity in user's learning history (`POST /api/quizzes/:id/submit`).
+- [x] Quiz Hub: Overview stats (total quizzes, attempted, avg score %, total attempts), subject filters, text search, start/retake actions, and direct deletion without popups.
+- [x] Sidebar & Modal Integration: Activated Quiz square button in [`Sidebar.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx) and added "Take AI Quiz" CTA button in [`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx).
 
 ---
 
