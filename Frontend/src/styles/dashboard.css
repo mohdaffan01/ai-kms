@@ -354,6 +354,78 @@
   background-color: var(--bg-dark);
 }
 
+/* Chat Search Scope Bar */
+.chat-scope-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.5rem;
+  background: rgba(18, 24, 38, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.chat-scope-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--accent-green, #10a37f);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.scope-icon-sparkle {
+  color: #f59e0b;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.chat-scope-select {
+  flex: 1;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f1f5f9;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-scope-select:hover,
+.chat-scope-select:focus {
+  border-color: rgba(16, 163, 127, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 12px rgba(16, 163, 127, 0.15);
+}
+
+.chat-scope-select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.btn-reset-scope {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.32rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-reset-scope:hover {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+}
+
 .chat-window-container {
   flex: 1;
   overflow-y: auto;

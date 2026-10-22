@@ -207,6 +207,141 @@ const callGemini = async (prompt, apiKey) => {
   return null;
 };
 
+// In-memory text cache to prevent re-reading/re-parsing PDFs on every single chat message
+const documentTextCache = new Map();
+
+/**
+ * Clear text cache for a specific document or entire cache
+ */
+export const clearDocumentCache = (documentId = null) => {
+  if (!documentId) {
+    documentTextCache.clear();
+    return;
+  }
+  for (const key of documentTextCache.keys()) {
+    if (key.startsWith(`${documentId}_`)) {
+      documentTextCache.delete(key);
+    }
+  }
+};
+
+/**
+ * Helper: Retrieve cleaned text from document file with in-memory caching
+ */
+export const getDocumentTextCached = async (doc) => {
+  if (!doc || !doc.filePath) return '';
+  const docId = (doc._id || doc.id).toString();
+  const absPath = getExistingFilePath(doc.filePath);
+  if (!fs.existsSync(absPath)) return '';
+
+  try {
+    const stat = fs.statSync(absPath);
+    const cacheKey = `${docId}_${stat.mtimeMs}`;
+
+    if (documentTextCache.has(cacheKey)) {
+      return documentTextCache.get(cacheKey);
+    }
+
+    let text = '';
+    if (doc.mimeType?.includes('pdf') || absPath.endsWith('.pdf')) {
+      text = await extractTextFromPdf(absPath);
+    } else {
+      text = fs.readFileSync(absPath, 'utf-8');
+    }
+
+    const cleaned = cleanPdfNoise(text);
+    // Limit cache size to 40 documents
+    if (documentTextCache.size > 40) {
+      const firstKey = documentTextCache.keys().next().value;
+      if (firstKey) documentTextCache.delete(firstKey);
+    }
+    documentTextCache.set(cacheKey, cleaned);
+    return cleaned;
+  } catch (err) {
+    console.warn(`[KnowledgeController] Failed to extract text for "${doc.title}":`, err.message);
+    return '';
+  }
+};
+
+/**
+ * Helper: Find relevant passages from a document text for a given user query
+ */
+const findRelevantPassagesFromDoc = (doc, docText, userQuery, maxPassages = 4) => {
+  if (!docText || !docText.trim()) return { score: 0, passages: [] };
+
+  const queryLower = userQuery.toLowerCase();
+  const docTitleLower = (doc.title || '').toLowerCase();
+  const docSubjectLower = (doc.subject || '').toLowerCase();
+  const docTopicLower = (doc.topic || '').toLowerCase();
+
+  // Stop words to exclude from keyword extraction
+  const stopWords = new Set([
+    'what', 'is', 'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or',
+    'how', 'why', 'can', 'you', 'explain', 'tell', 'me', 'about', 'give', 'does',
+    'from', 'with', 'which', 'by', 'this', 'that', 'these', 'those', 'kya', 'hai',
+    'btao', 'kese', 'kaise', 'batao', 'mai', 'se', 'ko', 'aur', 'hi', 'bhi', 'doc',
+    'document', 'file', 'pdf', 'notes', 'answer', 'question'
+  ]);
+
+  const rawKeywords = queryLower
+    .split(/[\s,?.!:;()"'`]+/)
+    .map((w) => w.trim())
+    .filter((w) => w.length > 1 && !stopWords.has(w));
+
+  let docBaseScore = 0;
+
+  // Title / Subject / Topic exact match bonus
+  if (docTitleLower && queryLower.includes(docTitleLower)) docBaseScore += 60;
+  if (docSubjectLower && queryLower.includes(docSubjectLower)) docBaseScore += 45;
+  if (docTopicLower && queryLower.includes(docTopicLower)) docBaseScore += 35;
+
+  // Check individual words in title / subject
+  rawKeywords.forEach((kw) => {
+    if (docTitleLower.includes(kw)) docBaseScore += 20;
+    if (docSubjectLower.includes(kw)) docBaseScore += 15;
+  });
+
+  // Break text into paragraphs / chunks
+  const paragraphs = docText
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 25);
+
+  const scoredParagraphs = paragraphs.map((para) => {
+    const pLower = para.toLowerCase();
+    let pScore = 0;
+
+    rawKeywords.forEach((kw) => {
+      if (pLower.includes(kw)) {
+        // Count occurrences
+        const regex = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'gi');
+        const count = (pLower.match(regex) || []).length;
+        pScore += Math.max(1, count) * 8 + 4;
+      }
+    });
+
+    return { paragraph: para, score: pScore };
+  });
+
+  scoredParagraphs.sort((a, b) => b.score - a.score);
+
+  const topScored = scoredParagraphs.filter((p) => p.score > 0).slice(0, maxPassages);
+  const totalParagraphScore = topScored.reduce((sum, p) => sum + p.score, 0);
+
+  const totalScore = docBaseScore + totalParagraphScore;
+
+  // If no keywords matched any paragraph, still provide the top introduction paragraphs if title/subject matched
+  let finalPassages = topScored.map((p) => p.paragraph);
+  if (finalPassages.length === 0 && (docBaseScore > 0 || paragraphs.length > 0)) {
+    finalPassages = paragraphs.slice(0, 2);
+  }
+
+  return {
+    score: totalScore,
+    passages: finalPassages,
+  };
+};
+
 /**
  * Helper: Generate structured summary from PDF text
  */
@@ -219,49 +354,14 @@ const generateDocumentSummary = (docTitle, rawText) => {
 };
 
 /**
- * Helper: Generate structured response for specific concept question
- */
-const generateStructuredConceptAnswer = (docTitle, userQuery, rawText) => {
-  const text = cleanPdfNoise(rawText);
-  const queryLower = userQuery.toLowerCase();
-  const paragraphs = text.split('\n\n').map((p) => p.trim()).filter((p) => p.length > 20);
-
-  const keywords = queryLower
-    .split(/\s+/)
-    .map((w) => w.replace(/[^\w]/g, ''))
-    .filter((w) => w.length > 2 && !['what', 'is', 'the', 'how', 'explain', 'tell', 'about', 'can', 'you', 'give', 'does', 'with', 'from', 'for', 'advantage', 'advantages', 'over'].includes(w));
-
-  // Rank paragraphs by keyword matches
-  const scored = paragraphs.map((p) => {
-    const pLower = p.toLowerCase();
-    let score = 0;
-    keywords.forEach((kw) => {
-      if (pLower.includes(kw)) score += 1;
-    });
-    return { paragraph: p, score };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-  const bestMatch = scored.find((s) => s.score > 0) || scored[0];
-
-  if (bestMatch && bestMatch.paragraph) {
-    // Truncate to clean concise sentences
-    const sentences = bestMatch.paragraph.split(/(?<=[.?!])\s+/).slice(0, 4);
-    const summary = sentences.join(' ').substring(0, 600);
-    return `### Key Takeaway from "${docTitle}":\n\n${summary}`;
-  }
-
-  return `### Key Takeaway from "${docTitle}":\n\nCould not locate an exact match for "${userQuery}" in this document.`;
-};
-
-/**
  * @desc    RAG Chat Query API - Answers user question grounded in uploaded PDF/document content
+ *          Intelligently searches across ALL user documents or a selected document
  * @route   POST /api/knowledge/chat
  * @access  Private
  */
 export const queryRagChat = async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, documentId } = req.body;
     const userId = req.user._id || req.user.id;
     const geminiApiKey = process.env.GEMINI_API_KEY || '';
 
@@ -274,27 +374,7 @@ export const queryRagChat = async (req, res) => {
 
     const userQuery = message.trim();
 
-    // 1. Handle Casual Greetings
-    if (isGreeting(userQuery)) {
-      const userDocs = await Document.find({ uploadedBy: userId });
-      const docCount = userDocs.length;
-      const latestTitle = docCount > 0 ? userDocs[0].title : null;
-
-      let greetingText = `Hello! I'm your **AiKMS Study Assistant**. 👋\n\n`;
-      if (latestTitle) {
-        greetingText += `I am ready to help you analyze and answer questions from your uploaded document **"${latestTitle}"**! What would you like to know?`;
-      } else {
-        greetingText += `Upload a PDF or study material using the sidebar button, and I'll help you query and summarize it!`;
-      }
-
-      return res.status(200).json({
-        success: true,
-        answer: greetingText,
-        sources: latestTitle ? [latestTitle] : [],
-      });
-    }
-
-    // 2. Fetch User Documents from MongoDB
+    // 1. Fetch ALL User Documents from MongoDB
     const userDocs = await Document.find({ uploadedBy: userId }).sort({ createdAt: -1 });
 
     if (!userDocs || userDocs.length === 0) {
@@ -305,67 +385,110 @@ export const queryRagChat = async (req, res) => {
       });
     }
 
-    const latestDoc = userDocs[0];
-    const fullPath = getExistingFilePath(latestDoc.filePath);
-
-    // Extract raw text for intelligent text generation
-    let rawDocText = '';
-    if (fs.existsSync(fullPath)) {
-      if (latestDoc.mimeType?.includes('pdf') || latestDoc.originalFileName?.endsWith('.pdf')) {
-        rawDocText = await extractTextFromPdf(fullPath);
-      } else {
-        rawDocText = fs.readFileSync(fullPath, 'utf-8');
+    // Determine target documents (Specific document or ALL documents)
+    let targetDocs = userDocs;
+    if (documentId && documentId !== 'all') {
+      const selected = userDocs.filter((d) => d._id.toString() === documentId.toString());
+      if (selected.length > 0) {
+        targetDocs = selected;
       }
     }
 
-    // 3. Handle Summary Requests
-    if (isSummaryRequest(userQuery) && rawDocText) {
-      if (geminiApiKey) {
-        const geminiPrompt = `You are an expert AI Study Assistant and Tutor. Provide a comprehensive, beautifully structured summary (with clear headings, bold key concepts, and bullet points) of the following study document.\n\nDOCUMENT ("${latestDoc.title}"):\n${rawDocText.substring(0, 100000)}`;
-        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
-        if (gAnswer) {
-          return res.status(200).json({
-            success: true,
-            answer: gAnswer,
-            sources: [latestDoc.title],
-          });
-        }
+    // 2. Handle Casual Greetings
+    if (isGreeting(userQuery)) {
+      const docTitles = userDocs.map((d) => `"${d.title}" (${d.subject || 'Coursework'})`);
+      let greetingText = `Hello! I'm your **AiKMS Study Assistant**. 👋\n\n`;
+      if (docTitles.length === 1) {
+        greetingText += `I am ready to help you analyze and answer questions from your uploaded document **${docTitles[0]}**! What would you like to know?`;
+      } else {
+        greetingText += `I have access to all **${docTitles.length} study documents** in your workspace:\n${docTitles.map((t) => `- ${t}`).join('\n')}\n\nYou can ask me questions about any of these files or topics!`;
       }
 
-      const summaryAnswer = generateDocumentSummary(latestDoc.title, rawDocText);
       return res.status(200).json({
         success: true,
-        answer: summaryAnswer,
-        sources: [latestDoc.title],
+        answer: greetingText,
+        sources: userDocs.map((d) => d.title),
       });
     }
 
-    // 4. Try Vector Search via ChromaDB & Embeddings
+    // 3. Handle Summary Requests
+    if (isSummaryRequest(userQuery)) {
+      let docToSummarize = targetDocs[0];
+      const queryLower = userQuery.toLowerCase();
+
+      // Check if user specifically mentioned any document title or subject
+      const namedDoc = userDocs.find(
+        (d) =>
+          (d.title && queryLower.includes(d.title.toLowerCase())) ||
+          (d.subject && queryLower.includes(d.subject.toLowerCase()))
+      );
+
+      if (namedDoc) {
+        docToSummarize = namedDoc;
+      }
+
+      const docText = await getDocumentTextCached(docToSummarize);
+      if (docText) {
+        if (geminiApiKey) {
+          const geminiPrompt = `You are an expert AI Study Assistant and Tutor. Provide a comprehensive, beautifully structured summary (with clear headings, bold key concepts, and bullet points) of the following study document.\n\nDOCUMENT ("${docToSummarize.title}" - Subject: ${docToSummarize.subject || 'General'}):\n${docText.substring(0, 80000)}`;
+          const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+          if (gAnswer) {
+            return res.status(200).json({
+              success: true,
+              answer: gAnswer,
+              sources: [docToSummarize.title],
+            });
+          }
+        }
+
+        const summaryAnswer = generateDocumentSummary(docToSummarize.title, docText);
+        return res.status(200).json({
+          success: true,
+          answer: summaryAnswer,
+          sources: [docToSummarize.title],
+        });
+      }
+    }
+
+    // 4. Try Vector Search via ChromaDB & Embeddings across user's documents
     let ragMatches = [];
     try {
       const queryVector = await generateEmbedding(userQuery);
-      ragMatches = await searchVectors(userId, queryVector, 4);
+      ragMatches = await searchVectors(userId, queryVector, 8);
+      if (documentId && documentId !== 'all') {
+        ragMatches = ragMatches.filter(
+          (m) => m.payload?.documentId === documentId.toString()
+        );
+      }
     } catch (vectorErr) {
       console.warn(`[KnowledgeController] Vector RAG search fallback: ${vectorErr.message}`);
     }
 
-    // 5. If Vector Search Returned Matches
-    if (ragMatches && ragMatches.length > 0) {
-      const contextTexts = ragMatches.map((m) => cleanPdfNoise(m.payload.text)).join('\n\n');
+    // 5. If Vector Search Returned Good Matches
+    if (ragMatches && ragMatches.length > 0 && ragMatches.some((m) => m.score > 0.05)) {
       const docIds = [...new Set(ragMatches.map((m) => m.payload.documentId))];
       const matchedDocs = await Document.find({ _id: { $in: docIds } });
+      const docMap = new Map(matchedDocs.map((d) => [d._id.toString(), d]));
       const sourceTitles = matchedDocs.map((d) => d.title);
 
-      // Attempt Gemini API if GEMINI_API_KEY exists
+      const contextTexts = ragMatches
+        .map((m) => {
+          const d = docMap.get(m.payload.documentId);
+          const header = d ? `[From Document: "${d.title}" (${d.subject || 'Coursework'})]:` : '';
+          return `${header}\n${cleanPdfNoise(m.payload.text)}`;
+        })
+        .join('\n\n');
+
       if (geminiApiKey) {
         const geminiPrompt = `You are an expert AI Study Tutor. Answer the user's question clearly, concisely, and accurately using the document context below.
+If context comes from different documents, clearly attribute the concepts to their respective source documents.
 
 Format your answer like ChatGPT:
 - Use clean Markdown formatting (clear headings, bullet points, bold terms).
 - Provide a clear definition/explanation first.
 - Explain key concepts, issues, and solutions mentioned in the study material.
 
-DOCUMENT CONTEXT ("${sourceTitles[0] || latestDoc.title}"):
+DOCUMENT CONTEXT:
 ${contextTexts}
 
 USER QUESTION:
@@ -381,7 +504,7 @@ ${userQuery}`;
         }
       }
 
-      // Attempt Local Ollama LLM if available
+      // Ollama LLM fallback if available
       try {
         const prompt = `System: You are an AI Study Assistant for AiKMS. Answer the user's question accurately using ONLY the provided document context below.\n\nDOCUMENT CONTEXT:\n${contextTexts}\n\nUSER QUESTION: ${userQuery}`;
 
@@ -409,55 +532,103 @@ ${userQuery}`;
         console.warn(`[KnowledgeController] Ollama LLM fallback: ${llmErr.message}`);
       }
 
-      // Smart Structured Context Answer Fallback
-      const topMatchText = cleanPdfNoise(ragMatches[0].payload.text);
-      const structuredAnswer = `### 📌 Answer from "${sourceTitles[0] || latestDoc.title}"\n\n${topMatchText}`;
+      // Smart Structured Context Answer Fallback from vector match
+      const topMatch = ragMatches[0];
+      const matchedDocObj = docMap.get(topMatch.payload.documentId);
+      const docLabel = matchedDocObj ? matchedDocObj.title : (sourceTitles[0] || 'Uploaded Document');
+      const topMatchText = cleanPdfNoise(topMatch.payload.text);
+      const structuredAnswer = `### 📌 Answer from "${docLabel}"\n\n${topMatchText}`;
 
       return res.status(200).json({
         success: true,
         answer: structuredAnswer,
-        sources: sourceTitles.length > 0 ? sourceTitles : [latestDoc.title],
+        sources: sourceTitles.length > 0 ? sourceTitles : [docLabel],
       });
     }
 
-    // 6. Direct Extraction Fallback (Supports Gemini API)
-    if (rawDocText) {
-      if (geminiApiKey) {
-        const geminiPrompt = `You are an expert AI Study Tutor. Answer the user's question clearly, concisely, and accurately based on the document context provided below.
+    // 6. Intelligent Multi-Document Search & Text Matching Fallback
+    // Evaluates ALL user documents (or selected document) to find the exact file matching the query
+    const scoredDocs = [];
+    for (const doc of targetDocs) {
+      const text = await getDocumentTextCached(doc);
+      if (text && text.trim()) {
+        const { score, passages } = findRelevantPassagesFromDoc(doc, text, userQuery);
+        scoredDocs.push({
+          doc,
+          text,
+          score,
+          passages,
+        });
+      }
+    }
 
-Format your answer like ChatGPT:
-- Use clean Markdown formatting (clear headings, bullet points, and bold terms).
-- Provide a clear definition/explanation first.
-- Break down key concepts, issues, and solutions mentioned in the document.
+    if (scoredDocs.length === 0) {
+      return res.status(200).json({
+        success: true,
+        answer: "None of your uploaded documents could be parsed for readable text. Please check the uploaded files.",
+        sources: [],
+      });
+    }
 
-DOCUMENT CONTEXT ("${latestDoc.title}"):
-${rawDocText.substring(0, 100000)}
+    // Sort documents by relevance score to the query
+    scoredDocs.sort((a, b) => b.score - a.score);
+
+    // Pick top matching documents (if one or more have relevant keyword hits)
+    const matchingDocs = scoredDocs.filter((d) => d.score > 0);
+    const primaryDocs = matchingDocs.length > 0 ? matchingDocs.slice(0, 2) : [scoredDocs[0]];
+
+    const primaryDoc = primaryDocs[0].doc;
+    const sources = primaryDocs.map((d) => d.doc.title);
+
+    // Build rich multi-document context passages
+    const contextSections = primaryDocs
+      .map((d) => {
+        const passageText =
+          d.passages && d.passages.length > 0
+            ? d.passages.join('\n\n')
+            : d.text.substring(0, 5000);
+        return `--- Document: "${d.doc.title}" (Subject: ${d.doc.subject || 'General'}) ---\n${passageText}`;
+      })
+      .join('\n\n');
+
+    // Attempt Gemini API with multi-document context
+    if (geminiApiKey) {
+      const geminiPrompt = `You are an expert AI Study Tutor. Answer the user's question clearly, concisely, and accurately based on the document context provided below.
+The student has multiple study documents uploaded in their workspace. The relevant document(s) matching their question have been identified and provided below.
+
+Rules:
+1. Ground your answer in the provided document context.
+2. If the user asked about a specific topic from one of the files, identify and explain it clearly with reference to that file.
+3. Format your answer like ChatGPT: clean Markdown with bold terms, headings, and bullet points.
+4. If the query cannot be answered from the document context, say what the document discusses instead of hallucinating.
+
+DOCUMENT CONTEXT:
+${contextSections.substring(0, 35000)}
 
 USER QUESTION:
 ${userQuery}`;
 
-        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
-        if (gAnswer) {
-          return res.status(200).json({
-            success: true,
-            answer: gAnswer,
-            sources: [latestDoc.title],
-          });
-        }
+      const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+      if (gAnswer) {
+        return res.status(200).json({
+          success: true,
+          answer: gAnswer,
+          sources,
+        });
       }
-
-      const structuredAnswer = generateStructuredConceptAnswer(latestDoc.title, userQuery, rawDocText);
-      return res.status(200).json({
-        success: true,
-        answer: structuredAnswer,
-        sources: [latestDoc.title],
-      });
     }
+
+    // Local / Heuristic Structured Concept Answer Fallback
+    const bestPassage =
+      primaryDocs[0].passages && primaryDocs[0].passages[0]
+        ? primaryDocs[0].passages[0]
+        : primaryDocs[0].text.substring(0, 600);
+    const structuredAnswer = `### 📌 Answer from "${primaryDoc.title}" (${primaryDoc.subject || 'Coursework'}):\n\n${bestPassage}`;
 
     return res.status(200).json({
       success: true,
-      answer: `I found your uploaded document "${latestDoc.title}", but could not extract readable text passages for "${userQuery}".`,
-      sources: [latestDoc.title],
+      answer: structuredAnswer,
+      sources,
     });
   } catch (error) {
     console.error(`[KnowledgeController] RAG Chat error:`, error);
@@ -486,6 +657,7 @@ export const deleteDocumentKnowledge = async (req, res) => {
 
     // Delete vectors from ChromaDB
     await deleteVectorsByDocument(documentId);
+    clearDocumentCache(documentId);
 
     res.status(200).json({
       success: true,

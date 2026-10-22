@@ -3,6 +3,7 @@ import path from "path";
 import Document from "../models/document.model.js";
 import Progress from "../models/progress.model.js";
 import { extractTopicsFromDocument } from "../services/topicExtractor.service.js";
+import { clearDocumentCache } from "./knowledge.controller.js";
 
 //----------------upload document--------------------
 export const uploadDocument = async (req, res) => {
@@ -225,6 +226,7 @@ export const deleteDocument = async (req, res) => {
 
     // Delete document record from MongoDB
     await Document.findByIdAndDelete(id);
+    clearDocumentCache(id);
 
     return res.status(200).json({
       success: true,
