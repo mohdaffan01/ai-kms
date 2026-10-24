@@ -3,9 +3,14 @@ import authApi from './authApi';
 /**
  * Send a question to RAG Chat endpoint to answer using uploaded PDF/document content
  * @param {string} message - User query text
+ * @param {string} [documentId] - Optional specific document ID to target (or 'all' / null)
  */
-export const queryKnowledgeChatApi = async (message) => {
-  const response = await authApi.post('/knowledge/chat', { message });
+export const queryKnowledgeChatApi = async (message, documentId = null) => {
+  const payload = { message };
+  if (documentId && documentId !== 'all') {
+    payload.documentId = documentId;
+  }
+  const response = await authApi.post('/knowledge/chat', payload);
   return response.data;
 };
 

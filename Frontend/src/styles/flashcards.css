@@ -630,14 +630,20 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
+  cursor: pointer;
+  user-select: none;
 }
 
 .deck-card-tile:hover {
-  border-color: rgba(16, 163, 127, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(16, 163, 127, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.45), 0 0 16px -2px rgba(16, 163, 127, 0.2);
+}
+
+.deck-card-tile:active {
+  transform: translateY(-1px) scale(0.995);
 }
 
 .deck-card-tile.mastered {
@@ -648,7 +654,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   font-size: 0.75rem;
+}
+
+.deck-card-tile .fc-badge.topic {
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.fc-tile-study-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  background: rgba(16, 163, 127, 0.12);
+  border: 1px solid rgba(16, 163, 127, 0.25);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.deck-card-tile:hover .fc-tile-study-hint {
+  opacity: 1;
+  background: rgba(16, 163, 127, 0.25);
+  border-color: rgba(16, 163, 127, 0.6);
+  transform: scale(1.04);
 }
 
 .deck-tile-front {
@@ -657,6 +695,11 @@
   color: #ffffff;
   line-height: 1.45;
   margin: 0;
+  transition: color 0.2s ease;
+}
+
+.deck-card-tile:hover .deck-tile-front {
+  color: #a7f3d0;
 }
 
 .deck-tile-back {
@@ -668,6 +711,117 @@
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Top Navigation Bar in Study Mode */
+.study-top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 0.75rem auto;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-fc-back-grid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-fc-back-grid:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.study-card-quick-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 380px;
+}
+
+.study-card-quick-meta .fc-badge.topic {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Question selector tabs strip */
+.study-deck-question-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 640px;
+  margin: 1.25rem auto 0 auto;
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.study-deck-question-tabs-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+
+.study-deck-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.4rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.study-deck-tab:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.study-deck-tab.active {
+  background: rgba(16, 163, 127, 0.2);
+  border-color: var(--accent-green);
+  color: #34d399;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(16, 163, 127, 0.3);
+}
+
+.study-deck-tab.mastered {
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.study-deck-tab .tab-check {
+  margin-left: 2px;
+  color: #34d399;
 }
 
 .deck-tile-footer {
