@@ -21,7 +21,8 @@ import {
   Lightbulb,
   Award,
   Grid,
-  Play
+  Play,
+  ArrowLeft
 } from 'lucide-react';
 import {
   getFlashcardsApi,
@@ -158,10 +159,21 @@ const FlashcardsView = ({ initialSubject = '' }) => {
 
   const completedTopicsForGen = getSubjectCompletedTopics(genSubject || selectedSubject);
 
+  // Open and study a specific card from grid view
+  const handleSelectCardForStudy = (index) => {
+    setCurrentIndex(index);
+    setIsFlipped(false);
+    setShowHint(false);
+    setDeckCompleted(false);
+    setMode('study');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Navigation handlers
   const handleNext = () => {
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
+    const safeIdx = cards.length > 0 ? Math.min(Math.max(0, currentIndex), cards.length - 1) : 0;
+    if (safeIdx < cards.length - 1) {
+      setCurrentIndex(safeIdx + 1);
       setIsFlipped(false);
       setShowHint(false);
     } else {
@@ -170,8 +182,9 @@ const FlashcardsView = ({ initialSubject = '' }) => {
   };
 
   const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
+    const safeIdx = cards.length > 0 ? Math.min(Math.max(0, currentIndex), cards.length - 1) : 0;
+    if (safeIdx > 0) {
+      setCurrentIndex(safeIdx - 1);
       setIsFlipped(false);
       setShowHint(false);
       setDeckCompleted(false);
@@ -266,6 +279,8 @@ const FlashcardsView = ({ initialSubject = '' }) => {
   };
 
   // Keyboard navigation listener
+  const safeIndex = cards.length > 0 ? Math.min(Math.max(0, currentIndex), cards.length - 1) : 0;
+
   useEffect(() => {
     if (mode !== 'study' || cards.length === 0 || isGenModalOpen || isManualModalOpen) return;
 
@@ -283,20 +298,20 @@ const FlashcardsView = ({ initialSubject = '' }) => {
         handlePrev();
       } else if (e.key === '1') {
         // Needs practice
-        if (cards[currentIndex]?.isMastered) {
-          handleToggleMastered(cards[currentIndex]);
+        if (cards[safeIndex]?.isMastered) {
+          handleToggleMastered(cards[safeIndex]);
         }
       } else if (e.key === '2') {
         // Mastered
-        if (!cards[currentIndex]?.isMastered) {
-          handleToggleMastered(cards[currentIndex]);
+        if (!cards[safeIndex]?.isMastered) {
+          handleToggleMastered(cards[safeIndex]);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mode, currentIndex, cards, isGenModalOpen, isManualModalOpen]);
+  }, [mode, safeIndex, cards, isGenModalOpen, isManualModalOpen]);
 
   // AI Flashcard Generation Submit
   const handleGenerateSubmit = async (e) => {
@@ -375,8 +390,8 @@ const FlashcardsView = ({ initialSubject = '' }) => {
     }
   };
 
-  const currentCard = cards[currentIndex];
-  const progressPercent = cards.length > 0 ? Math.round(((currentIndex + 1) / cards.length) * 100) : 0;
+  const currentCard = cards[safeIndex] || cards[0] || {};
+  const progressPercent = cards.length > 0 ? Math.round(((safeIndex + 1) / cards.length) * 100) : 0;
 
   // Distinct subjects list (merging from dashboard subjects and existing flashcards)
   const availableSubjectNames = [
@@ -585,6 +600,14 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                 <button
                   type="button"
                   className="btn-fc-secondary"
+                  onClick={() => setMode('grid')}
+                >
+                  <Grid size={15} />
+                  <span>View All Cards</span>
+                </button>
+                <button
+                  type="button"
+                  className="btn-fc-secondary"
                   onClick={handleResetMastery}
                 >
                   <span>Reset Mastery</span>
@@ -597,7 +620,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
               <div className="study-progress-wrapper">
                 <div className="study-progress-info">
                   <span>
-                    Card <strong>{currentIndex + 1}</strong> of <strong>{cards.length}</strong>
+                    Card <strong>{safeIndex + 1}</strong> of <strong>{cards.length}</strong>
                   </span>
                   <span>{progressPercent}% Deck Progress</span>
                 </div>
@@ -617,7 +640,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                     <div className="fc-card-top-meta">
                       <div className="fc-card-tags">
                         <span className="fc-badge subject">{currentCard.subject}</span>
-                        <span className="fc-badge topic">{currentCard.topic}</span>
+                        <span className="fc-badge topic" title={currentCard.topic}>{currentCard.topic}</span>
                         <span className={`fc-badge difficulty-${currentCard.difficulty || 'medium'}`}>
                           {currentCard.difficulty}
                         </span>
@@ -646,7 +669,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                     <div className="fc-card-top-meta">
                       <div className="fc-card-tags">
                         <span className="fc-badge subject">{currentCard.subject}</span>
-                        <span className="fc-badge topic">{currentCard.topic}</span>
+                        <span className="fc-badge topic" title={currentCard.topic}>{currentCard.topic}</span>
                       </div>
                       {currentCard.isMastered && (
                         <div className="fc-mastered-indicator">
@@ -675,7 +698,7 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                   type="button"
                   className="study-nav-btn"
                   onClick={handlePrev}
-                  disabled={currentIndex === 0}
+                  disabled={safeIndex === 0}
                   title="Previous Card (Left Arrow)"
                 >
                   <ChevronLeft size={22} />
@@ -721,17 +744,26 @@ const FlashcardsView = ({ initialSubject = '' }) => {
                 </button>
               </div>
 
-              {/* Shortcuts hint */}
-              <div className="study-shortcuts-hint">
-                <span>
-                  <kbd>Space</kbd> Flip
-                </span>
-                <span>
-                  <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Navigate
-                </span>
-                <span>
-                  <kbd>1</kbd> Practice / <kbd>2</kbd> Mastered
-                </span>
+              {/* Question selector tabs strip: lets user jump to any question directly */}
+              <div className="study-deck-question-tabs">
+                <span className="study-deck-question-tabs-label">Questions:</span>
+                {cards.map((c, i) => (
+                  <button
+                    key={c._id || i}
+                    type="button"
+                    className={`study-deck-tab ${i === safeIndex ? 'active' : ''} ${c.isMastered ? 'mastered' : ''}`}
+                    onClick={() => {
+                      setCurrentIndex(i);
+                      setIsFlipped(false);
+                      setShowHint(false);
+                      setDeckCompleted(false);
+                    }}
+                    title={`Q${i + 1}: ${c.front?.substring(0, 60)}...`}
+                  >
+                    <span className="tab-number">{i + 1}</span>
+                    {c.isMastered && <Check size={11} className="tab-check" />}
+                  </button>
+                ))}
               </div>
             </>
           )}
@@ -756,19 +788,26 @@ const FlashcardsView = ({ initialSubject = '' }) => {
           </div>
 
           <div className="deck-cards-grid">
-            {cards.map((card) => (
+            {cards.map((card, index) => (
               <div
                 key={card._id}
                 className={`deck-card-tile ${card.isMastered ? 'mastered' : ''}`}
+                onClick={() => handleSelectCardForStudy(index)}
+                title="Click to open & study this flashcard"
               >
                 <div className="deck-tile-meta">
-                  <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', minWidth: 0 }}>
                     <span className="fc-badge subject">{card.subject}</span>
-                    <span className="fc-badge topic">{card.topic}</span>
+                    <span className="fc-badge topic" title={card.topic}>{card.topic}</span>
                   </div>
-                  <span className={`fc-badge difficulty-${card.difficulty || 'medium'}`}>
-                    {card.difficulty}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                    <span className={`fc-badge difficulty-${card.difficulty || 'medium'}`}>
+                      {card.difficulty}
+                    </span>
+                    <span className="fc-tile-study-hint">
+                      <Play size={10} /> Study
+                    </span>
+                  </div>
                 </div>
 
                 <h4 className="deck-tile-front">{card.front}</h4>
