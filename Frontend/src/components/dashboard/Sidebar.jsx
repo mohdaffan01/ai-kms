@@ -22,6 +22,10 @@ import DocumentViewerModal from './DocumentViewerModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import { getMyDocumentsApi, deleteDocumentApi } from '../../api/documentApi';
 
+const MIN_SIDEBAR_WIDTH = 220;
+const MAX_SIDEBAR_WIDTH = 520;
+const DEFAULT_SIDEBAR_WIDTH = 260;
+
 const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -29,6 +33,59 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [isDeletingDoc, setIsDeletingDoc] = useState(false);
+
+  // Resizable Sidebar width state (persisted in localStorage)
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aikms_sidebar_width');
+      const parsed = parseInt(saved, 10);
+      return !isNaN(parsed) && parsed >= MIN_SIDEBAR_WIDTH && parsed <= MAX_SIDEBAR_WIDTH
+        ? parsed
+        : DEFAULT_SIDEBAR_WIDTH;
+    } catch {
+      return DEFAULT_SIDEBAR_WIDTH;
+    }
+  });
+  const [isResizing, setIsResizing] = useState(false);
+
+  // Handle drag-to-resize
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e) => {
+      const newWidth = Math.min(Math.max(e.clientX, MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.classList.remove('resizing-sidebar');
+      setSidebarWidth((current) => {
+        localStorage.setItem('aikms_sidebar_width', String(current));
+        return current;
+      });
+    };
+
+    document.body.classList.add('resizing-sidebar');
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.body.classList.remove('resizing-sidebar');
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  const handleResetWidth = () => {
+    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
+    localStorage.setItem('aikms_sidebar_width', String(DEFAULT_SIDEBAR_WIDTH));
+  };
 
   // Document Viewer Modal state
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -175,7 +232,10 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
       )}
 
       {/* Main Sidebar Element */}
-      <aside className={`chat-sidebar ${isOpen ? 'open' : ''}`}>
+      <aside 
+        className={`chat-sidebar ${isOpen ? 'open' : ''} ${isResizing ? 'resizing' : ''}`}
+        style={!isOpen ? { width: `${sidebarWidth}px` } : undefined}
+      >
         {/* Brand & New Chat Button */}
         <div className="sidebar-top">
           <div className="sidebar-brand">
@@ -348,6 +408,16 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             <LogOut size={18} />
           </button>
         </div>
+
+        {/* Sidebar Resize Handle (Drag to adjust width) */}
+        <div
+          className="sidebar-resizer"
+          onMouseDown={handleMouseDown}
+          onDoubleClick={handleResetWidth}
+          title="Drag to resize sidebar • Double-click to reset"
+          role="separator"
+          aria-orientation="vertical"
+        />
       </aside>
 
       {/* Upload Content Modal */}
