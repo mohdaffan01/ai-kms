@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import Document from "../models/document.model.js";
-import Progress from "../models/progress.model.js";
+import { documentRepository } from "../repositories/document.repository.js";
+import { progressRepository } from "../repositories/progress.repository.js";
 import { extractTopicsFromDocument } from "../services/topicExtractor.service.js";
 import { clearDocumentCache } from "./knowledge.controller.js";
 
@@ -27,7 +27,7 @@ export const uploadDocument = async (req, res) => {
 
     const userId = req.user._id || req.user.id;
 
-    const document = await Document.create({
+    const document = await documentRepository.create({
       title,
       contentType: "file",
       originalFileName: req.file.originalname,
@@ -47,7 +47,7 @@ export const uploadDocument = async (req, res) => {
     // Auto-extract study topics from uploaded document into Progress index
     try {
       const extractedChapters = await extractTopicsFromDocument(document);
-      let progress = await Progress.findOne({ userId });
+      let progress = await progressRepository.findByUserId(userId);
 
       if (progress) {
         let subj = progress.subjects.find(
@@ -166,7 +166,7 @@ export const getMyDocuments = async (req, res) => {
     if (topic) filter.topic = topic;
     if (folder) filter.folder = folder;
 
-    const documents = await Document.find(filter).sort({
+    const documents = await documentRepository.find(filter).sort({
       createdAt: -1,
     });
 
@@ -190,7 +190,7 @@ export const deleteDocument = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const document = await Document.findById(id);
+    const document = await documentRepository.findById(id);
 
     if (!document) {
       return res.status(404).json({
@@ -225,7 +225,7 @@ export const deleteDocument = async (req, res) => {
     }
 
     // Delete document record from MongoDB
-    await Document.findByIdAndDelete(id);
+    await documentRepository.findByIdAndDelete(id);
     clearDocumentCache(id);
 
     return res.status(200).json({

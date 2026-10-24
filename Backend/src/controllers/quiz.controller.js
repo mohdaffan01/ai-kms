@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import Quiz from '../models/quiz.model.js';
-import Document from '../models/document.model.js';
-import Progress from '../models/progress.model.js';
+import { quizRepository } from '../repositories/quiz.repository.js';
+import { documentRepository } from '../repositories/document.repository.js';
+import { progressRepository } from '../repositories/progress.repository.js';
 import { extractTextFromPdf } from '../services/documentProcessor.js';
 import { cleanText } from '../services/textCleaner.js';
 import { getExistingFilePath } from './knowledge.controller.js';
@@ -150,7 +150,7 @@ export const getQuizzes = async (req, res) => {
       query.subject = { $regex: new RegExp(`^${subject.trim()}$`, 'i') };
     }
 
-    const quizzes = await Quiz.find(query).sort({ createdAt: -1 });
+    const quizzes = await quizRepository.find(query).sort({ createdAt: -1 });
 
     // Aggregate overview stats
     const totalQuizzes = quizzes.length;
@@ -195,7 +195,7 @@ export const getQuizById = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { id } = req.params;
 
-    const quiz = await Quiz.findOne({ _id: id, userId });
+    const quiz = await quizRepository.findByIdAndUser(id, userId);
     if (!quiz) {
       return res.status(404).json({ success: false, message: 'Quiz not found.' });
     }
@@ -235,7 +235,7 @@ export const generateQuiz = async (req, res) => {
     const questionCount = Math.min(Math.max(parseInt(count, 10) || 5, 2), 15);
 
     // 1. Fetch user progress to find completed topics
-    const progress = await Progress.findOne({ userId });
+    const progress = await progressRepository.findByUserId(userId);
     let completedTopics = [];
     let allSubjectTopics = [];
 
@@ -278,10 +278,7 @@ export const generateQuiz = async (req, res) => {
     }
 
     // 2. Fetch reference document(s) uploaded by user for this subject
-    const userDocs = await Document.find({
-      uploadedBy: userId,
-      subject: { $regex: new RegExp(`^${targetSubject}$`, 'i') },
-    }).sort({ createdAt: -1 });
+    const userDocs = await documentRepository.findUserDocumentsBySubject(userId, targetSubject);
 
     let documentContext = '';
     let sourceDocId = null;
@@ -378,7 +375,7 @@ Respond ONLY with a valid JSON array of objects without markdown formatting or c
     const quizTitle = `${targetSubject}: ${cleanTopicName} Quiz`;
     const topicLabel = cleanTopicName;
 
-    const quiz = await Quiz.create({
+    const quiz = await quizRepository.create({
       userId,
       subject: targetSubject,
       topic: topicLabel,
@@ -415,7 +412,7 @@ export const submitQuizResult = async (req, res) => {
     const { id } = req.params;
     const { answers = [], timeSpentSeconds = 0 } = req.body;
 
-    const quiz = await Quiz.findOne({ _id: id, userId });
+    const quiz = await quizRepository.findByIdAndUser(id, userId);
     if (!quiz) {
       return res.status(404).json({ success: false, message: 'Quiz not found.' });
     }
@@ -460,26 +457,13 @@ export const submitQuizResult = async (req, res) => {
 
     // Log recent activity in Progress model
     try {
-      await Progress.findOneAndUpdate(
-        { userId },
-        {
-          $push: {
-            recentActivities: {
-              $each: [
-                {
-                  id: `act-quiz-${Date.now()}`,
-                  type: 'study_session',
-                  title: `Completed ${quiz.title} (Scored ${percentage}%)`,
-                  subject: quiz.subject,
-                  timestamp: new Date(),
-                },
-              ],
-              $position: 0,
-              $slice: 15,
-            },
-          },
-        }
-      );
+      await progressRepository.addRecentActivity(userId, {
+        id: `act-quiz-${Date.now()}`,
+        type: 'study_session',
+        title: `Completed ${quiz.title} (Scored ${percentage}%)`,
+        subject: quiz.subject,
+        timestamp: new Date(),
+      }, 15);
     } catch (actErr) {
       console.warn('[QuizController] Could not update recent activity:', actErr.message);
     }
@@ -516,7 +500,7 @@ export const deleteQuiz = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { id } = req.params;
 
-    const quiz = await Quiz.findOneAndDelete({ _id: id, userId });
+    const quiz = await quizRepository.deleteByIdAndUser(id, userId);
     if (!quiz) {
       return res.status(404).json({ success: false, message: 'Quiz not found.' });
     }

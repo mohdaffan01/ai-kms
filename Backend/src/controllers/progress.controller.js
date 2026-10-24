@@ -1,5 +1,5 @@
-import Progress from '../models/progress.model.js';
-import Document from '../models/document.model.js';
+import { progressRepository } from '../repositories/progress.repository.js';
+import { documentRepository } from '../repositories/document.repository.js';
 import { extractTopicsFromDocument } from '../services/topicExtractor.service.js';
 
 // Empty default subjects array: subjects are generated dynamically from uploaded documents or user creation
@@ -44,10 +44,10 @@ export const getDashboardData = async (req, res) => {
     const userId = req.user._id || req.user.id;
 
     // 1. Fetch user's progress record from MongoDB or initialize with empty subjects
-    let progress = await Progress.findOne({ userId });
+    let progress = await progressRepository.findByUserId(userId);
 
     if (!progress) {
-      progress = await Progress.create({
+      progress = await progressRepository.create({
         userId,
         subjects: [],
         recentActivities: [
@@ -63,7 +63,7 @@ export const getDashboardData = async (req, res) => {
     }
 
     // 2. Fetch user's real documents from MongoDB
-    const userDocs = await Document.find({ uploadedBy: userId }).sort({ createdAt: -1 });
+    const userDocs = await documentRepository.findUserDocuments(userId);
 
     // 3. Dynamically sync hierarchical topics from actual uploaded documents (PDF, TXT, MD, Notes)
     // No random or demo topics allowed!
@@ -323,7 +323,7 @@ export const toggleTopic = async (req, res) => {
       });
     }
 
-    let progress = await Progress.findOne({ userId });
+    let progress = await progressRepository.findByUserId(userId);
     if (!progress) {
       return res.status(404).json({ success: false, message: 'Progress not found.' });
     }
@@ -402,7 +402,7 @@ export const toggleTopic = async (req, res) => {
     await progress.save();
 
     // Recalculate stats
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     let total = 0;
@@ -459,9 +459,9 @@ export const createSubject = async (req, res) => {
       });
     }
 
-    let progress = await Progress.findOne({ userId });
+    let progress = await progressRepository.findByUserId(userId);
     if (!progress) {
-      progress = await Progress.create({
+      progress = await progressRepository.create({
         userId,
         subjects: [],
         recentActivities: [],
@@ -515,7 +515,7 @@ export const createSubject = async (req, res) => {
 
     await progress.save();
 
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(201).json({
@@ -549,7 +549,7 @@ export const deleteSubject = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { subjectId } = req.params;
 
-    const progress = await Progress.findOne({ userId });
+    const progress = await progressRepository.findByUserId(userId);
     if (!progress) {
       return res.status(404).json({ success: false, message: 'Progress record not found' });
     }
@@ -563,7 +563,7 @@ export const deleteSubject = async (req, res) => {
     progress.subjects.splice(subjectIndex, 1);
 
     // Unlink / clean subject reference from documents so subject does not auto-regenerate on next reload
-    await Document.updateMany(
+    await documentRepository.updateMany(
       {
         uploadedBy: userId,
         subject: { $regex: new RegExp(`^${removedSubject.name.trim()}$`, 'i') },
@@ -582,7 +582,7 @@ export const deleteSubject = async (req, res) => {
 
     await progress.save();
 
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(200).json({
@@ -615,7 +615,7 @@ export const updateSubject = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Subject name cannot be empty.' });
     }
 
-    const progress = await Progress.findOne({ userId });
+    const progress = await progressRepository.findByUserId(userId);
     if (!progress) {
       return res.status(404).json({ success: false, message: 'Progress record not found' });
     }
@@ -637,13 +637,7 @@ export const updateSubject = async (req, res) => {
 
     // If subject name changed, also update matching user documents so they stay linked
     if (name && oldName.trim().toLowerCase() !== newName.trim().toLowerCase()) {
-      await Document.updateMany(
-        {
-          uploadedBy: userId,
-          subject: { $regex: new RegExp(`^${oldName.trim()}$`, 'i') },
-        },
-        { $set: { subject: newName } }
-      );
+      await documentRepository.updateSubjectName(userId, oldName, newName);
     }
 
     // Log activity
@@ -657,7 +651,7 @@ export const updateSubject = async (req, res) => {
 
     await progress.save();
 
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(200).json({
@@ -691,7 +685,7 @@ export const addTopicToSubject = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Topic name is required.' });
     }
 
-    const progress = await Progress.findOne({ userId });
+    const progress = await progressRepository.findByUserId(userId);
     if (!progress) {
       return res.status(404).json({ success: false, message: 'Progress record not found' });
     }
@@ -731,7 +725,7 @@ export const addTopicToSubject = async (req, res) => {
 
     await progress.save();
 
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     let total = 0;
@@ -780,12 +774,12 @@ export const resetDefaultSubjects = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    let progress = await Progress.findOne({ userId });
+    let progress = await progressRepository.findByUserId(userId);
     if (!progress) {
-      progress = new Progress({ userId });
+      progress = progressRepository.instantiate({ userId });
     }
 
-    const userDocs = await Document.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.find({ uploadedBy: userId });
     const userDocSubjects = new Set(userDocs.map((d) => (d.subject || '').trim().toLowerCase()));
 
     // Filter out subjects with no matching documents and no topics

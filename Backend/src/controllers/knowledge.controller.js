@@ -1,4 +1,4 @@
-import Document from '../models/document.model.js';
+import { documentRepository } from '../repositories/document.repository.js';
 import { processDocument, extractTextFromPdf } from '../services/documentProcessor.js';
 import { cleanText } from '../services/textCleaner.js';
 import { generateEmbedding } from '../services/embeddingService.js';
@@ -19,7 +19,7 @@ export const processDocumentKnowledge = async (req, res) => {
     const userId = req.user._id || req.user.id;
 
     // 1. Fetch document from MongoDB
-    const document = await Document.findById(documentId);
+    const document = await documentRepository.findById(documentId);
 
     if (!document) {
       return res.status(404).json({ message: 'Document not found' });
@@ -61,7 +61,7 @@ export const processDocumentKnowledge = async (req, res) => {
 
     if (req.params.documentId) {
       try {
-        await Document.findByIdAndUpdate(req.params.documentId, { processingStatus: 'failed' });
+        await documentRepository.updateProcessingStatus(req.params.documentId, 'failed');
       } catch (dbErr) {
         console.error(`[KnowledgeController] Failed to update document status:`, dbErr);
       }
@@ -375,7 +375,7 @@ export const queryRagChat = async (req, res) => {
     const userQuery = message.trim();
 
     // 1. Fetch ALL User Documents from MongoDB
-    const userDocs = await Document.find({ uploadedBy: userId }).sort({ createdAt: -1 });
+    const userDocs = await documentRepository.findUserDocuments(userId);
 
     if (!userDocs || userDocs.length === 0) {
       return res.status(200).json({
@@ -467,7 +467,7 @@ export const queryRagChat = async (req, res) => {
     // 5. If Vector Search Returned Good Matches
     if (ragMatches && ragMatches.length > 0 && ragMatches.some((m) => m.score > 0.05)) {
       const docIds = [...new Set(ragMatches.map((m) => m.payload.documentId))];
-      const matchedDocs = await Document.find({ _id: { $in: docIds } });
+      const matchedDocs = await documentRepository.findDocumentsByIds(docIds);
       const docMap = new Map(matchedDocs.map((d) => [d._id.toString(), d]));
       const sourceTitles = matchedDocs.map((d) => d.title);
 
@@ -650,7 +650,7 @@ export const deleteDocumentKnowledge = async (req, res) => {
     const { documentId } = req.params;
     const userId = req.user._id || req.user.id;
 
-    const document = await Document.findById(documentId);
+    const document = await documentRepository.findById(documentId);
     if (document && document.uploadedBy.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Not authorized to delete this document vectors' });
     }
