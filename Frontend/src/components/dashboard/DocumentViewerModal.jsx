@@ -12,9 +12,12 @@ import {
   CheckCircle2, 
   Clock, 
   AlertTriangle,
-  Loader2 
+  Loader2,
+  Files,
+  AlignLeft,
+  AlignJustify
 } from 'lucide-react';
-import { deleteDocumentApi } from '../../api/documentApi';
+import { deleteDocumentApi, getDocumentStatsApi } from '../../api/documentApi';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
 const API_STATIC_BASE = 'http://localhost:3000';
@@ -22,10 +25,119 @@ const API_STATIC_BASE = 'http://localhost:3000';
 const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }) => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [pageCount, setPageCount] = React.useState(doc?.pageCount || null);
+  const [wordCount, setWordCount] = React.useState(doc?.wordCount ?? null);
+  const [lineCount, setLineCount] = React.useState(doc?.lineCount ?? null);
+
+  const fileUrl = doc?.filePath ? `${API_STATIC_BASE}/${doc.filePath.replace(/^\/+/, '')}` : '#';
+  const isPdf = doc?.mimeType?.includes('pdf') || doc?.originalFileName?.toLowerCase().endsWith('.pdf');
+
+  React.useEffect(() => {
+    if (!doc) return;
+
+    if (doc.pageCount !== undefined && doc.pageCount !== null) {
+      setPageCount(doc.pageCount);
+    }
+    if (doc.wordCount !== undefined && doc.wordCount !== null) {
+      setWordCount(doc.wordCount);
+    }
+    if (doc.lineCount !== undefined && doc.lineCount !== null) {
+      setLineCount(doc.lineCount);
+    }
+
+    // Handle note content directly
+    if (doc.contentType === 'note' && doc.noteContent) {
+      setPageCount(1);
+      const cleanText = doc.noteContent.trim();
+      setWordCount(cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0);
+      setLineCount(cleanText ? cleanText.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0);
+      return;
+    }
+
+    // If stats are already present, nothing more to do
+    if (
+      doc.pageCount !== undefined && doc.pageCount !== null &&
+      doc.wordCount !== undefined && doc.wordCount !== null &&
+      doc.lineCount !== undefined && doc.lineCount !== null
+    ) {
+      return;
+    }
+
+    let isMounted = true;
+
+    // 1. Fetch exact document stats via Backend API
+    const docId = doc._id || doc.id;
+    if (docId) {
+      getDocumentStatsApi(docId)
+        .then((res) => {
+          if (!isMounted) return;
+          if (res?.stats) {
+            if (res.stats.pageCount) setPageCount(res.stats.pageCount);
+            if (res.stats.wordCount !== undefined && res.stats.wordCount !== null) {
+              setWordCount(res.stats.wordCount);
+            }
+            if (res.stats.lineCount !== undefined && res.stats.lineCount !== null) {
+              setLineCount(res.stats.lineCount);
+            }
+          }
+        })
+        .catch((err) => {
+          console.debug('[DocumentViewerModal] Stats API fallback:', err.message);
+          // 2. Client-side PDF fallback if API fails
+          if (fileUrl && fileUrl !== '#') {
+            fetch(fileUrl)
+              .then((res) => res.arrayBuffer())
+              .then((buf) => {
+                if (!isMounted) return;
+                const text = new TextDecoder('latin1').decode(buf);
+                const countMatch = text.match(/\/Type\s*\/Pages[\s\S]*?\/Count\s+(\d+)/);
+                if (countMatch && countMatch[1]) {
+                  setPageCount(parseInt(countMatch[1], 10));
+                }
+                if (doc.fileSize) {
+                  const approxWords = Math.round(doc.fileSize / 150);
+                  const approxLines = Math.round(approxWords / 6);
+                  setWordCount((prev) => (prev === null ? approxWords : prev));
+                  setLineCount((prev) => (prev === null ? approxLines : prev));
+                }
+              })
+              .catch(() => {
+                if (isMounted) {
+                  setWordCount((prev) => prev ?? 0);
+                  setLineCount((prev) => prev ?? 0);
+                }
+              });
+          }
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [doc?._id, doc?.id, doc?.pageCount, doc?.wordCount, doc?.lineCount, doc?.filePath, doc?.noteContent, fileUrl, isPdf]);
 
   if (!isOpen || !doc) return null;
 
-  const fileUrl = doc.filePath ? `${API_STATIC_BASE}/${doc.filePath.replace(/^\/+/, '')}` : '#';
+  const formatPageCount = () => {
+    if (pageCount === null || pageCount === undefined) {
+      return isPdf ? 'Detecting...' : '1 Page';
+    }
+    return `${pageCount} ${pageCount === 1 ? 'Page' : 'Pages'}`;
+  };
+
+  const formatWordCount = () => {
+    if (wordCount === null || wordCount === undefined) {
+      return isPdf ? 'Counting...' : '0 Words';
+    }
+    return `${Number(wordCount).toLocaleString()} ${wordCount === 1 ? 'Word' : 'Words'}`;
+  };
+
+  const formatLineCount = () => {
+    if (lineCount === null || lineCount === undefined) {
+      return isPdf ? 'Counting...' : '0 Lines';
+    }
+    return `${Number(lineCount).toLocaleString()} ${lineCount === 1 ? 'Line' : 'Lines'}`;
+  };
 
   const formatFileSize = (bytes) => {
     if (!bytes) return 'N/A';
@@ -72,8 +184,6 @@ const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }
       setIsDeleting(false);
     }
   };
-
-  const isPdf = doc.mimeType?.includes('pdf') || doc.originalFileName?.toLowerCase().endsWith('.pdf');
 
   return (
     <div className="doc-viewer-overlay" onClick={onClose}>
@@ -144,6 +254,30 @@ const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }
                 <div className="meta-content">
                   <span className="meta-label">Folder</span>
                   <span className="meta-value">{doc.folder || 'General'}</span>
+                </div>
+              </div>
+
+              <div className="metadata-item">
+                <Files size={16} className="meta-icon" />
+                <div className="meta-content">
+                  <span className="meta-label">Pages</span>
+                  <span className="meta-value">{formatPageCount()}</span>
+                </div>
+              </div>
+
+              <div className="metadata-item">
+                <AlignLeft size={16} className="meta-icon" />
+                <div className="meta-content">
+                  <span className="meta-label">Words</span>
+                  <span className="meta-value">{formatWordCount()}</span>
+                </div>
+              </div>
+
+              <div className="metadata-item">
+                <AlignJustify size={16} className="meta-icon" />
+                <div className="meta-content">
+                  <span className="meta-label">Lines</span>
+                  <span className="meta-value">{formatLineCount()}</span>
                 </div>
               </div>
 

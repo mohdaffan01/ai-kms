@@ -35,6 +35,21 @@ const documentSchema = new mongoose.Schema(
       default: null,
     },
 
+    pageCount: {
+      type: Number,
+      default: null,
+    },
+
+    wordCount: {
+      type: Number,
+      default: null,
+    },
+
+    lineCount: {
+      type: Number,
+      default: null,
+    },
+
     // Used only when contentType is "note"
     noteContent: {
       type: String,
