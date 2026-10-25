@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import Flashcard from '../models/flashcard.model.js';
-import Document from '../models/document.model.js';
-import Progress from '../models/progress.model.js';
+import { flashcardRepository } from '../repositories/flashcard.repository.js';
+import { documentRepository } from '../repositories/document.repository.js';
+import { progressRepository } from '../repositories/progress.repository.js';
 import { extractTextFromPdf } from '../services/documentProcessor.js';
 import { cleanText } from '../services/textCleaner.js';
 import { getExistingFilePath } from './knowledge.controller.js';
@@ -176,10 +176,10 @@ export const getFlashcards = async (req, res) => {
       ];
     }
 
-    const cards = await Flashcard.find(query).sort({ updatedAt: -1, createdAt: -1 });
+    const cards = await flashcardRepository.find(query).sort({ updatedAt: -1, createdAt: -1 });
 
     // Aggregate statistics across this user's deck
-    const allUserCards = await Flashcard.find({ userId });
+    const allUserCards = await flashcardRepository.findAllByUser(userId);
     const totalCards = allUserCards.length;
     const masteredCards = allUserCards.filter((c) => c.isMastered).length;
     const learningCards = totalCards - masteredCards;
@@ -242,7 +242,7 @@ export const generateFlashcards = async (req, res) => {
     const cardCount = Math.min(Math.max(parseInt(count, 10) || 5, 2), 15);
 
     // 1. Fetch user's study progress to find which topics have been marked completed
-    const progress = await Progress.findOne({ userId });
+    const progress = await progressRepository.findByUserId(userId);
     let completedTopics = [];
     let allSubjectTopics = [];
 
@@ -284,10 +284,7 @@ export const generateFlashcards = async (req, res) => {
     }
 
     // 2. Fetch relevant document(s) uploaded by user for this subject
-    const userDocs = await Document.find({
-      uploadedBy: userId,
-      subject: { $regex: new RegExp(`^${targetSubject}$`, 'i') },
-    }).sort({ createdAt: -1 });
+    const userDocs = await documentRepository.findUserDocumentsBySubject(userId, targetSubject);
 
     let documentContext = '';
     let sourceDocId = null;
@@ -375,7 +372,7 @@ Respond ONLY with a valid JSON array of objects without markdown formatting or s
     // 4. Save newly generated flashcards into MongoDB
     const createdFlashcards = [];
     for (const card of generatedCards) {
-      const doc = await Flashcard.create({
+      const doc = await flashcardRepository.create({
         userId,
         subject: targetSubject,
         topic: card.topic || selectedTopics[0] || targetSubject,
@@ -425,7 +422,7 @@ export const createManualFlashcard = async (req, res) => {
       });
     }
 
-    const card = await Flashcard.create({
+    const card = await flashcardRepository.create({
       userId,
       subject: subject.trim(),
       topic: (topic && topic.trim()) || 'General',
@@ -462,7 +459,7 @@ export const toggleFlashcardMastered = async (req, res) => {
     const { id } = req.params;
     const { isMastered } = req.body;
 
-    const card = await Flashcard.findOne({ _id: id, userId });
+    const card = await flashcardRepository.findByIdAndUser(id, userId);
     if (!card) {
       return res.status(404).json({ success: false, message: 'Flashcard not found.' });
     }
@@ -497,7 +494,7 @@ export const deleteFlashcard = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { id } = req.params;
 
-    const card = await Flashcard.findOneAndDelete({ _id: id, userId });
+    const card = await flashcardRepository.deleteByIdAndUser(id, userId);
     if (!card) {
       return res.status(404).json({ success: false, message: 'Flashcard not found.' });
     }
@@ -527,14 +524,7 @@ export const resetDeckMastery = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const { subject } = req.body;
 
-    const query = { userId };
-    if (subject && subject !== 'all') {
-      query.subject = { $regex: new RegExp(`^${subject.trim()}$`, 'i') };
-    }
-
-    const result = await Flashcard.updateMany(query, {
-      $set: { isMastered: false },
-    });
+    const result = await flashcardRepository.resetDeckMastery(userId, subject);
 
     res.status(200).json({
       success: true,

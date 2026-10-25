@@ -116,7 +116,7 @@ const ChatWindow = ({ messages, isLoading }) => {
               <div className="message-bubble">
                 <div className="message-sender-name">AiKMS Assistant</div>
                 <div className="message-text" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={16} className="animate-spin" color="var(--accent-green, #10a37f)" />
                   <span>Searching PDF & generating response...</span>
                 </div>
               </div>

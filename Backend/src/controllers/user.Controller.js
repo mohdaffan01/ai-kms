@@ -1,4 +1,4 @@
-import User from '../models/user.model.js';
+import { userRepository } from '../repositories/user.repository.js';
 import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
@@ -46,13 +46,13 @@ export const registerUser = async (req, res, next) => {
       throw new Error('Please provide a valid email address');
     }
 
-    const userExists = await User.findOne({ email: email?.trim()?.toLowerCase() });
+    const userExists = await userRepository.findByEmail(email);
     if (userExists) {
       res.status(400);
       throw new Error('User already exists with this email address');
     }
 
-    const user = await User.create({
+    const user = await userRepository.create({
       name: name?.trim(),
       email: email?.trim()?.toLowerCase(),
       password: password?.trim(),
@@ -92,7 +92,7 @@ export const loginUser = async (req, res, next) => {
       throw new Error('Please provide email and password');
     }
 
-    const user = await User.findOne({ email: email?.trim()?.toLowerCase() });
+    const user = await userRepository.findByEmail(email);
 
     if (user && (await user.matchPassword(password))) {
       const token = generateToken(user._id);
@@ -120,7 +120,7 @@ export const loginUser = async (req, res, next) => {
 // @access  Private
 export const getUserProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await userRepository.findByIdWithoutPassword(req.user._id);
     if (user) {
       res.json(user);
     } else {
@@ -137,11 +137,11 @@ export const getUserProfile = async (req, res, next) => {
 // @access  Private
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await userRepository.findById(req.user._id);
 
     if (user) {
       if (req.body.email && req.body.email.toLowerCase() !== user.email) {
-        const emailExists = await User.findOne({ email: req.body.email.toLowerCase() });
+        const emailExists = await userRepository.findByEmail(req.body.email);
         if (emailExists) {
           res.status(400);
           throw new Error('Email address is already in use by another user');
@@ -196,7 +196,7 @@ export const changeUserPassword = async (req, res, next) => {
       throw new Error('New password must be at least 8 characters');
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await userRepository.findById(req.user._id);
 
     if (user && (await user.matchPassword(currentPassword))) {
       user.password = newPassword;

@@ -91,32 +91,31 @@ const ChatInput = ({ onSendMessage }) => {
           className="chat-textarea"
         />
 
-        {voiceSupported && (
-          <button
-            type="button"
-            className={`btn-voice-toggle ${isListening ? 'active' : ''}`}
-            onClick={toggleVoiceInput}
-            aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
-          >
-            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-          </button>
-        )}
+        <div className="chat-input-actions">
+          {voiceSupported && (
+            <button
+              type="button"
+              className={`btn-voice-toggle ${isListening ? 'active' : ''}`}
+              onClick={toggleVoiceInput}
+              aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+            >
+              {isListening ? <MicOff size={19} /> : <Mic size={19} />}
+            </button>
+          )}
 
-        <button
-          type="submit"
-          disabled={!input.trim()}
-          className="btn-send-message"
-          aria-label="Send message"
-        >
-          <Send size={18} />
-        </button>
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="btn-send-message"
+            aria-label="Send message"
+          >
+            <Send size={19} />
+          </button>
+        </div>
       </form>
 
       {voiceError && <div className="voice-status-error">{voiceError}</div>}
-
-      <div className="chat-footer-disclaimer">
-        AiKMS Demo Workspace • Voice input is available in supported browsers
-      </div>
+      
     </div>
   );
 };

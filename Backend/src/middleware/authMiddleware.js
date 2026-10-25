@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model.js';
+import { userRepository } from '../repositories/user.repository.js';
 
 export const protect = async (req, res, next) => {
   let token;
@@ -16,7 +16,7 @@ export const protect = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET || '123456');
 
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await userRepository.findByIdWithoutPassword(decoded.id);
 
       if (!req.user) {
         res.status(401);
