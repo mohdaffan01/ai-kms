@@ -38,6 +38,16 @@ export const requestPasswordResetApi = async (email) => {
   return response.data;
 };
 
+export const resetPasswordWithOtpApi = async ({ email, otp, password, confirmPassword }) => {
+  const response = await authApi.post('/auth/reset-password-otp', {
+    email,
+    otp,
+    password,
+    confirmPassword,
+  });
+  return response.data;
+};
+
 export const resetPasswordApi = async (token, passwordData) => {
   const response = await authApi.post(`/auth/reset-password/${token}`, passwordData);
   return response.data;

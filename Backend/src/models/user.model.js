@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema(
   {
@@ -28,15 +29,15 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Please add a password'],
       minlength: [8, 'Password must be at least 8 characters'],
     },
-    profileImage: {
-      type: String,
-      default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-    },
     role: {
       type: String,
       enum: ['student', 'teacher', 'admin'],
       default: 'student',
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    resetPasswordOtp: String,
+    resetPasswordOtpExpire: Date,
   },
   {
     timestamps: true,
@@ -55,6 +56,40 @@ userSchema.pre('save', async function () {
 // Compare entered password with hashed password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate 6-digit numeric OTP and set 10-minute expiry
+userSchema.methods.generateResetOtp = function () {
+  // Generate a random 6-digit integer string (e.g. "481920")
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Hash OTP and set to resetPasswordOtp field
+  this.resetPasswordOtp = crypto
+    .createHash('sha256')
+    .update(otp)
+    .digest('hex');
+
+  // Set expire to 10 minutes from now
+  this.resetPasswordOtpExpire = Date.now() + 10 * 60 * 1000;
+
+  return otp;
+};
+
+// Generate and hash password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  // Generate random 20-byte token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire to 30 minutes from now
+  this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);
