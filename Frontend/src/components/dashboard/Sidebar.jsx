@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, 
@@ -7,20 +7,24 @@ import {
   LogOut, 
   User, 
   Menu, 
-  X,
-  Brain,
-  Folder,
-  Trash2,
-  Eye,
-  Loader2,
-  LayoutDashboard,
-  Layers,
-  HelpCircle
+  X, 
+  Brain, 
+  Folder, 
+  Trash2, 
+  Eye, 
+  Loader2, 
+  LayoutDashboard, 
+  Layers, 
+  HelpCircle,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import DocumentViewerModal from './DocumentViewerModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import UserProfileFlyout from './UserProfileFlyout';
 import { getMyDocumentsApi, deleteDocumentApi } from '../../api/documentApi';
+import { getMeApi } from '../../api/authApi';
 
 const MIN_SIDEBAR_WIDTH = 220;
 const MAX_SIDEBAR_WIDTH = 520;
@@ -33,6 +37,24 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [isDeletingDoc, setIsDeletingDoc] = useState(false);
+
+  // Documents Section Collapsible state (defaults to false / remembered in localStorage)
+  const [isDocsExpanded, setIsDocsExpanded] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aikms_sidebar_docs_expanded');
+      return saved !== null ? saved === 'true' : false;
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleDocsExpanded = () => {
+    setIsDocsExpanded((prev) => {
+      const next = !prev;
+      localStorage.setItem('aikms_sidebar_docs_expanded', String(next));
+      return next;
+    });
+  };
 
   // Resizable Sidebar width state (persisted in localStorage)
   const [sidebarWidth, setSidebarWidth] = useState(() => {
@@ -93,9 +115,72 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
   const navigate = useNavigate();
 
-  // Get user info from localStorage
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : { name: 'Student', email: 'user@example.com' };
+  // Get user info from localStorage (as reactive state)
+  const [user, setUser] = useState(() => {
+    try {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : { name: 'Student', email: 'user@example.com' };
+    } catch {
+      return { name: 'Student', email: 'user@example.com' };
+    }
+  });
+  const [isProfileWindowOpen, setIsProfileWindowOpen] = useState(false);
+  const profileFooterRef = useRef(null);
+
+  // Sync latest user profile on mount
+  useEffect(() => {
+    const fetchLatestUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          const fresh = await getMeApi();
+          if (fresh) {
+            setUser((prev) => {
+              const merged = { ...prev, ...fresh };
+              localStorage.setItem('user', JSON.stringify(merged));
+              return merged;
+            });
+          }
+        }
+      } catch {
+        // Silently keep localStorage fallback
+      }
+    };
+    fetchLatestUser();
+
+    const handleUserUpdated = (e) => {
+      if (e.detail) setUser(e.detail);
+    };
+    window.addEventListener('aikms:user-updated', handleUserUpdated);
+    return () => {
+      window.removeEventListener('aikms:user-updated', handleUserUpdated);
+    };
+  }, []);
+
+  // Close user profile window on outside click or Escape key
+  useEffect(() => {
+    if (!isProfileWindowOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (profileFooterRef.current && !profileFooterRef.current.contains(e.target)) {
+        setIsProfileWindowOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsProfileWindowOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isProfileWindowOpen]);
   const folders = [...new Set(documents.map((item) => item.folder?.trim() || 'General'))]
     .sort((first, second) => first.localeCompare(second));
   const existingSubjectNames = [
@@ -183,6 +268,8 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
         if (prev.some((d) => (d._id || d.id) === docId)) return prev;
         return [uploadedDoc, ...prev];
       });
+      setIsDocsExpanded(true);
+      localStorage.setItem('aikms_sidebar_docs_expanded', 'true');
     }
     fetchDocuments(false);
   };
@@ -300,88 +387,111 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
         {/* Your Content Section */}
         <div className="sidebar-content-section">
-          <div className="section-header">
-            <span className="section-title">Your Content</span>
-            {documents.length > 0 && (
-              <span className="content-count-badge">{documents.length}</span>
-            )}
+          <div 
+            className="section-header"
+            onClick={toggleDocsExpanded}
+            role="button"
+            tabIndex={0}
+            aria-expanded={isDocsExpanded}
+            title={isDocsExpanded ? "Click to collapse documents" : "Click to view documents"}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleDocsExpanded();
+              }
+            }}
+          >
+            <div className="section-header-title-row">
+              <span className="section-title">Documents</span>
+              {documents.length > 0 && (
+                <span className="content-count-badge">{documents.length}</span>
+              )}
+              <div className="section-arrow-badge">
+                <ChevronDown 
+                  size={14} 
+                  className={`section-toggle-arrow ${isDocsExpanded ? 'expanded' : ''}`} 
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="content-list">
-            {isLoadingDocs ? (
-              <div className="content-loading-state">Loading files...</div>
-            ) : documents.length === 0 ? (
-              <div className="empty-content-state">
-                <Folder size={24} className="empty-icon" />
-                <p>No documents uploaded yet.</p>
-              </div>
-            ) : (
-              documentsByFolder.map(({ folder, items }) => (
-                <section className="content-folder-group" key={folder}>
-                  <div className="content-folder-heading">
-                    <Folder size={14} />
-                    <span className="content-folder-name">{folder}</span>
-                    <span className="content-folder-count">{items.length}</span>
-                  </div>
-                  {items.map((item) => {
-                    const docId = item._id || item.id;
-                    const isDeleting = isDeletingDoc && (docToDelete?._id || docToDelete?.id) === docId;
+          {isDocsExpanded && (
+            <div className="content-list">
+              {isLoadingDocs ? (
+                <div className="content-loading-state">Loading files...</div>
+              ) : documents.length === 0 ? (
+                <div className="empty-content-state">
+                  <Folder size={24} className="empty-icon" />
+                  <p>No documents uploaded yet.</p>
+                </div>
+              ) : (
+                documentsByFolder.map(({ folder, items }) => (
+                  <section className="content-folder-group" key={folder}>
+                    <div className="content-folder-heading">
+                      <Folder size={14} />
+                      <span className="content-folder-name">{folder}</span>
+                      <span className="content-folder-count">{items.length}</span>
+                    </div>
+                    {items.map((item) => {
+                      const docId = item._id || item.id;
+                      const isDeleting = isDeletingDoc && (docToDelete?._id || docToDelete?.id) === docId;
 
-                    return (
-                      <div
-                        key={docId}
-                        className="content-item"
-                        title={`Click to view ${item.title} (${item.subject})`}
-                        onClick={() => handleOpenViewer(item)}
-                      >
-                        <FileText size={16} className="content-icon" />
-                        <div className="content-item-info">
-                          <span className="content-title">{item.title}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <span className="content-subject-tag">{item.subject}</span>
-                            {item.processingStatus === 'processing' && (
-                              <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                                <Loader2 size={10} className="spinner" /> Processing...
-                              </span>
-                            )}
+                      return (
+                        <div
+                          key={docId}
+                          className="content-item"
+                          title={`Click to view ${item.title} (${item.subject})`}
+                          onClick={() => handleOpenViewer(item)}
+                        >
+                          <FileText size={16} className="content-icon" />
+                          <div className="content-item-info">
+                            <span className="content-title">{item.title}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <span className="content-subject-tag">{item.subject}</span>
+                              {item.processingStatus === 'processing' && (
+                                <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                                  <Loader2 size={10} className="spinner" /> Processing...
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="content-item-actions">
+                            <button
+                              className="btn-view-doc"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenViewer(item);
+                              }}
+                              title="View Document"
+                            >
+                              <Eye size={14} />
+                            </button>
+
+                            <button
+                              className="btn-delete-doc"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDocToDelete(item);
+                              }}
+                              title="Delete Document"
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? (
+                                <Loader2 size={14} className="spinner" />
+                              ) : (
+                                <Trash2 size={14} />
+                              )}
+                            </button>
                           </div>
                         </div>
-
-                        <div className="content-item-actions">
-                          <button
-                            className="btn-view-doc"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenViewer(item);
-                            }}
-                            title="View Document"
-                          >
-                            <Eye size={14} />
-                          </button>
-
-                          <button
-                            className="btn-delete-doc"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDocToDelete(item);
-                            }}
-                            title="Delete Document"
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? (
-                              <Loader2 size={14} className="spinner" />
-                            ) : (
-                              <Trash2 size={14} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </section>
-              ))
-            )}
-          </div>
+                      );
+                    })}
+                  </section>
+                ))
+              )}
+            </div>
+          )}
 
           <button 
             className="btn-upload-content" 
@@ -393,8 +503,22 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
         </div>
 
         {/* User Footer & Logout */}
-        <div className="sidebar-user-footer">
-          <div className="user-profile-info">
+        <div className="sidebar-user-footer" ref={profileFooterRef}>
+          <div 
+            className={`user-profile-info ${isProfileWindowOpen ? 'active' : ''}`}
+            onClick={() => setIsProfileWindowOpen((prev) => !prev)}
+            role="button"
+            tabIndex={0}
+            aria-haspopup="dialog"
+            aria-expanded={isProfileWindowOpen}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsProfileWindowOpen((prev) => !prev);
+              }
+            }}
+            title="Click to open profile & account details"
+          >
             <div className="user-avatar-badge">
               <User size={18} />
             </div>
@@ -402,11 +526,32 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
               <span className="user-display-name">{user.name}</span>
               <span className="user-display-email">{user.email}</span>
             </div>
+            <ChevronRight 
+              size={14} 
+              className={`user-profile-chevron ${isProfileWindowOpen ? 'open' : ''}`} 
+            />
           </div>
 
           <button className="btn-sidebar-logout" onClick={handleLogout} title="Logout">
             <LogOut size={18} />
           </button>
+
+          {/* Small Profile Window on Right Side */}
+          {isProfileWindowOpen && (
+            <UserProfileFlyout
+              user={user}
+              onClose={() => setIsProfileWindowOpen(false)}
+              onUserUpdate={(updated) => {
+                setUser((prev) => ({ ...prev, ...updated }));
+                localStorage.setItem('user', JSON.stringify({ ...user, ...updated }));
+                window.dispatchEvent(new CustomEvent('aikms:user-updated', { detail: { ...user, ...updated } }));
+              }}
+              onLogout={handleLogout}
+              docCount={documents.length}
+              subjectCount={existingSubjectNames.length}
+              onSelectTab={onSelectTab}
+            />
+          )}
         </div>
 
         {/* Sidebar Resize Handle (Drag to adjust width) */}

@@ -221,7 +221,24 @@ body.resizing-sidebar * {
 }
 
 .section-header {
-  padding: 0 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.18s ease;
+  display: flex;
+  align-items: center;
+}
+
+.section-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.section-header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
 }
 
 .section-title {
@@ -230,6 +247,33 @@ body.resizing-sidebar * {
   text-transform: uppercase;
   color: var(--text-dim);
   letter-spacing: 0.5px;
+  transition: color 0.18s ease;
+}
+
+.section-header:hover .section-title {
+  color: var(--text-main);
+}
+
+.section-arrow-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  padding: 0.1rem;
+  transition: color 0.18s ease;
+}
+
+.section-header:hover .section-arrow-badge {
+  color: var(--text-main);
+}
+
+.section-toggle-arrow {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.section-toggle-arrow.expanded {
+  transform: rotate(180deg);
+  color: var(--accent-green);
 }
 
 .content-list {
@@ -324,13 +368,38 @@ body.resizing-sidebar * {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  position: relative; /* Allows anchoring flyout window on the right */
 }
 
+/* User Profile Section in Sidebar Footer */
 .user-profile-info {
   display: flex;
   align-items: center;
   gap: 0.65rem;
   overflow: hidden;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  margin: -0.35rem 0 -0.35rem -0.35rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+  flex: 1;
+  min-width: 0;
+  user-select: none;
+}
+
+.user-profile-info:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.user-profile-info:active {
+  transform: scale(0.985);
+}
+
+.user-profile-info.active {
+  background: rgba(16, 163, 127, 0.14);
+  border-color: rgba(16, 163, 127, 0.4);
 }
 
 .user-avatar-badge {
@@ -344,12 +413,21 @@ body.resizing-sidebar * {
   justify-content: center;
   color: var(--accent-green);
   flex-shrink: 0;
+  overflow: hidden;
+  transition: border-color 0.18s ease;
 }
+
+.user-profile-info:hover .user-avatar-badge {
+  border-color: var(--accent-green);
+}
+
 
 .user-details {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
 .user-display-name {
@@ -362,11 +440,31 @@ body.resizing-sidebar * {
 }
 
 .user-display-email {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.user-profile-chevron {
+  color: var(--text-dim);
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0.7;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, color 0.2s ease;
+}
+
+.user-profile-info:hover .user-profile-chevron {
+  opacity: 1;
+  color: var(--text-main);
+  transform: translateX(2px);
+}
+
+.user-profile-chevron.open {
+  transform: rotate(90deg) !important;
+  color: var(--accent-green) !important;
+  opacity: 1 !important;
 }
 
 .btn-sidebar-logout {
@@ -380,11 +478,557 @@ body.resizing-sidebar * {
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
 .btn-sidebar-logout:hover {
   color: #f87171;
   background: rgba(239, 68, 68, 0.15);
+}
+
+/* ==========================================================================
+   USER PROFILE FLYOUT WINDOW (Opens on the Right Side of the Sidebar Footer)
+   ========================================================================== */
+.user-profile-flyout {
+  position: absolute;
+  left: calc(100% + 14px);
+  bottom: 0px;
+  width: 326px;
+  max-width: min(340px, calc(100vw - 280px));
+  max-height: calc(100vh - 24px);
+  background: linear-gradient(150deg, #222329 0%, #1a1a20 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: flyoutSlideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes flyoutSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Arrow notch pointing left back to the profile item */
+.user-profile-flyout::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  bottom: 18px;
+  width: 12px;
+  height: 12px;
+  background: #202127;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  transform: rotate(45deg);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Flyout Header */
+.flyout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.95rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.flyout-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+.flyout-header-sparkle {
+  color: var(--accent-green);
+}
+
+.btn-flyout-close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s ease;
+}
+
+.btn-flyout-close:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Flyout Content Scrollable */
+.flyout-content {
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
+}
+
+/* Hero Section */
+.flyout-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 0.6rem;
+}
+
+.flyout-avatar-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.flyout-avatar-badge {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-green);
+  transition: border-color 0.18s ease;
+}
+
+.flyout-online-dot {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 12px;
+  height: 12px;
+  background-color: #22c55e;
+  border: 2px solid #1a1a20;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+}
+
+.flyout-user-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.flyout-user-name {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.flyout-user-email {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.flyout-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.flyout-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.flyout-badge.role {
+  background: rgba(16, 163, 127, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 163, 127, 0.3);
+  text-transform: capitalize;
+}
+
+.flyout-badge.status {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Flyout Stats Grid */
+.flyout-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.flyout-stat-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.stat-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-card-icon.docs {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.stat-card-icon.subjects {
+  background: rgba(16, 163, 127, 0.15);
+  color: var(--accent-green);
+}
+
+.stat-card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-card-num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.stat-card-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  line-height: 1.2;
+}
+
+/* Actions List */
+.flyout-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.65rem;
+}
+
+.flyout-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.83rem;
+  font-weight: 500;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.flyout-menu-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.menu-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.menu-item-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.menu-item-icon.edit {
+  color: #38bdf8;
+}
+
+.menu-item-icon.password {
+  color: #fbbf24;
+}
+
+.menu-item-icon.dashboard {
+  color: var(--accent-green);
+}
+
+.menu-item-hint {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+/* Footer / Logout Button */
+.flyout-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.5rem;
+}
+
+.btn-flyout-logout {
+  width: 100%;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 0.55rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.18s ease;
+}
+
+.btn-flyout-logout:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+/* Sub-View Navigation (Edit / Password Forms) */
+.flyout-sub-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-flyout-back {
+  background: transparent;
+  border: none;
+  color: var(--accent-green);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background-color 0.18s ease;
+}
+
+.btn-flyout-back:hover {
+  background: rgba(16, 163, 127, 0.15);
+}
+
+.sub-header-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Flyout Alerts */
+.flyout-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+}
+
+.flyout-alert.error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.flyout-alert.success {
+  background: rgba(16, 163, 127, 0.15);
+  border: 1px solid rgba(16, 163, 127, 0.3);
+  color: #34d399;
+}
+
+/* Flyout Form Controls */
+.flyout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flyout-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.flyout-form label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.flyout-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.flyout-input:focus {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.25);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .flyout-input {
+  padding-right: 2.2rem;
+}
+
+.btn-password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-password-toggle:hover {
+  color: var(--text-main);
+}
+
+
+/* Flyout Form Action Buttons */
+.flyout-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.btn-flyout-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.btn-flyout-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+.btn-flyout-save {
+  background: var(--accent-green);
+  border: 1px solid var(--accent-green);
+  color: #ffffff;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.18s ease;
+}
+
+.btn-flyout-save:hover {
+  background: var(--accent-green-hover);
+  border-color: var(--accent-green-hover);
+}
+
+.btn-flyout-save:disabled,
+.btn-flyout-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive positioning */
+@media (max-width: 768px) {
+  .user-profile-flyout {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 74px;
+    width: auto;
+    max-width: none;
+    max-height: 80vh;
+    animation: flyoutSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .user-profile-flyout::before {
+    display: none;
+  }
+}
+
+@keyframes flyoutSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Main Chat Area */

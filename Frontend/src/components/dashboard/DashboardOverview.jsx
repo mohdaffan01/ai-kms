@@ -464,7 +464,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
           {/* 2 & 3. Subject Cards & Topic Tracking Section */}
           <section className="dashboard-section section-subjects">
             <div className="section-title-wrap with-action">
-              <h2 className="section-main-heading">Subjects</h2>
+              <h2 className="section-main-heading">My Vaults</h2>
 
               <button
                 type="button"
@@ -472,7 +472,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
                 onClick={() => setIsCreateSubjectOpen(true)}
               >
                 <FolderPlus size={16} />
-                <span>New Subject</span>
+                <span>New Vault</span>
               </button>
             </div>
 

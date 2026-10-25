@@ -285,6 +285,7 @@
   transform: rotateY(180deg);
 }
 
+/* Front Face (Deep Dark Theme) */ 
 .fc-card-face {
   position: absolute;
   top: 0;
@@ -298,16 +299,16 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(145deg, #1e2025 0%, #15171b 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: linear-gradient(145deg, #15171c 0%, #0e1015 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.03);
   box-sizing: border-box;
   transition: border-color 0.25s, box-shadow 0.25s;
 }
 
 .fc-card-scene:hover .fc-card-face {
-  border-color: rgba(16, 163, 127, 0.4);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 24px rgba(16, 163, 127, 0.15);
+  border-color: rgba(16, 163, 127, 0.45);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 24px rgba(16, 163, 127, 0.15);
 }
 
 /* Back Face */
