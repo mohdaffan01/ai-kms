@@ -30,3 +30,12 @@ export const deleteDocumentApi = async (id) => {
   const response = await authApi.delete(`/documents/${id}`);
   return response.data;
 };
+
+/**
+ * Fetch calculated statistics (pageCount, wordCount, lineCount) for a document
+ * @param {string} id - Document MongoDB ID
+ */
+export const getDocumentStatsApi = async (id) => {
+  const response = await authApi.get(`/documents/${id}/stats`);
+  return response.data;
+};

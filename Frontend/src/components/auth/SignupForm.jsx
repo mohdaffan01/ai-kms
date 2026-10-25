@@ -83,7 +83,7 @@ const SignupForm = () => {
   return (
     <div className="auth-form-card">
       <h2 className="auth-title">Create your account</h2>
-      
+
       {error && (
         <div className="auth-error">
           <AlertCircle size={16} />
@@ -99,7 +99,7 @@ const SignupForm = () => {
             <input
               type="text"
               id="fullName"
-              placeholder="Mohd Affan"
+              placeholder="Enter your Name"
               value={fullName}
               onChange={handleNameChange}
               required

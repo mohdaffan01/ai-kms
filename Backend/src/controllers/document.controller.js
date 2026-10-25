@@ -1,9 +1,86 @@
 import fs from "fs";
 import path from "path";
+import { PDFParse } from "pdf-parse";
 import { documentRepository } from "../repositories/document.repository.js";
 import { progressRepository } from "../repositories/progress.repository.js";
 import { extractTopicsFromDocument } from "../services/topicExtractor.service.js";
 import { clearDocumentCache } from "./knowledge.controller.js";
+
+/**
+ * Resolves the statistics (pageCount, wordCount, lineCount) of a document file.
+ * Defaults to 1 page for text/note files and extracts pages, words, and lines from text.
+ */
+export const resolveDocumentStats = async (filePath, mimeType = '', originalFileName = '', noteContent = null) => {
+  let pageCount = 1;
+  let wordCount = 0;
+  let lineCount = 0;
+
+  if (noteContent) {
+    const cleanText = (noteContent || '').trim();
+    wordCount = cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0;
+    lineCount = cleanText ? cleanText.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0;
+    return { pageCount: 1, wordCount, lineCount };
+  }
+
+  if (!filePath) return { pageCount: 1, wordCount: 0, lineCount: 0 };
+
+  const isPdf = mimeType?.includes('pdf') || originalFileName?.toLowerCase().endsWith('.pdf');
+
+  try {
+    const fullPath = path.isAbsolute(filePath) && fs.existsSync(filePath)
+      ? filePath
+      : (fs.existsSync(path.resolve(process.cwd(), filePath))
+          ? path.resolve(process.cwd(), filePath)
+          : path.resolve(process.cwd(), 'Backend', filePath));
+
+    if (fs.existsSync(fullPath)) {
+      if (isPdf) {
+        const buffer = fs.readFileSync(fullPath);
+        const parser = new PDFParse({ data: buffer });
+        const resParsed = await parser.getText();
+        pageCount = resParsed.total || (Array.isArray(resParsed.pages) ? resParsed.pages.length : null) || 1;
+        const text = (resParsed.text || '').trim();
+        if (text) {
+          wordCount = text.split(/\s+/).filter(Boolean).length;
+          lineCount = text.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length;
+        }
+        if (typeof parser.destroy === 'function') await parser.destroy();
+
+        // Fallback regex detection on PDF binary if pageCount couldn't be determined
+        if (!pageCount || pageCount === 1) {
+          const latinText = buffer.toString('latin1');
+          const countMatch = latinText.match(/\/Type\s*\/Pages[\s\S]*?\/Count\s+(\d+)/);
+          if (countMatch && countMatch[1]) {
+            pageCount = parseInt(countMatch[1], 10);
+          } else {
+            const pageMatches = latinText.match(/\/Type\s*\/Page\b/g);
+            if (pageMatches && pageMatches.length > 0) {
+              pageCount = pageMatches.length;
+            }
+          }
+        }
+      } else {
+        const text = fs.readFileSync(fullPath, 'utf-8').trim();
+        wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+        lineCount = text ? text.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0;
+        pageCount = 1;
+      }
+    }
+  } catch (err) {
+    console.warn('[resolveDocumentStats] Could not extract document statistics:', err.message);
+  }
+
+  return {
+    pageCount: pageCount || 1,
+    wordCount: wordCount || 0,
+    lineCount: lineCount || 0,
+  };
+};
+
+export const resolveDocumentPageCount = async (filePath, mimeType = '', originalFileName = '') => {
+  const stats = await resolveDocumentStats(filePath, mimeType, originalFileName);
+  return stats.pageCount;
+};
 
 //----------------upload document--------------------
 export const uploadDocument = async (req, res) => {
@@ -27,6 +104,13 @@ export const uploadDocument = async (req, res) => {
 
     const userId = req.user._id || req.user.id;
 
+    // Extract document stats (pages, words, lines)
+    const { pageCount, wordCount, lineCount } = await resolveDocumentStats(
+      req.file.path,
+      req.file.mimetype,
+      req.file.originalname
+    );
+
     const document = await documentRepository.create({
       title,
       contentType: "file",
@@ -34,6 +118,9 @@ export const uploadDocument = async (req, res) => {
       filePath: `uploads/${req.file.filename}`,
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
+      pageCount,
+      wordCount,
+      lineCount,
       subject,
       topic: topic || "",
       folder: folder || "General",
@@ -170,6 +257,35 @@ export const getMyDocuments = async (req, res) => {
       createdAt: -1,
     });
 
+    // Backfill stats for existing documents if not yet populated
+    for (const doc of documents) {
+      if (
+        doc.pageCount === null ||
+        doc.pageCount === undefined ||
+        doc.wordCount === null ||
+        doc.wordCount === undefined ||
+        doc.lineCount === null ||
+        doc.lineCount === undefined
+      ) {
+        const stats = await resolveDocumentStats(
+          doc.filePath,
+          doc.mimeType,
+          doc.originalFileName,
+          doc.noteContent
+        );
+        doc.pageCount = stats.pageCount;
+        doc.wordCount = stats.wordCount;
+        doc.lineCount = stats.lineCount;
+        documentRepository
+          .findByIdAndUpdate(doc._id, {
+            pageCount: stats.pageCount,
+            wordCount: stats.wordCount,
+            lineCount: stats.lineCount,
+          })
+          .catch(() => {});
+      }
+    }
+
     return res.status(200).json({
       success: true,
       count: documents.length,
@@ -238,6 +354,61 @@ export const deleteDocument = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Could not delete document.",
+    });
+  }
+};
+
+// ------------------------- Get Document Stats ---------------------------
+export const getDocumentStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const document = await documentRepository.findById(id);
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found.",
+      });
+    }
+
+    if (
+      document.pageCount &&
+      document.wordCount !== null &&
+      document.wordCount !== undefined &&
+      document.lineCount !== null &&
+      document.lineCount !== undefined
+    ) {
+      return res.status(200).json({
+        success: true,
+        stats: {
+          pageCount: document.pageCount,
+          wordCount: document.wordCount,
+          lineCount: document.lineCount,
+        },
+      });
+    }
+
+    const stats = await resolveDocumentStats(
+      document.filePath,
+      document.mimeType,
+      document.originalFileName,
+      document.noteContent
+    );
+
+    document.pageCount = stats.pageCount;
+    document.wordCount = stats.wordCount;
+    document.lineCount = stats.lineCount;
+    await document.save();
+
+    return res.status(200).json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    console.error("Get document stats error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Could not calculate document stats.",
     });
   }
 };
