@@ -5,7 +5,6 @@ import {
   Plus,
   Search,
   FileText,
-  Sparkles,
   UploadCloud,
   CheckCircle2,
   BookOpen,
@@ -250,7 +249,6 @@ const SubjectDetailModal = ({
               onClose();
             }}
           >
-            <Sparkles size={14} />
             <span>Study {subject.name} with AI</span>
           </button>
 

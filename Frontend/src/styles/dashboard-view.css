@@ -19,9 +19,14 @@
   box-sizing: border-box;
 }
 
-/* Custom Scrollbar */
+/* Custom Sleek Scrollbar */
+.dashboard-page-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
 .dashboard-page-container::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .dashboard-page-container::-webkit-scrollbar-track {
@@ -29,12 +34,13 @@
 }
 
 .dashboard-page-container::-webkit-scrollbar-thumb {
-  background-color: #383838;
-  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  transition: background-color 0.2s ease;
 }
 
 .dashboard-page-container::-webkit-scrollbar-thumb:hover {
-  background-color: #4a4a4a;
+  background-color: var(--accent-green);
 }
 
 
@@ -128,23 +134,24 @@
 }
 
 .stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.15rem 1.25rem;
+  background: linear-gradient(145deg, #1e2625 0%, #151c1b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  padding: 1.25rem 1.35rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  border-color: #4f4f4f;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-color: rgba(16, 163, 127, 0.3);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .stat-card-top {
@@ -253,25 +260,26 @@
 }
 
 .subject-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, #1f2726 0%, #151d1c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   cursor: pointer;
+  position: relative;
 }
 
 .subject-card:hover {
-  transform: translateY(-2px);
-  border-color: #555555;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  transform: translateY(-3px);
+  border-color: rgba(16, 163, 127, 0.45);
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 163, 127, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .subject-card-header {
-  padding: 1rem 1.25rem;
+  padding: 1.15rem 1.35rem 0.85rem 1.35rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -289,18 +297,21 @@
 }
 
 .subject-icon-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 4px 10px rgba(0, 0, 0, 0.2);
   flex-shrink: 0;
 }
 
 .subject-name {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.08rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   color: var(--text-main);
   margin: 0;
   white-space: nowrap;
@@ -323,13 +334,13 @@
 }
 
 .subject-progress-percent {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 750;
   color: var(--accent-green);
 }
 
 .subject-topics-count {
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   color: var(--text-dim);
 }
 
@@ -353,19 +364,22 @@
   border-color: var(--text-muted);
 }
 
-/* Progress Bar */
+/* Progress Bar - Modern Inset Pill */
 .subject-progress-container {
-  height: 5px;
-  background: #242424;
-  width: 100%;
-  position: relative;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  margin: 0.25rem 1.35rem 0.95rem 1.35rem;
+  border-radius: 999px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
 }
 
 .subject-progress-bar {
   height: 100%;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  border-radius: 0 3px 3px 0;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 999px;
+  box-shadow: 0 0 10px rgba(16, 163, 127, 0.4);
 }
 
 /* Card Action Bar (Docs Count & Study with AI) */
@@ -373,9 +387,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.65rem 1.25rem;
-  background: rgba(0, 0, 0, 0.12);
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 0.75rem 1.35rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .subject-docs-count {
@@ -392,20 +406,24 @@
   align-items: center;
   gap: 0.35rem;
   background: rgba(16, 163, 127, 0.12);
-  border: 1px solid rgba(16, 163, 127, 0.28);
-  color: var(--accent-green);
-  font-size: 0.76rem;
+  border: 1px solid rgba(16, 163, 127, 0.32);
+  color: #34d399;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 0.3rem 0.65rem;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.2px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.22s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn-study-ai:hover {
   background: var(--accent-green);
   color: #ffffff;
   border-color: var(--accent-green);
+  box-shadow: 0 4px 14px rgba(16, 163, 127, 0.4);
+  transform: translateY(-1px);
 }
 
 /* --------------------------------------------------------------------------
@@ -784,13 +802,24 @@
 
 .progress-hero-card,
 .subject-wise-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, #16222b 0%, #101820 100%);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  border-radius: 16px;
   padding: 1.35rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-hero-card:hover,
+.subject-wise-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.28);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(14, 165, 233, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.09);
 }
 
 .progress-card-header {
@@ -830,10 +859,12 @@
 
 .subject-count-tag {
   font-size: 0.78rem;
-  color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 0.2rem 0.55rem;
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 0.2rem 0.6rem;
   border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
 .progress-hero-body {
@@ -910,12 +941,13 @@
 }
 
 .stat-pill {
-  background: #252525;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.7rem;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
   display: flex;
   flex-direction: column;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pill-val {
@@ -1006,13 +1038,21 @@
 
 .recent-activity-card,
 .uploaded-docs-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, #1e2625 0%, #151c1b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
   padding: 1.35rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.recent-activity-card:hover,
+.uploaded-docs-card:hover {
+  border-color: rgba(16, 163, 127, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .activity-card-header,
@@ -1079,7 +1119,28 @@
   gap: 0.65rem;
   max-height: 380px;
   overflow-y: auto;
-  padding-right: 0.25rem;
+  padding-right: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.activity-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.activity-list::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-green);
 }
 
 .activity-list-item {

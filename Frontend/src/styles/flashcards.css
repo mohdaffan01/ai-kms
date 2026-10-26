@@ -160,6 +160,129 @@
   flex-wrap: wrap;
 }
 
+/* Custom Modern Dropdown Menu */
+.custom-dropdown-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  user-select: none;
+}
+
+.custom-dropdown-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.custom-dropdown-box {
+  position: relative;
+}
+
+.custom-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 140px;
+  background: #182221;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  padding: 0.45rem 0.85rem;
+  border-radius: 9px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.custom-dropdown-btn:hover {
+  background: #202b29;
+  border-color: rgba(16, 163, 127, 0.4);
+}
+
+.custom-dropdown-btn.active {
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.2);
+}
+
+.dropdown-current-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.dropdown-chevron {
+  color: #8e8e8e;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dropdown-chevron.rotated {
+  transform: rotate(180deg);
+  color: var(--accent-green);
+}
+
+.custom-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 260px;
+  max-height: 250px;
+  overflow-y: auto;
+  background: #192322;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.35rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  z-index: 100;
+  animation: dropdownFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.custom-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.825rem;
+  color: #ececec;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.custom-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.custom-dropdown-item.selected {
+  background: rgba(16, 163, 127, 0.15);
+  color: #34d399;
+  font-weight: 600;
+}
+
+.dropdown-check-icon {
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
 .fc-select-wrap {
   display: flex;
   align-items: center;
@@ -173,19 +296,41 @@
 }
 
 .fc-select {
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #1a2221;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e8e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-main);
-  padding: 0.45rem 0.85rem;
-  border-radius: var(--radius-sm);
+  padding: 0.45rem 2.2rem 0.45rem 0.9rem;
+  border-radius: 8px;
   font-size: 0.825rem;
+  font-weight: 500;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.fc-select:hover {
+  background-color: #202b29;
+  border-color: rgba(16, 163, 127, 0.4);
 }
 
 .fc-select:focus {
   border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.fc-select option {
+  background-color: #1c2221;
+  color: #ececec;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
 }
 
 /* Stats Badges */

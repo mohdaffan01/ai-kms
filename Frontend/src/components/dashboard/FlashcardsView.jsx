@@ -22,7 +22,8 @@ import {
   Award,
   Grid,
   Play,
-  ArrowLeft
+  ArrowLeft,
+  ChevronDown
 } from 'lucide-react';
 import {
   getFlashcardsApi,
@@ -34,6 +35,61 @@ import {
 } from '../../api/flashcardApi';
 import { getDashboardDataApi } from '../../api/progressApi';
 import '../../styles/flashcards.css';
+
+// Custom Modern Dropdown Component (Replaces old-fashioned native browser select)
+const CustomSelect = ({ label, value, options, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = React.useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((o) => o.value === value) || options[0];
+
+  return (
+    <div className="custom-dropdown-wrap" ref={dropdownRef}>
+      {label && <span className="custom-dropdown-label">{label}</span>}
+      <div className="custom-dropdown-box">
+        <button
+          type="button"
+          className={`custom-dropdown-btn ${isOpen ? 'active' : ''}`}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="dropdown-current-text">{selectedOption ? selectedOption.label : value}</span>
+          <ChevronDown size={14} className={`dropdown-chevron ${isOpen ? 'rotated' : ''}`} />
+        </button>
+
+        {isOpen && (
+          <div className="custom-dropdown-menu">
+            {options.map((option) => {
+              const isSelected = option.value === value;
+              return (
+                <div
+                  key={option.value}
+                  className={`custom-dropdown-item ${isSelected ? 'selected' : ''}`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  <span>{option.label}</span>
+                  {isSelected && <Check size={14} className="dropdown-check-icon" />}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const FlashcardsView = ({ initialSubject = '' }) => {
   const [cards, setCards] = useState([]);
@@ -471,40 +527,30 @@ const FlashcardsView = ({ initialSubject = '' }) => {
       <div className="flashcards-toolbar">
         <div className="fc-filters-group">
           {/* Subject Filter */}
-          <div className="fc-select-wrap">
-            <label htmlFor="fc-filter-subject">Subject:</label>
-            <select
-              id="fc-filter-subject"
-              className="fc-select"
-              value={selectedSubject}
-              onChange={(e) => {
-                setSelectedSubject(e.target.value);
-                setSelectedTopic('all');
-              }}
-            >
-              <option value="all">All Subjects</option>
-              {availableSubjectNames.map((subj) => (
-                <option key={subj} value={subj}>
-                  {subj}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CustomSelect
+            label="Subject:"
+            value={selectedSubject}
+            onChange={(val) => {
+              setSelectedSubject(val);
+              setSelectedTopic('all');
+            }}
+            options={[
+              { value: 'all', label: 'All Subjects' },
+              ...availableSubjectNames.map((subj) => ({ value: subj, label: subj })),
+            ]}
+          />
 
           {/* Status Filter */}
-          <div className="fc-select-wrap">
-            <label htmlFor="fc-filter-status">Status:</label>
-            <select
-              id="fc-filter-status"
-              className="fc-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="learning">Needs Practice</option>
-              <option value="mastered">Mastered Only</option>
-            </select>
-          </div>
+          <CustomSelect
+            label="Status:"
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val)}
+            options={[
+              { value: 'all', label: 'All Status' },
+              { value: 'learning', label: 'Needs Practice' },
+              { value: 'mastered', label: 'Mastered Only' },
+            ]}
+          />
         </div>
 
         {/* Deck Stats chips */}

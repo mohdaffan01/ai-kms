@@ -6,8 +6,7 @@ import {
   Layers,
   Boxes,
   BookOpen,
-  FileText,
-  Sparkles
+  FileText
 } from 'lucide-react';
 
 const getSubjectIcon = (name = '') => {
@@ -100,7 +99,6 @@ const SubjectCard = ({
           }}
           title={`Ask AI Assistant about ${subject.name}`}
         >
-          <Sparkles size={13} />
           <span>Study with AI</span>
         </button>
       </div>
