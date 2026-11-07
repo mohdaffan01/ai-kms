@@ -179,6 +179,18 @@
   - Options to generate cards from "All Completed Topics" or a "Specific Topic".
   - Generates 2-15 flashcards via Gemini LLM with automatic text fallback.
 
+### 3.12 Minimalist 404 & Backend Disconnection Error Screen ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx), [not-found.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/not-found.css))
+- **Design Philosophy**: Minimalist, clean, editorial dark theme matching modern high-end web applications (inspired by minimalist layout demo).
+- **Visual Composition**:
+  - **Dark Base Canvas**: Pure obsidian dark theme (`#0d0f14`) with crisp text contrast (`#f8fafc`).
+  - **Architectural Background Columns**: 5 faint vertical guide lines (`rgba(255, 255, 255, 0.035)`) adding subtle depth without visual clutter.
+  - **Giant Watermark Number**: Huge faint `404` or `503` watermark (`clamp(14rem, 30vw, 26rem)`, `rgba(255, 255, 255, 0.04)`) layered directly behind the foreground text.
+  - **Centered Editorial Typography**: Clean heading ("Page Not Found" / "Backend Disconnected") with elegant line-height and subdued subtitle (`#94a3b8`).
+- **Pill-Shaped Action Buttons**:
+  - **Primary Solid Pill (Left)**: Solid dark pill (`border-radius: 9999px`) with hover elevation and directional arrow (`Go to Dashboard →` or `Retry Connection →`).
+  - **Secondary Outlined Pill (Right)**: Translucent glass pill (`border-radius: 9999px`, `border: 1px solid rgba(255, 255, 255, 0.25)`) routing to home (`Go Home`).
+- **Subtle Live Health Status**: Minimal pill indicator with pulsing status dot (`● Server Online` in emerald, `● Checking...` in amber, or `● Server Unreachable` in crimson) displayed non-intrusively in offline mode.
+
 ---
 
 ## 4. Forms & Interactive Elements

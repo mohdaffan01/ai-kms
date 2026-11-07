@@ -23,6 +23,21 @@ authApi.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor to detect backend connection failure (ERR_NETWORK / server offline)
+authApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (!error.response && (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error'))) {
+      window.dispatchEvent(
+        new CustomEvent('aikms:backend-offline', {
+          detail: { message: 'Backend server is not reachable on port 3000', error },
+        })
+      );
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const registerApi = async (userData) => {
   const response = await authApi.post('/auth/register', userData);
   return response.data;

@@ -62,6 +62,7 @@
 - [x] **Collapsible Documents Section**: Accordion document list with expand/collapse toggle and state saved in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] User Profile Flyout with Password Change shortcut, Dashboard Overview link, and Logout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))
 - [x] Manual Voice / Text-to-Speech Control (`Listen` / `Stop` button on AI response bubbles with SpeechSynthesis cleanup) ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
+- [x] **Minimalist 404 & Backend Connection Error Screen**: Clean, editorial dark-themed error view ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx), [not-found.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/not-found.css)) featuring giant faint background watermark (`404` / `503`), architectural background guide lines, centered typography ("Page Not Found" / "Backend Disconnected"), and pill-shaped action buttons (`Go to Dashboard →`, `Retry Connection →`, `Go Home`) with live connection ping recovery.
 
 ### 3.4 Advanced AI & RAG Engine
 - [x] PDF text extraction dependency installed (`pdf-parse`)
@@ -120,6 +121,8 @@
   - `/reset-password/:token`: Secure password reset execution page ([ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx))
   - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between New Chat (default), Dashboard Overview, Smart Flashcards, and AI Quizzes
   - `/profile`: Protected profile & security management ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
+  - `/404`: Dedicated Not Found error page for broken or non-existent URLs ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx))
+  - `/server-offline`: Dedicated 503 Backend Connection Failure screen with live ping tester ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx))
 
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5

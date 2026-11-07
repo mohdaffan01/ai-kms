@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   RefreshCw,
   FolderPlus,
@@ -74,7 +75,13 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
-      setError(err.response?.data?.message || 'Could not connect to backend server.');
+      const isConnectionError = !err.response || err.code === 'ERR_NETWORK';
+      setError({
+        message: isConnectionError
+          ? 'Backend API server is offline or unreachable on port 3000.'
+          : (err.response?.data?.message || 'Could not connect to backend server.'),
+        isConnectionError,
+      });
     } finally {
       if (showLoading) setIsLoading(false);
       setIsRefreshing(false);
@@ -439,10 +446,22 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       {error && (
         <div className="dashboard-error-banner">
           <AlertCircle size={18} />
-          <span>{error}</span>
-          <button type="button" className="btn-retry" onClick={() => fetchDashboard(true)}>
-            Retry
-          </button>
+          <span>{typeof error === 'object' ? error.message : error}</span>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {error.isConnectionError && (
+              <Link
+                to="/server-offline"
+                state={{ isBackendOffline: true }}
+                className="btn-retry"
+                style={{ textDecoration: 'none', background: 'rgba(239, 68, 68, 0.25)', borderColor: 'rgba(239, 68, 68, 0.5)' }}
+              >
+                Server Status
+              </Link>
+            )}
+            <button type="button" className="btn-retry" onClick={() => fetchDashboard(true)}>
+              Retry
+            </button>
+          </div>
         </div>
       )}
 

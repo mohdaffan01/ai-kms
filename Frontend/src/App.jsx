@@ -6,6 +6,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import NotFound from './pages/NotFound';
 import AppSplashScreen from './components/common/AppSplashScreen';
 
 import './styles/index.css';
@@ -50,7 +51,9 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="*" element={<RootRedirect />} />
+          <Route path="/server-offline" element={<NotFound isBackendOffline={true} />} />
+          <Route path="/404" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>

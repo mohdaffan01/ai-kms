@@ -1,0 +1,309 @@
+/* ============================================================
+   Minimalist 404 & Backend Disconnected Page Styles
+   Design: Clean Editorial Dark Theme + Giant Watermark + Pill Actions
+   ============================================================ */
+
+.minimal-404-wrapper {
+  position: relative;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #0d0f14;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------
+   Subtle Vertical Architectural Grid Lines (matching demo)
+   ------------------------------------------------------------ */
+.minimal-404-grid-lines {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.grid-col-line {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.035) 20%,
+    rgba(255, 255, 255, 0.035) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* ------------------------------------------------------------
+   Giant Faint Background Watermark Number (404 / 503)
+   ------------------------------------------------------------ */
+.minimal-404-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(14rem, 30vw, 26rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+  color: rgba(255, 255, 255, 0.04);
+  user-select: none;
+  pointer-events: none;
+  z-index: 2;
+  text-align: center;
+  white-space: nowrap;
+  animation: watermarkFadeIn 0.8s ease-out forwards;
+}
+
+/* ------------------------------------------------------------
+   Foreground Centered Content
+   ------------------------------------------------------------ */
+.minimal-404-content {
+  position: relative;
+  z-index: 3;
+  max-width: 620px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0;
+  animation: contentSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Big Clean Heading */
+.minimal-404-title {
+  font-size: clamp(2.4rem, 5.5vw, 3.8rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.15;
+}
+
+/* Centered Subtitle */
+.minimal-404-subtitle {
+  font-size: clamp(0.95rem, 1.6vw, 1.08rem);
+  font-weight: 400;
+  color: #94a3b8;
+  line-height: 1.65;
+  max-width: 500px;
+  margin: 0 auto 2.25rem auto;
+}
+
+/* ------------------------------------------------------------
+   Subtle Status Badge (for Backend Offline mode)
+   ------------------------------------------------------------ */
+.minimal-404-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(8px);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.online {
+  background-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.status-dot.testing {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  animation: statusPulse 1.2s infinite alternate;
+}
+
+.status-dot.offline,
+.status-dot.unknown {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.status-text {
+  font-weight: 450;
+  letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------
+   Pill Action Buttons (Identical to demo layout)
+   ------------------------------------------------------------ */
+.minimal-404-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Solid Pill Button (Left in demo) */
+.btn-pill-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.8rem 1.85rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.btn-pill-solid:hover:not(:disabled) {
+  background-color: #11141a;
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.btn-pill-solid:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-pill-solid:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.btn-pill-solid:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Outlined Pill Button (Right in demo) */
+.btn-pill-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.8rem 1.85rem;
+  border-radius: 9999px;
+  font-size: 0.95rem;
+  font-weight: 450;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-pill-outline:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-pill-outline:active {
+  transform: translateY(0);
+}
+
+/* Spinner for live connection check */
+.btn-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes statusPulse {
+  0% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes watermarkFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes contentSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------------
+   Responsive Adjustments
+   ------------------------------------------------------------ */
+@media (max-width: 640px) {
+  .minimal-404-title {
+    font-size: 2.2rem;
+  }
+
+  .minimal-404-subtitle {
+    font-size: 0.92rem;
+    margin-bottom: 2rem;
+  }
+
+  .minimal-404-actions {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  .btn-pill-solid,
+  .btn-pill-outline {
+    width: 100%;
+  }
+
+  .minimal-404-grid-lines {
+    padding: 0 1rem;
+  }
+}

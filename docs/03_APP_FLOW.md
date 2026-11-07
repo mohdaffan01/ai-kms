@@ -20,6 +20,9 @@
 | `/reset-password/:token` | [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx) | Password reset token verification & new password submission | Public |
 | `/dashboard` | [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx) | Main workspace (Sidebar + New Chat default / Dashboard Overview / Flashcards / Quizzes) | Protected (Requires valid JWT session) |
 | `/profile` | [Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx) | User settings, avatar selection, & password update page | Protected (Requires valid JWT session) |
+| `/404` | [NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx) | Themed 404 Knowledge Node Not Found error screen | Public |
+| `/server-offline` | [NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx) | Dedicated 503 Backend Server Disconnected screen with live ping tester | Public |
+| `*` (Catch-all) | [NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx) | Fallback route rendering 404 error page | Public |
 
 ---
 
@@ -261,4 +264,41 @@
                    ├──> Select "All Completed Topics" or "Specific Topic", and choose count (2-15)
                    ├──> HTTP POST /api/flashcards/generate { subject, topic, count }
                    └──> Gemini LLM analyzes reference PDF text & completed topics -> Returns and saves new cards to deck
+```
+
+---
+
+### 3.9 Backend Disconnection & 404 Recovery Journey
+
+```
+[ User encounters Unmatched Route OR Backend Failure ]
+          │
+          ├──> Unmatched Route (e.g., /invalid-url)
+          │        │
+          │        └──> Router catches with path="*"
+          │                 ├──> Renders <NotFound /> in 404 Mode
+          │                 ├──> Displays "404 - Knowledge Node Not Found"
+          │                 ├──> Explains link is broken or resource does not exist
+          │                 └──> Action buttons: "Go to Dashboard" or "Back to Login"
+          │
+          └──> Backend Connection Failure (Server down on port 3000)
+                   │
+                   ├──> Triggers:
+                   │        ├──> Direct navigation to /server-offline or ?reason=offline
+                   │        ├──> Axios API error: error.code === 'ERR_NETWORK' / !error.response
+                   │        └──> DashboardOverview catch handler displays red error banner with "Server Status" link
+                   │
+                   ├──> Renders <NotFound isBackendOffline={true} />
+                   │        ├──> Displays "503 - Backend Server Disconnected"
+                   │        ├──> Hero icon renders glowing Server + WifiOff badge
+                   │        ├──> Diagnostics Card shows:
+                   │        │        ├──> Target URL (http://localhost:3000/api)
+                   │        │        ├──> Live Status pill ("Server Unreachable" / "Server Online")
+                   │        │        ├──> Detailed error explanation
+                   │        │        └──> CLI Quick-fix instruction: `npm run dev` in Backend/
+                   │        │
+                   │        └──> User clicks "Retry Connection":
+                   │                 ├──> Pings `GET http://localhost:3000/` with 3.5s timeout
+                   │                 ├──> If unreachable: Updates status to "Server Unreachable"
+                   │                 └──> If reachable: Status turns green ("Server Online") and automatically redirects to /dashboard within 1.2s
 ```
