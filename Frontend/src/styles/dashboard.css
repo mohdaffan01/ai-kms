@@ -94,8 +94,7 @@ body.resizing-sidebar * {
   color: var(--text-main);
 }
 
-.btn-sidebar-nav,
-.btn-new-chat {
+.btn-sidebar-nav {
   width: 100%;
   background: transparent;
   border: 1px solid var(--border-color);
@@ -111,17 +110,42 @@ body.resizing-sidebar * {
   transition: var(--transition);
 }
 
-.btn-sidebar-nav:hover,
-.btn-new-chat:hover {
+.btn-sidebar-nav:hover {
   background: var(--bg-card);
   border-color: var(--text-muted);
 }
 
-.btn-sidebar-nav.active,
-.btn-new-chat.active {
+.btn-sidebar-nav.active {
   background: var(--accent-green-light);
   border-color: var(--accent-green);
   color: var(--accent-green);
+}
+
+.btn-new-chat {
+  width: 100%;
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid rgba(45, 212, 191, 0.38);
+  color: #2dd4bf;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-new-chat:hover {
+  background: rgba(45, 212, 191, 0.16);
+  border-color: #2dd4bf;
+  color: #5eead4;
+  box-shadow: 0 0 10px rgba(45, 212, 191, 0.15);
+}
+
+.btn-new-chat:active {
+  transform: scale(0.98);
 }
 
 /* Sidebar Square Action Grid: Quiz & Flashcards */

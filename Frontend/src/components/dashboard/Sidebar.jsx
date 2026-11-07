@@ -16,6 +16,7 @@ import {
   LayoutDashboard, 
   Layers, 
   HelpCircle,
+  MessageSquare,
   ChevronRight,
   ChevronDown
 } from 'lucide-react';
@@ -332,12 +333,43 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             <span className="brand-name">AiKMS</span>
           </div>
 
+          {/* 1. New Chat (Fresh Conversation Action) */}
           <button 
+            type="button"
+            className="btn-new-chat"
+            onClick={() => {
+              if (onNewChat) onNewChat();
+              setIsOpen(false);
+            }}
+            title="Start a new chat session"
+          >
+            <Plus size={18} />
+            <span>New Chat</span>
+          </button>
+
+          {/* 2. Chat (Go back to ongoing conversation) */}
+          <button 
+            type="button"
+            className={`btn-sidebar-nav ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => {
+              if (onSelectTab) onSelectTab('chat');
+              setIsOpen(false);
+            }}
+            title="Open active chat"
+          >
+            <MessageSquare size={18} />
+            <span>Chat</span>
+          </button>
+
+          {/* 3. Dashboard Overview */}
+          <button 
+            type="button"
             className={`btn-sidebar-nav ${activeTab === 'dashboard' ? 'active' : ''}`}
             onClick={() => {
               if (onSelectTab) onSelectTab('dashboard');
               setIsOpen(false);
             }}
+            title="View Dashboard overview"
           >
             <LayoutDashboard size={18} />
             <span>Dashboard</span>
@@ -371,18 +403,6 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
               <span>Flashcards</span>
             </button>
           </div>
-
-          <button 
-            className={`btn-new-chat ${activeTab === 'chat' ? 'active' : ''}`}
-            onClick={() => {
-              if (onSelectTab) onSelectTab('chat');
-              if (onNewChat) onNewChat();
-              setIsOpen(false);
-            }}
-          >
-            <Plus size={18} />
-            <span>New Chat</span>
-          </button>
         </div>
 
         {/* Your Content Section */}

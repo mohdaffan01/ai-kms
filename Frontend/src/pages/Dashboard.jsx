@@ -15,9 +15,16 @@ import '../styles/dashboard-view.css';
 const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const initialTab = ['chat', 'flashcards', 'quiz', 'dashboard'].includes(tabParam) ? tabParam : 'dashboard';
-  const [activeTab, setActiveTab] = useState(initialTab); // 'dashboard' | 'chat' | 'flashcards' | 'quiz'
-  const [messages, setMessages] = useState([]);
+  const initialTab = ['chat', 'flashcards', 'quiz', 'dashboard'].includes(tabParam) ? tabParam : 'chat';
+  const [activeTab, setActiveTab] = useState(initialTab); // 'chat' (default) | 'dashboard' | 'flashcards' | 'quiz'
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('aikms_active_chat_messages');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [viewerDoc, setViewerDoc] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -75,9 +82,19 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Keep activeTab in sync with tab query parameter
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab && ['chat', 'flashcards', 'quiz', 'dashboard'].includes(currentTab)) {
+      setActiveTab(currentTab);
+    } else if (!currentTab) {
+      setActiveTab('chat');
+    }
+  }, [searchParams]);
+
   const handleSelectTab = (tab, extraParams = {}) => {
     setActiveTab(tab);
-    if (tab === 'dashboard') {
+    if (tab === 'chat' && Object.keys(extraParams).length === 0) {
       setSearchParams({});
     } else {
       setSearchParams({ tab, ...extraParams });
@@ -116,8 +133,20 @@ const Dashboard = () => {
     }
   };
 
+  // Persist messages in session so navigating between tabs does not lose conversation
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('aikms_active_chat_messages', JSON.stringify(messages));
+    } catch (e) {
+      console.warn('Could not save chat messages to session:', e);
+    }
+  }, [messages]);
+
   const handleNewChat = () => {
     setMessages([]);
+    try {
+      sessionStorage.removeItem('aikms_active_chat_messages');
+    } catch {}
     handleSelectTab('chat');
   };
 
