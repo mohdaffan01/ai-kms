@@ -7,7 +7,8 @@ import {
   BookOpen,
   FolderPlus,
   Clock,
-  Filter
+  Filter,
+  Award,
 } from 'lucide-react';
 
 const formatRelativeTime = (timestamp) => {
@@ -39,6 +40,9 @@ const getActivityIcon = (type) => {
       return <Upload size={16} className="act-icon icon-upload" />;
     case 'subject_created':
       return <FolderPlus size={16} className="act-icon icon-subject" />;
+    case 'study_session':
+    case 'quiz_completed':
+      return <Award size={16} className="act-icon icon-quiz" />;
     default:
       return <FileText size={16} className="act-icon icon-default" />;
   }
@@ -56,19 +60,23 @@ const getActivityBadge = (type) => {
       return <span className="act-badge badge-upload">Document Uploaded</span>;
     case 'subject_created':
       return <span className="act-badge badge-subject">Subject Created</span>;
+    case 'study_session':
+    case 'quiz_completed':
+      return <span className="act-badge badge-quiz">Quiz Completed</span>;
     default:
       return <span className="act-badge badge-default">Activity</span>;
   }
 };
 
 const RecentActivitySection = ({ recentActivity = [], recentDocuments = [] }) => {
-  const [filter, setFilter] = useState('all'); // 'all' | 'topics' | 'notes' | 'documents'
+  const [filter, setFilter] = useState('all'); // 'all' | 'topics' | 'notes' | 'documents' | 'quizzes'
 
   const filteredActivity = recentActivity.filter((act) => {
     if (filter === 'all') return true;
     if (filter === 'topics') return act.type === 'topic_completed' || act.type === 'topic_uncompleted';
     if (filter === 'notes') return act.type === 'note_added';
     if (filter === 'documents') return act.type === 'doc_uploaded';
+    if (filter === 'quizzes') return act.type === 'study_session' || act.type === 'quiz_completed';
     return true;
   });
 
@@ -109,6 +117,13 @@ const RecentActivitySection = ({ recentActivity = [], recentDocuments = [] }) =>
             onClick={() => setFilter('documents')}
           >
             Documents
+          </button>
+          <button
+            type="button"
+            className={`filter-tab ${filter === 'quizzes' ? 'active' : ''}`}
+            onClick={() => setFilter('quizzes')}
+          >
+            Quizzes
           </button>
         </div>
       </div>

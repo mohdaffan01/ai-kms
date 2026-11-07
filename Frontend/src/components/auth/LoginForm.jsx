@@ -22,7 +22,7 @@ const LoginForm = () => {
 
     try {
       setIsSubmitting(true);
-      const data = await loginApi({ email: email.trim(), password });
+      const data = await loginApi({ email: email.trim(), password });// calling login api
 
       if (data && data.token) {
         localStorage.setItem('token', data.token);

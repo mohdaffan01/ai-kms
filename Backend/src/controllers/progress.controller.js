@@ -217,7 +217,11 @@ export const getDashboardData = async (req, res) => {
     }
 
     if (progressModified) {
-      await progress.save();
+      try {
+        await progress.save();
+      } catch (saveErr) {
+        console.warn('[ProgressController] Auto-sync progress save warning:', saveErr.message);
+      }
     }
 
     // 4. Compute stats

@@ -5,7 +5,7 @@ import LoginForm from '../components/auth/LoginForm';
 
 const Login = () => {
   const navigate = useNavigate();
-
+  //Render First, Effects Later
   useEffect(() => {
     // If already authenticated in demo session, go to dashboard
     if (localStorage.getItem('isAuthenticated') === 'true') {

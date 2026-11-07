@@ -247,7 +247,7 @@ export const forgotPassword = async (req, res, next) => {
     console.log('\n===============================================');
     console.log(`🔐 [AiKMS DIRECT PASSWORD RESET LINK]`);
     console.log(`User: ${user.name} (${user.email})`);
-    console.log(`From Email: ${process.env.EMAIL_USER || 'mohdaffan338@gmail.com'}`);
+    console.log(`From Email: ${process.env.EMAIL_USER}`);
     console.log(`Reset URL: ${resetUrl}`);
     console.log(`Valid for: 30 minutes`);
     console.log('===============================================\n');
