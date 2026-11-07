@@ -1,0 +1,174 @@
+/* ============================================================
+   AiKMS App Splash Screen & Loading Experience
+   Eliminates white blank page and provides a sleek brand intro
+   ============================================================ */
+
+.aikms-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background-color: #171717;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  opacity: 1;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s ease;
+  pointer-events: all;
+}
+
+.aikms-splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15rem;
+  animation: splashContentPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glowing Logo Icon Container */
+.splash-logo-container {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splash-glow-ring {
+  position: absolute;
+  inset: -10px;
+  border-radius: 24px;
+  background: radial-gradient(circle, rgba(16, 163, 127, 0.45) 0%, rgba(16, 163, 127, 0) 72%);
+  animation: splashGlowPulse 2s ease-in-out infinite;
+}
+
+.splash-logo-box {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #10a37f 0%, #0a7a5e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(16, 163, 127, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  animation: splashLogoFloat 2.4s ease-in-out infinite;
+}
+
+.splash-logo-svg {
+  width: 34px;
+  height: 34px;
+  stroke: #ffffff;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* Brand Typography */
+.splash-brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.splash-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #ececec;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.splash-title span {
+  color: #10a37f;
+  text-shadow: 0 0 15px rgba(16, 163, 127, 0.4);
+}
+
+.splash-subtitle {
+  font-size: 0.85rem;
+  color: #8e8e8e;
+  font-weight: 450;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+/* Modern Gradient Loading Progress Bar */
+.splash-progress-track {
+  width: 150px;
+  height: 3px;
+  background-color: #262626;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 0.4rem;
+}
+
+.splash-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 45%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10a37f, #34d399, #10a37f);
+  box-shadow: 0 0 10px rgba(16, 163, 127, 0.7);
+  animation: splashProgressSlide 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Keyframe Animations */
+@keyframes splashContentPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes splashGlowPulse {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.95;
+  }
+}
+
+@keyframes splashLogoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes splashProgressSlide {
+  0% {
+    left: -45%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+

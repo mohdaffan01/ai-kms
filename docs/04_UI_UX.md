@@ -15,6 +15,11 @@
 
 ## 2. Page & Layout Structure
 
+### 2.0 Zero-Flash Native Preloader & App Splash Screen ([index.html](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/index.html), [AppSplashScreen.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/AppSplashScreen.jsx))
+- **Zero-Flash Dark Baseline**: `index.html` embeds inline dark styling (`background-color: #171717`) in `<head>` preventing browser white blank page flashes on initial load and slow networks (3G/4G).
+- **0ms Native Preloader**: Renders an animated SVG brain logo, glowing green aura, and progress track inside `#root` before JavaScript bundles parse.
+- **React AppSplashScreen**: Smooth startup brand animation displaying floating brain logo (`#10a37f`), glowing halo, and animated progress bar, transitioning out with a 350ms graceful fade.
+
 ### 2.1 Navigation Bar ([Navbar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Navbar.jsx))
 - **Position**: Fixed top navigation bar.
 - **Elements**:
