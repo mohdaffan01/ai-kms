@@ -2,7 +2,10 @@
 
 ## 1. Application Entry Point
 - **Root URL**: `http://localhost:5173/`
-- **Initial Routing Logic**: When a user accesses the application, `App.jsx` evaluates the route. If an unauthenticated user accesses `/dashboard` or undefined routes (`*`), they are automatically redirected to `/login` ([App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx#L19)).
+- **Initial Routing Logic**: When a user accesses the root `/` or any unmatched route, `App.jsx` evaluates the `RootRedirect` component. 
+  - If **authenticated** (`localStorage.getItem('isAuthenticated') === 'true'`), the user is immediately navigated to `/dashboard`.
+  - On `/dashboard`, the active view defaults to **`chat`** (New Chat screen with welcome header & chat input) rather than the dashboard overview.
+  - If **unauthenticated**, the user is redirected to `/login`.
 
 ---
 
@@ -10,10 +13,12 @@
 
 | Page Route | Component File | Description | Access Control |
 |---|---|---|---|
-| `/login` | [Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx) | Account login page with form layout | Public (Redirects to `/dashboard` if logged in) |
+| `/login` | [Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx) | Account login page with credentials form | Public (Redirects to `/dashboard` if logged in) |
 | `/signup` | [Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx) | Registration page with account setup form | Public (Redirects to `/dashboard` if logged in) |
 | `/register` | [Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx) | Standalone registration view with full validation | Public (Redirects to `/dashboard` if logged in) |
-| `/dashboard` | [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx) | Main workspace (Sidebar + Chat Interface / Dashboard tab) | Protected (Requires valid JWT session) |
+| `/forgot-password` | [ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx) | Password reset request form (triggers Nodemailer reset email) | Public |
+| `/reset-password/:token` | [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx) | Password reset token verification & new password submission | Public |
+| `/dashboard` | [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx) | Main workspace (Sidebar + New Chat default / Dashboard Overview / Flashcards / Quizzes) | Protected (Requires valid JWT session) |
 | `/profile` | [Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx) | User settings, avatar selection, & password update page | Protected (Requires valid JWT session) |
 
 ---
@@ -57,7 +62,22 @@
    - On success, `token`, `isAuthenticated=true`, and `user` payload are written to `localStorage`.
    - Navigation redirects to `/dashboard`.
 
-3. **Session Verification & Logout**:
+3. **Password Reset Flow (Email & Token / OTP)**:
+   - User clicks "Forgot Password?" link on `/login`.
+   - User enters registered email address and submits.
+   - Frontend calls `POST /api/auth/forgot-password`.
+   - Backend creates a crypto hash token (expires in 30 mins) and sends an HTML email via `sendEmail.js` using Nodemailer Gmail SMTP.
+   - User clicks the reset link in the email (`http://localhost:5173/reset-password/<token>`).
+   - User enters new password and confirms password.
+   - Frontend calls `POST /api/auth/reset-password/:token`.
+   - On success, password is encrypted with bcrypt, token is cleared, and user is redirected to `/login` with success banner.
+
+4. **Dual Chat Navigation & Session Persistence Flow**:
+   - When user starts a chat in the workspace, messages are automatically saved to `sessionStorage` (`aikms_active_chat_messages`).
+   - If user navigates to **Dashboard Overview**, **Quiz**, or **Flashcards** and then clicks **`Chat`** (`MessageSquare` icon in sidebar), the workspace switches back to Chat with all previous messages completely preserved.
+   - If user wants a fresh start, clicking **`+ New Chat`** (Mint-Teal button in sidebar) clears the message array and removes the session item, opening a clean welcome screen.
+
+5. **Session Verification & Logout**:
    - On app startup, `AuthContext` checks for `token` in `localStorage`. If present, calls `getMeApi()` (`GET /api/auth/me`).
    - Clicking **Logout** in Navbar or Sidebar clears `localStorage` tokens and redirects user to `/login`.
 

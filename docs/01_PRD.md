@@ -73,6 +73,9 @@ Learners and students face significant challenges in managing learning materials
 | FR-12 | AI / RAG | Semantic search & context-grounded AI QA engine | Completed | [knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js) |
 | FR-16 | Analytics | Comprehensive learning progress dashboard with hierarchical chapters & subtopics | Completed | [DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx), [progress.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js) |
 | FR-17 | Revision | Smart 3D Flashcards & Spaced Revision deck with completed-topics AI generation | Completed | [FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx), [flashcard.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/flashcard.controller.js) |
+| FR-18 | Assessment | AI-Powered Quiz Generation, Interactive Player, Timer, and Scoring Analytics | Completed | [QuizView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx), [quiz.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/quiz.controller.js) |
+| FR-19 | Auth | Password Reset via Nodemailer HTML Email, 30-min Token, and OTP Fallback | Completed | [ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx), [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx), [sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js) |
+| FR-20 | Navigation | New Chat default landing, Dual-button sidebar, Mint-Teal action button, and sessionStorage persistence | Completed | [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx), [Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx), [App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx) |
 
 ### 6.2 Planned Functional Requirements
 | ID | Module | Feature Description | Status | Target Milestone |
@@ -80,7 +83,6 @@ Learners and students face significant challenges in managing learning materials
 | FR-13 | Graph | Concept extraction & Knowledge Graph construction | Not Started | Module 3 / Phase 3 |
 | FR-14 | Graph | Interactive Knowledge Graph visualization canvas | Not Started | Module 3 / Phase 3 |
 | FR-15 | Gap | Knowledge gap detection & study recommendations | Not Started | Module 4 / Phase 4 |
-| FR-18 | Assessment | Quiz Generation & Practice Assessments | In Pipeline (UI Button Added) | Module 5 / Phase 5 |
 
 ---
 

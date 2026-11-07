@@ -10,11 +10,12 @@
 
 ## 2. Collections & Data Models
 
-The backend database contains **4 primary collections**:
+The backend database contains **5 primary collections**:
 1. `users` (managed by [user.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/user.model.js))
 2. `documents` (managed by [document.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/document.model.js))
 3. `progress` (managed by [progress.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
 4. `flashcards` (managed by [flashcard.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/flashcard.model.js))
+5. `quizzes` (managed by [quiz.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/quiz.model.js))
 
 ---
 
@@ -31,6 +32,10 @@ The backend database contains **4 primary collections**:
 | `password` | String | Yes | No | None | `minlength: 8` | Bcrypt hashed password string |
 | `profileImage` | String | No | No | `'https://images.unsplash.com/...'` | String URL | Profile picture avatar URL |
 | `role` | String | No | No | `'student'` | Enum: `['student', 'teacher', 'admin']` | User access role |
+| `resetPasswordToken` | String | No | No | `undefined` | Hashed token string | Password reset security token |
+| `resetPasswordExpire` | Date | No | No | `undefined` | Date object | Password reset token expiration timestamp (30 mins) |
+| `resetPasswordOtp` | String | No | No | `undefined` | Numeric OTP string | Optional OTP code for password reset |
+| `resetPasswordOtpExpire` | Date | No | No | `undefined` | Date object | OTP expiration timestamp |
 | `createdAt` | Date | Auto | No | Current timestamp | Managed by Mongoose `{ timestamps: true }` | Account creation timestamp |
 | `updatedAt` | Date | Auto | No | Current timestamp | Managed by Mongoose `{ timestamps: true }` | Account last updated timestamp |
 
@@ -149,6 +154,38 @@ Tracks learning progress, subject cards, hierarchical topic and subtopic complet
 
 ---
 
+### 2.5 Quiz Collection (`quizzes`)
+
+**File Location**: [quiz.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/quiz.model.js)
+
+Stores generated multiple-choice quizzes, question structures, correct options, conceptual explanations, attempt histories, and best scores.
+
+#### Schema Definition & Fields:
+| Field Name | Data Type | Required | Default Value | Description |
+|---|---|---|---|---|
+| `_id` | ObjectId | Auto | Auto ObjectId | Unique primary quiz identifier |
+| `userId` | ObjectId | Yes | None | Reference to `User._id` |
+| `title` | String | Yes | None | Title of the quiz assessment |
+| `subject` | String | Yes | None | Associated academic subject |
+| `topics` | [String] | No | `[]` | List of covered topic names |
+| `difficulty` | String | No | `'medium'` | Enum: `['easy', 'medium', 'hard']` |
+| `questions` | [Question] | Yes | None | Array of MCQ question objects |
+| `attempts` | [Attempt] | No | `[]` | Array of historical quiz attempt results |
+| `bestScore` | Number | No | `0` | Best raw score achieved |
+| `bestPercentage` | Number | No | `0` | Best percentage score achieved |
+| `createdAt` | Date | Auto | Current timestamp | Managed by `{ timestamps: true }` |
+| `updatedAt` | Date | Auto | Current timestamp | Managed by `{ timestamps: true }` |
+
+#### Question Subschema:
+- `question` (String, required): The prompt text.
+- `options` ([String], minimum 2): Available multiple-choice answers.
+- `correctAnswer` (Number, required): 0-based index of the correct answer in options array.
+- `explanation` (String, required): Conceptual rationale for the correct answer.
+- `topic` (String): Specific subtopic tag.
+- `difficulty` (String): `'easy'` | `'medium'` | `'hard'`.
+
+---
+
 ## 3. Database Relationships
 
 ```
@@ -211,6 +248,9 @@ Tracks learning progress, subject cards, hierarchical topic and subtopic complet
 | Get User Profile | `getUserProfile` | `User.findById(req.user._id).select('-password')` | Logged-in User profile JSON |
 | Update Profile | `updateUserProfile` | `User.findById(...)`, `user.save()` | Updated User profile JSON |
 | Change Password | `changeUserPassword` | `User.findById(...)`, `user.save()` | Success message JSON |
+| Forgot Password | `forgotPassword` | `User.findOne({ email })`, `crypto.randomBytes()`, `sendEmail()` | Email sent confirmation JSON |
+| Reset Password (Token) | `resetPassword` | `User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } })` | Password updated confirmation JSON |
+| Reset Password (OTP) | `resetPasswordWithOtp` | `User.findOne({ email, resetPasswordOtp, resetPasswordOtpExpire })` | Password updated confirmation JSON |
 | Upload Document | `uploadDocument` | `Document.create(...)`, `extractTopicsFromDocument(...)`, `Progress.save()` | Created Document JSON |
 | Get My Documents | `getMyDocuments` | `Document.find({ uploadedBy, ...filters }).sort({ createdAt: -1 })` | Array of Document JSON objects |
 | Delete Document | `deleteDocument` | `Document.findById(id)`, `Document.findByIdAndDelete(id)` | Success message JSON |
@@ -226,3 +266,8 @@ Tracks learning progress, subject cards, hierarchical topic and subtopic complet
 | Toggle Card Mastery | `toggleFlashcardMastered` | `Flashcard.findOne(...)`, toggle `isMastered`, update `reviewCount` | Updated Flashcard JSON |
 | Delete Flashcard | `deleteFlashcard` | `Flashcard.findOneAndDelete(...)` | Deletion confirmation JSON |
 | Reset Deck Mastery | `resetDeckMastery` | `Flashcard.updateMany({ userId, subject }, { isMastered: false })` | Modified count JSON |
+| Get User Quizzes | `getMyQuizzes` | `Quiz.find({ userId, ...filters })` | Array of Quiz summaries + stats |
+| Generate Quiz (AI) | `generateQuiz` | Inspect completed topics, extract notes, call Gemini LLM, `Quiz.create(...)` | Created Quiz JSON |
+| Get Quiz Details | `getQuizById` | `Quiz.findOne({ _id, userId })` | Full Quiz detail with questions |
+| Submit Quiz Attempt | `submitQuizAttempt` | `Quiz.findOne(...)`, compute score/percentage, push attempt log, update bestScore | Attempt results JSON + bestScore |
+| Delete Quiz | `deleteQuiz` | `Quiz.findOneAndDelete({ _id, userId })` | Deletion confirmation JSON |

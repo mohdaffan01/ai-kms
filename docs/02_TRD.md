@@ -38,13 +38,16 @@ This document describes the technical architecture, stack, data communication pa
 {
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "chromadb": "^3.5.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.4",
     "multer": "^2.3.0",
-    "nodemon": "^3.1.14"
+    "nodemailer": "^10.2.1",
+    "nodemon": "^3.1.14",
+    "pdf-parse": "^2.4.5"
   }
 }
 ```
@@ -57,6 +60,7 @@ This document describes the technical architecture, stack, data communication pa
     "lucide-react": "^1.42.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {

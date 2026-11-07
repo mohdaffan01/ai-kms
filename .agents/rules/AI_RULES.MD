@@ -9,24 +9,25 @@ trigger: always_on
 This file defines the mandatory rules that every AI agent must follow
 when working on this project.
 
-The documentation inside `/docs` is the source of truth for the project.
+The documentation inside `/docs` is the primary source of truth for the project.
 
 AI MUST NOT make important project changes based only on assumptions
 or by looking at isolated code.
 
 ---
 
-# 2. MANDATORY DOCUMENTATION READING
+# 2. MANDATORY PROTOCOL: READ DOCS FIRST — NEVER SCAN ENTIRE CODEBASE
 
-Before making ANY code change, the AI MUST:
-
-1. Read this file completely.
-2. Read `docs/07_PROJECT_STATE.md`.
-3. Identify which project documents are relevant to the requested task.
-4. Read those relevant documents before making changes.
-5. Inspect the existing code related to the task.
-
-The AI must understand the current project state before modifying code.
+> [!IMPORTANT]
+> **STRICT RULE FROM USER:**
+> 1. **DO NOT read or scan the entire codebase blindly.** Grepping or recursively reading across files without checking docs first is strictly forbidden.
+> 2. **ALWAYS read the documentation in `/docs` FIRST** before touching any code.
+> 3. Start by reading `docs/07_PROJECT_STATE.md` to know the current state.
+> 4. Based on `/docs`, identify **EXACTLY** which component, route, controller, or model file is responsible for the task.
+> 5. Read **ONLY** those specific, targeted files.
+> 6. Implement the minimal required change.
+> 7. **EVERY SINGLE TIME a change is made, IMMEDIATELY update the relevant `/docs` files** (especially `docs/07_PROJECT_STATE.md` and related doc files) so the documentation is always 100% up to date.
+> 8. This is a permanent instruction that must be followed on every interaction without needing reminders.
 
 ---
 
@@ -483,17 +484,11 @@ What should be done next, if applicable.
 
 # 21. GOLDEN RULE
 
-Before changing code:
-
-READ THE DOCUMENTATION.
-
-Before making a major decision:
-
-CHECK THE DOCUMENTATION.
-
-After changing the project:
-
-UPDATE THE DOCUMENTATION.
+1. **NEVER scan or read the whole codebase blindly.**
+2. **ALWAYS read the documentation first (`docs/07_PROJECT_STATE.md` + relevant docs).**
+3. **Decide from the docs which file to read, and inspect ONLY that specific file.**
+4. **Make the required change.**
+5. **Update `/docs` IMMEDIATELY every single time without exception.**
 
 The AI must always leave the project in a state where another AI agent
 can understand what the project is, what has been completed, what is

@@ -18,6 +18,7 @@ The project is currently positioned at the transition point to **Phase 3: Knowle
   - Express JWT authentication backend with `bcryptjs` password hashing ([user.Controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/user.Controller.js)).
   - Frontend `AuthContext` provider with persistent token handling ([AuthContext.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/context/AuthContext.jsx)).
   - Registration, Login, Profile Edit, and Password Change views & API endpoints.
+  - Password Reset via Nodemailer HTML Email (`sendEmail.js`), 30-min hashed token validation, and OTP verification fallback ([ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx), [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx)).
 - **Document Ingestion & File Storage**:
   - Multer middleware configuration supporting PDF, PPT, DOC, TXT, and MD uploads up to 20MB ([uploadMiddleware.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/middleware/uploadMiddleware.js)).
   - Server disk storage (`Backend/uploads`) and Mongoose database model ([document.model.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/document.model.js)).
@@ -26,15 +27,24 @@ The project is currently positioned at the transition point to **Phase 3: Knowle
 - **Document Vectorization & RAG Engine**:
   - `pdf-parse` text extraction pipeline with semantic chunking & cleaning.
   - ChromaDB vector store integration with embedding indexing.
-  - `/api/knowledge/chat` endpoint powered by Gemini 2.5 Flash for context-grounded Q&A.
+  - `/api/knowledge/chat` endpoint powered by Gemini 2.5 Flash for context-grounded Q&A with Search Scope bar (All Documents vs Specific Document).
 - **Learning Dashboard & Hierarchical Topic Tracking**:
   - MongoDB `Progress` model storing subjects, parent topics, and nested subtopics.
   - `topicExtractor.service.js` automatically parses uploaded notes into parent chapters and child subtopics.
-  - Comprehensive Dashboard with KPI cards, Subject cards, Hierarchical Accordion modal, and optimistic checkbox completion sync.
+  - Comprehensive Dashboard with KPI cards, Subject cards, Hierarchical Accordion modal, inline subject renaming, and GitHub-style safe deletion modal.
+- **Smart Flashcards & Spaced Revision Module**:
+  - AI Flashcard generator creating curriculum-aligned cards from completed topics.
+  - 3D perspective flip card deck with keyboard shortcuts, all-cards deck search, and manual card creator.
+- **AI Assessment & Interactive Quiz Module**:
+  - Mongoose `quizzes` schema with 4-option MCQs, timer, instant feedback, scoring percentage, and attempt analytics.
+- **Workspace Navigation & Session Persistence**:
+  - Root `/` automatically lands authenticated users directly on New Chat (`/dashboard`, default tab `'chat'`).
+  - Dual-button sidebar architecture: `+ New Chat` (Mint-Teal action button `#2dd4bf`) and `Chat` navigation button.
+  - `sessionStorage` (`aikms_active_chat_messages`) preserves ongoing conversation during tab switches and page refreshes.
 
 ### 2.2 Features in Planning & Next Phases
 - **Knowledge Graph Construction & Visualization**: Extracting key concepts/entities and rendering an interactive visual graph (Phase 3).
-- **Knowledge Gap Detection & Adaptive Quizzes**: Analyzing user queries/quizzes to detect knowledge gaps (Phase 4).
+- **Knowledge Gap Detection & Recommendations**: Analyzing user query patterns and quiz performance to detect knowledge gaps (Phase 4).
 
 ---
 

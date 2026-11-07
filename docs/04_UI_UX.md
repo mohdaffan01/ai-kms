@@ -36,24 +36,30 @@
 ## 3. Important Components & Interactivity
 
 ### 3.1 Sidebar Component ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
-- **Brand Header**: Compact logo displaying "AiKMS".
-- **Navigation Action Buttons**:
-  - **Dashboard Button**: Full-width button switching view to Learning Dashboard.
+- **Brand Header**: Compact logo displaying "AiKMS" with brain icon.
+- **Action & Navigation Buttons**:
+  - **`+ New Chat` Button**: Prominent action button highlighted in stylish **Mint-Teal** tone (`color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.38); background: rgba(45, 212, 191, 0.08);`). Clicking starts a fresh chat session, clears messages, and removes `sessionStorage` item.
+  - **`Chat` Navigation Button**: Standard nav button with `MessageSquare` icon. Highlights when active (`activeTab === 'chat'`). Clicking returns to the active conversation **without losing previous messages**.
+  - **`Dashboard` Button**: Standard nav button with `LayoutDashboard` icon switching view to Curriculum Overview.
   - **Quick Action Grid**: 2-column square button container:
-    - **Quiz Button (Left)**: Square button with HelpCircle icon and glowing golden `SOON` badge for upcoming assessment modules.
-    - **Flashcards Button (Right)**: Square button with Layers icon, active glowing state, launching Flashcards workspace.
-  - **New Chat Button**: Full-width button clearing current chat stream.
-- **Content Section**:
-  - Displays count badge of uploaded documents.
-  - Scrollable document list item cards featuring file title, subject tag, quick view eye icon button, and delete garbage bin button.
-- **Upload Content Trigger**: Accent button with upload icon launching [UploadModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UploadModal.jsx).
-- **User Footer**: Profile avatar badge, user name, user email, and logout icon button.
+    - **Quiz Button (Left)**: Square button with `HelpCircle` icon, active state, launching AI Quiz & Assessment hub.
+    - **Flashcards Button (Right)**: Square button with `Layers` icon, active state, launching Flashcards workspace.
+- **Content Section (Documents Drawer)**:
+  - Collapsible accordion header with title, count badge, and animated chevron arrow. Expansion state is remembered in `localStorage` (`aikms_sidebar_docs_expanded`).
+  - Folder grouping and scrollable document list item cards featuring file title, subject tag, quick view eye icon button, and delete garbage bin button.
+- **Sidebar Resize Handle**: Custom draggable right edge (`.sidebar-resizer`) allowing user to adjust sidebar width between 220px and 520px (persisted in `localStorage` as `aikms_sidebar_width`).
+- **User Footer**: Profile avatar badge, user name, user email, and profile flyout trigger with change password and logout options.
 
-### 3.2 Chat Window ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
-- **Empty State**: Centered welcome screen featuring a large glowing Brain icon, "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded learning materials.").
+### 3.2 Chat Window & Scope Bar ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- **Chat Scope Bar**: Context bar above the conversation feed featuring a dropdown selector:
+  - **All Documents (Default)**: Searches across all indexed PDF materials with auto-search globe icon.
+  - **Specific Document**: Filters context down strictly to a selected document file with subject tag badge.
+  - **Reset to All**: Reset button appearing whenever a single document is selected.
+- **Empty State**: Centered welcome screen featuring a large glowing Brain icon, "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded PDF learning materials.").
 - **Message Stream**: Vertical feed with smooth auto-scroll to bottom.
-  - **User Row**: Right-aligned/distinct bubble displaying user icon and message text.
-  - **AI Row**: Left-aligned bubble featuring Brain icon avatar, sender label ("AiKMS Assistant"), and markdown response text.
+  - **User Row**: Right-aligned distinct bubble displaying user icon and message text.
+  - **AI Row**: Left-aligned bubble featuring Brain icon avatar, sender label ("AiKMS Assistant"), listen/stop voice synthesis toggle button, and markdown response text.
+  - **Chat Session Persistence**: Messages stay synced in `sessionStorage` (`aikms_active_chat_messages`) during tab switches and page refreshes.
 
 ### 3.3 Chat Input ([ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx))
 - **Input Textarea**: Auto-expanding single-row textarea with placeholder ("Ask anything about your study material...").

@@ -3,19 +3,23 @@
 ## 1. Executive Summary
 
 - **Project Name**: AI-KMS (AI Knowledge Management System)
-- **Current Version**: 1.0.0 (Foundation Prototype)
-- **Overall Status**: Phase 1 (Core Infrastructure) & Phase 2 (Document Vectorization & RAG Engine) Fully Complete & Operational. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
-- **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs and Knowledge Gap detection.
+- **Current Version**: 1.1.0 (Interactive AI Study Workspace & Curriculum Hub)
+- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, and Chat Session Architecture are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
+- **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs, spaced revision flashcards, adaptive quizzes, and curriculum progress tracking.
 
 ---
 
 ## 2. Current Development Phase
-- **Active Phase**: Transitioning from **Phase 2 (Text Parsing, Vector Embeddings & RAG Search Engine)** to **Phase 3 (Knowledge Graph Canvas & Visualization)**.
+- **Active Phase**: Transitioning to **Phase 3 (Knowledge Graph Canvas & Entity Visualization)**.
 - **Phase Completion**:
   - Phase 1: Core System & Data Layer — **100% Completed**
-  - Phase 2: Document Vectorization & RAG Engine — **100% Completed**
-  - Phase 3: Knowledge Graph Canvas — **0% Started**
-  - Phase 4: Gap Detection & Analytics — **0% Started**
+  - Phase 2: Document Vectorization & Grounded RAG AI Engine — **100% Completed**
+  - Curriculum Dashboard & Hierarchical Topic Tracking — **100% Completed**
+  - Smart Flashcards & Spaced Revision Module — **100% Completed**
+  - AI Assessment & Interactive Quiz Module — **100% Completed**
+  - Workspace Routing, Dual-Button Chat Navigation & Session Persistence — **100% Completed**
+  - Phase 3: Knowledge Graph Canvas — **Ready to Start**
+  - Phase 4: Knowledge Gap Detection & Analytics — **In Pipeline**
 
 ---
 
@@ -30,6 +34,10 @@
 - [x] User profile view & preset avatar picker ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
 - [x] Profile update endpoint (`PUT /api/users/profile`)
 - [x] Password change endpoint with current password check (`PUT /api/users/change-password`)
+- [x] **Forgot Password Email Flow**: (`POST /api/auth/forgot-password`) sends rich HTML email with secure 30-minute password reset link using Nodemailer & Gmail SMTP credentials ([`sendEmail.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js))
+- [x] **Token-Based Password Reset**: (`POST /api/auth/reset-password/:token`) validates hashed reset token, checks expiration, and updates password ([`user.Controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/user.Controller.js))
+- [x] **OTP-Based Password Reset**: (`POST /api/auth/reset-password-otp`) alternative OTP code verification for password recovery
+- [x] Public Forgot Password & Reset Password frontend pages ([ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx), [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx))
 
 ### 3.2 Document Management & Storage
 - [x] Multipart file upload middleware using Multer (`diskStorage` to `Backend/uploads/`)
@@ -41,25 +49,28 @@
 - [x] Interactive upload modal with drag-and-drop file dropzone ([UploadModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UploadModal.jsx))
 - [x] Document viewer modal with PDF iframe preview, download link, and metadata list ([DocumentViewerModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DocumentViewerModal.jsx))
 
-### 3.3 UI / UX & Navigation Workspace
-- [x] Modern dark-mode aesthetic with custom CSS styling ([index.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/index.css))
-- [x] Fixed navigation bar with brand logo, nav links, user badge, and logout ([Navbar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Navbar.jsx))
-- [x] Responsive sidebar with document drawer, count badge, view/delete action buttons, and mobile menu toggle ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
-- [x] Chat interface layout with welcome empty state, auto-scrolling feed, and textarea input ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
-- [x] AI Chat Interaction (Fully connected to RAG backend `/api/knowledge/chat` to answer questions directly from uploaded PDFs)
-- [x] Manual Voice / Text-to-Speech Control (On-demand `Listen` / `Stop` button on AI response bubbles; auto-speak disabled)
+### 3.3 UI / UX & Workspace Navigation Architecture
+- [x] **Default Landing on New Chat**: Platform entry (`/`) directly evaluates authentication state — authenticated users land straight on `/dashboard` with active tab defaulting to `'chat'` (New Chat screen) rather than Dashboard Overview ([App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- [x] **Dual Chat Navigation Architecture**:
+  - **`+ New Chat` Button**: Action button styled in distinctive Mint-Teal (`#2dd4bf`) that resets active conversation (`messages = []`) and clears session storage for a brand new conversation ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
+  - **`Chat` Navigation Button**: Standard sidebar navigation item (`MessageSquare` icon) that switches view to active chat **without clearing ongoing messages** ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
+- [x] **Chat Session Persistence**: Ongoing chat messages are automatically synchronized and persisted in `sessionStorage` (`aikms_active_chat_messages`), preventing accidental chat loss when navigating to Dashboard Overview, Quiz, or Flashcards, or when refreshing the page ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- [x] **Chat Scope Selector Bar**: Real-time dropdown above chat feed allowing learners to query across "All Documents" (auto search) or restrict retrieval context to a specific selected document ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- [x] **Resizable Sidebar Drawer**: Draggable sidebar with custom resize handle and persistent width stored in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
+- [x] **Collapsible Documents Section**: Accordion document list with expand/collapse toggle and state saved in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
+- [x] User Profile Flyout with Password Change shortcut, Dashboard Overview link, and Logout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))
+- [x] Manual Voice / Text-to-Speech Control (`Listen` / `Stop` button on AI response bubbles with SpeechSynthesis cleanup) ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
 
-### 3.4 Advanced AI & Analytics Capabilities
+### 3.4 Advanced AI & RAG Engine
 - [x] PDF text extraction dependency installed (`pdf-parse`)
 - [x] Backend service structure created ([`documentProcessor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/documentProcessor.js), [`textCleaner.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textCleaner.js), [`textChunker.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/textChunker.js), [`embeddingService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/embeddingService.js), [`chromaService.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/chromaService.js))
 - [x] Document processing API endpoint (`POST /api/knowledge/process/:documentId`) ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js))
 - [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
 - [x] Gemini 2.5 Flash LLM Integration (`gemini-2.5-flash` API endpoint for grounded Q&A and summary generation)
-- [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material (across all academic subjects, file types, and syllabus layouts) using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, practice exercises, and sentence fragments through universal linguistic sanitization.
-- [ ] Concept & relationship extraction for Knowledge Graphs
-- [ ] Interactive Knowledge Graph visualization canvas
-- [x] AI Quiz Generation & Assessment Engine ([`quiz.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/quiz.controller.js), [`QuizView.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx))
+- [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, and fragments through linguistic sanitization.
+- [ ] Concept & relationship extraction for Knowledge Graphs (Phase 3)
+- [ ] Interactive Knowledge Graph visualization canvas (Phase 3)
 
 ### 3.5 Learning Dashboard & Curriculum Progress Tracking
 - [x] Mongoose Progress Model with hierarchical topics and subtopics ([`progress.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
@@ -97,57 +108,69 @@
 
 ### 4.1 Frontend Status
 - **Framework**: React 19 + Vite 8 + React Router DOM 7
-- **Health**: Fully operational. Compiles cleanly without errors.
+- **Health**: Fully operational. Compiles cleanly without errors (`npm run build`).
 - **Pages Built**:
   - `/login`: Public auth login page ([Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx))
   - `/signup`: Public auth registration page ([Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx))
   - `/register`: Standalone registration page with validation ([Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx))
-  - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between Learning Dashboard, AI Chat, and Smart Flashcards
+  - `/forgot-password`: Password reset request page ([ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx))
+  - `/reset-password/:token`: Secure password reset execution page ([ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx))
+  - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between New Chat (default), Dashboard Overview, Smart Flashcards, and AI Quizzes
   - `/profile`: Protected profile & security management ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
 
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
+- **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
 
 ### 4.3 Database Status
-- **Engine**: MongoDB with Mongoose 9 (Metadata & Progress) + ChromaDB (Vector Store)
+- **Engine**: MongoDB with Mongoose 9 (Metadata, Curriculum & Assessments) + ChromaDB (Vector Store)
 - **Health**: Operational. Connects via `connectDB()` in `Backend/src/config/db.js` and `chromaService.js`.
 - **Collections Established**:
-  - `users`: User profiles, credentials, role, timestamps.
+  - `users`: User profiles, credentials, resetPasswordToken, resetPasswordExpire, role, timestamps.
   - `documents`: Document records, file metadata, ownership relation to `users`, processing status.
   - `progress`: User learning progress, subjects, hierarchical chapters and child subtopics, recent activity stream.
   - `flashcards`: Study flashcards with questions, answers, hints, mastery tracking, and source linkage.
+  - `quizzes`: Practice quizzes with MCQ questions, explanations, difficulty ratings, attempt logs, and best score.
   - `knowledge_chunks`: ChromaDB collection storing text chunks & vector embeddings with metadata payload (`userId`, `documentId`, `chunkIndex`).
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 26 active endpoints.
+- **Total Operational Endpoints**: 34 active endpoints.
   1. `GET /`: Healthcheck response
-  2. `POST /api/auth/register`: Public registration (with name alphabet validation, password strength check)
+  2. `POST /api/auth/register`: Public registration (with alphabet name validation, password strength check)
   3. `POST /api/auth/login`: Public login
   4. `GET /api/auth/me`: Authenticated profile fetch
-  5. `PUT /api/users/profile`: Update name & avatar
-  6. `PUT /api/users/change-password`: Change password
-  7. `POST /api/documents/upload`: Multipart document file upload & automatic topic extraction
-  8. `GET /api/documents/my-documents`: List user documents with filters
-  9. `DELETE /api/documents/:id`: Delete document file and DB record
-  10. `POST /api/knowledge/process/:documentId`: Extract, clean, chunk, embed & index document into ChromaDB
-  11. `POST /api/knowledge/search`: User-isolated semantic RAG search across indexed documents in ChromaDB
-  12. `POST /api/knowledge/chat`: Grounded RAG Chat endpoint answering user questions directly from uploaded PDFs
-  13. `DELETE /api/knowledge/:documentId`: Delete document vector embeddings from ChromaDB
-  14. `GET /api/progress/dashboard`: Fetch full learning dashboard state, synced subjects, and stats
-  15. `POST /api/progress/topic/toggle`: Toggle chapter or individual subtopic completion state
-  16. `POST /api/progress/topic/add`: Add custom parent chapter or child subtopic
-  17. `POST /api/progress/subject`: Create new academic subject
-  18. `PUT /api/progress/subject/:subjectId`: Update subject name & metadata with automatic document resynchronization
-  19. `DELETE /api/progress/subject/:subjectId`: Delete subject from user curriculum
-  20. `POST /api/progress/reset-defaults`: Clean curriculum to active study materials
-  21. `GET /api/flashcards`: Fetch user's flashcards with subject, topic, mastery filters and deck statistics
-  22. `POST /api/flashcards/generate`: Generate AI flashcards based on completed topics & uploaded reference notes
-  23. `POST /api/flashcards`: Manually create a custom flashcard
-  24. `PATCH /api/flashcards/:id/master`: Toggle flashcard mastery status & increment review count
-  25. `DELETE /api/flashcards/:id`: Delete a single flashcard
-  26. `POST /api/flashcards/reset-mastery`: Reset mastery for all cards in a subject deck to practice again
+  5. `POST /api/auth/forgot-password`: Request password reset email with token link via Nodemailer
+  6. `POST /api/auth/reset-password/:token`: Reset password using URL token
+  7. `POST /api/auth/reset-password-otp`: Reset password using email OTP verification
+  8. `PUT /api/users/profile`: Update name & avatar
+  9. `PUT /api/users/change-password`: Change password
+  10. `POST /api/documents/upload`: Multipart document file upload & automatic topic extraction
+  11. `GET /api/documents/my-documents`: List user documents with filters
+  12. `DELETE /api/documents/:id`: Delete document file and DB record
+  13. `POST /api/knowledge/process/:documentId`: Extract, clean, chunk, embed & index document into ChromaDB
+  14. `POST /api/knowledge/search`: User-isolated semantic RAG search across indexed documents in ChromaDB
+  15. `POST /api/knowledge/chat`: Grounded RAG Chat endpoint answering user questions directly from uploaded PDFs
+  16. `DELETE /api/knowledge/:documentId`: Delete document vector embeddings from ChromaDB
+  17. `GET /api/progress/dashboard`: Fetch full learning dashboard state, synced subjects, and stats
+  18. `POST /api/progress/topic/toggle`: Toggle chapter or individual subtopic completion state
+  19. `POST /api/progress/topic/add`: Add custom parent chapter or child subtopic
+  20. `POST /api/progress/subject`: Create new academic subject
+  21. `PUT /api/progress/subject/:subjectId`: Update subject name & metadata with automatic document resynchronization
+  22. `DELETE /api/progress/subject/:subjectId`: Delete subject from user curriculum
+  23. `POST /api/progress/reset-defaults`: Clean curriculum to active study materials
+  24. `GET /api/flashcards`: Fetch user's flashcards with subject, topic, mastery filters and deck statistics
+  25. `POST /api/flashcards/generate`: Generate AI flashcards based on completed topics & uploaded reference notes
+  26. `POST /api/flashcards`: Manually create a custom flashcard
+  27. `PATCH /api/flashcards/:id/master`: Toggle flashcard mastery status & increment review count
+  28. `DELETE /api/flashcards/:id`: Delete a single flashcard
+  29. `POST /api/flashcards/reset-mastery`: Reset mastery for all cards in a subject deck to practice again
+  30. `GET /api/quizzes`: Fetch user's quizzes with subject filters and quiz stats
+  31. `POST /api/quizzes/generate`: Generate AI assessment quiz from completed topics
+  32. `GET /api/quizzes/:id`: Fetch specific quiz details for practice session
+  33. `POST /api/quizzes/:id/submit`: Submit quiz answers, compute percentage score, and save attempt log
+  34. `DELETE /api/quizzes/:id`: Delete a practice quiz
 
 ---
 
@@ -161,4 +184,4 @@
 ## 6. Current Next Steps
 
 1. **Phase 3 - Concept Extraction Engine**: Implement NLP / LLM extraction of concept triplets `(Subject, Relation, Object)` from document chunks.
-2. **Phase 3 - Knowledge Graph Canvas**: Render concept nodes and interactive relationships graph on frontend.
+2. **Phase 3 - Knowledge Graph Canvas**: Render interactive concept graph with nodes and relationship edges on frontend.
