@@ -41,19 +41,21 @@
 ## 3. Important Components & Interactivity
 
 ### 3.1 Sidebar Component ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
-- **Brand Header**: Compact logo displaying "AiKMS" with brain icon.
+- **Brand Header**: Compact logo displaying "AiKMS" with gradient brain icon badge and refined spacing.
 - **Action & Navigation Buttons**:
-  - **`+ New Chat` Button**: Prominent action button highlighted in stylish **Mint-Teal** tone (`color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.38); background: rgba(45, 212, 191, 0.08);`). Clicking starts a fresh chat session, clears messages, and removes `sessionStorage` item.
-  - **`Chat` Navigation Button**: Standard nav button with `MessageSquare` icon. Highlights when active (`activeTab === 'chat'`). Clicking returns to the active conversation **without losing previous messages**.
-  - **`Dashboard` Button**: Standard nav button with `LayoutDashboard` icon switching view to Curriculum Overview.
-  - **Quick Action Grid**: 2-column square button container:
-    - **Quiz Button (Left)**: Square button with `HelpCircle` icon, active state, launching AI Quiz & Assessment hub.
-    - **Flashcards Button (Right)**: Square button with `Layers` icon, active state, launching Flashcards workspace.
+  - **`+ New Chat` Button**: Modern squircle action button (`border-radius: 11px`) styled with a dual-stop teal gradient (`background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) ...)`), inward specular light (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`), and soft hover glow. Clicking resets conversation state.
+  - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon, translucent surface, and subtle hover transition. Switches to active chat conversation without clearing messages.
+  - **`Dashboard` Button**: Modern nav button with `LayoutDashboard` icon switching view to Curriculum Overview. Highlights with emerald gradient surface and crisp border when active.
+  - **Bluish Study Module Action Grid**: 2-column square button container styled with dashboard-inspired cyan/blue & indigo tones:
+    - **Quiz Button (Left)**: Sky-blue themed card (`#38bdf8`) with `HelpCircle` icon, glowing hover state, and cyan active border launching AI Assessment hub.
+    - **Flashcards Button (Right)**: Indigo-blue themed card (`#818cf8`) with `Layers` icon, glowing hover state, and blue active border launching Spaced Revision workspace.
 - **Content Section (Documents Drawer)**:
   - Collapsible accordion header with title, count badge, and animated chevron arrow. Expansion state is remembered in `localStorage` (`aikms_sidebar_docs_expanded`).
+  - **Modern Upload Content Button**: Sleek dashed pill/squircle with subtle surface hover.
   - Folder grouping and scrollable document list item cards featuring file title, subject tag, quick view eye icon button, and delete garbage bin button.
 - **Sidebar Resize Handle**: Custom draggable right edge (`.sidebar-resizer`) allowing user to adjust sidebar width between 220px and 520px (persisted in `localStorage` as `aikms_sidebar_width`).
 - **User Footer**: Profile avatar badge, user name, user email, and profile flyout trigger with change password and logout options.
+  - **User Profile Flyout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))**: Compact popover menu floating comfortably to the right of the sidebar (`left: calc(100% + 24px)`, `bottom: 12px`, `width: 308px`), with reduced vertical padding, 40px avatar, and balanced stats/actions list to avoid overcrowding the sidebar border.
 
 ### 3.2 Chat Window & Scope Bar ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - **Chat Scope Bar**: Context bar above the conversation feed featuring a dropdown selector:
