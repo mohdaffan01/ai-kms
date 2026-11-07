@@ -95,6 +95,7 @@ Learners and students face significant challenges in managing learning materials
 - **File Validation**:
   - Restrict uploads to whitelisted file extensions (`.pdf`, `.ppt`, `.pptx`, `.doc`, `.docx`, `.txt`, `.md`).
   - File size cap enforced at 20MB per document upload.
+  - Blank document guard: Documents must contain at least 3 characters of readable text; blank or sub-3 character files are blocked and removed upon upload.
 - **Performance & Scalability**:
   - Express static file serving for fast document retrieval.
   - Async MongoDB database queries with index support on `uploadedBy` and `email`.

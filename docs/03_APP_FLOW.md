@@ -98,7 +98,8 @@
           │        └──> Click "Upload Document"
           │
           ├──> HTTP POST /api/documents/upload (Multipart FormData with Bearer Token)
-          │        ├──> Backend Multer saves file to Backend/uploads/
+          │        ├──> Backend Multer receives file in Backend/uploads/
+          │        ├──> Content Validation: resolveDocumentStats extracts readable text; if charCount < 3 (blank file), file is unlinked from disk & returns HTTP 400 Bad Request
           │        ├──> Backend creates Document record in MongoDB
           │        └──> extractTopicsFromDocument automatically extracts hierarchical chapters & subtopics and syncs with Progress collection
           │

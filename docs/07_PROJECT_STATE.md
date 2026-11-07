@@ -43,6 +43,7 @@
 - [x] Multipart file upload middleware using Multer (`diskStorage` to `Backend/uploads/`)
 - [x] File extension validation whitelist (`.pdf`, `.ppt`, `.pptx`, `.doc`, `.docx`, `.txt`, `.md`)
 - [x] Upload size cap enforcement (20MB limit)
+- [x] **Blank Document & Content Guard**: Validates readable text length on upload; if a PDF contains less than 3 characters of readable text, the upload is rejected immediately (`400 Bad Request`) and the uploaded temporary file is unlinked from disk to prevent storage clutter ([document.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/document.controller.js))
 - [x] Mongoose Document schema with metadata (Title, Subject, Topic, Folder, ContentType, Status)
 - [x] Fetch user documents API with subject/topic/folder filtering (`GET /api/documents/my-documents`)
 - [x] Document deletion endpoint with disk file cleanup and DB deletion (`DELETE /api/documents/:id`)

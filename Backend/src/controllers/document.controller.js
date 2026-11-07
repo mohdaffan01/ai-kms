@@ -14,15 +14,17 @@ export const resolveDocumentStats = async (filePath, mimeType = '', originalFile
   let pageCount = 1;
   let wordCount = 0;
   let lineCount = 0;
+  let charCount = 0;
 
   if (noteContent) {
     const cleanText = (noteContent || '').trim();
+    charCount = cleanText.length;
     wordCount = cleanText ? cleanText.split(/\s+/).filter(Boolean).length : 0;
     lineCount = cleanText ? cleanText.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0;
-    return { pageCount: 1, wordCount, lineCount };
+    return { pageCount: 1, wordCount, lineCount, charCount };
   }
 
-  if (!filePath) return { pageCount: 1, wordCount: 0, lineCount: 0 };
+  if (!filePath) return { pageCount: 1, wordCount: 0, lineCount: 0, charCount: 0 };
 
   const isPdf = mimeType?.includes('pdf') || originalFileName?.toLowerCase().endsWith('.pdf');
 
@@ -41,6 +43,7 @@ export const resolveDocumentStats = async (filePath, mimeType = '', originalFile
         pageCount = resParsed.total || (Array.isArray(resParsed.pages) ? resParsed.pages.length : null) || 1;
         const text = (resParsed.text || '').trim();
         if (text) {
+          charCount = text.length;
           wordCount = text.split(/\s+/).filter(Boolean).length;
           lineCount = text.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length;
         }
@@ -61,6 +64,7 @@ export const resolveDocumentStats = async (filePath, mimeType = '', originalFile
         }
       } else {
         const text = fs.readFileSync(fullPath, 'utf-8').trim();
+        charCount = text.length;
         wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
         lineCount = text ? text.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0;
         pageCount = 1;
@@ -74,6 +78,7 @@ export const resolveDocumentStats = async (filePath, mimeType = '', originalFile
     pageCount: pageCount || 1,
     wordCount: wordCount || 0,
     lineCount: lineCount || 0,
+    charCount: charCount || 0,
   };
 };
 
@@ -104,12 +109,29 @@ export const uploadDocument = async (req, res) => {
 
     const userId = req.user._id || req.user.id;
 
-    // Extract document stats (pages, words, lines)
-    const { pageCount, wordCount, lineCount } = await resolveDocumentStats(
+    // Extract document stats (pages, words, lines, character count)
+    const { pageCount, wordCount, lineCount, charCount } = await resolveDocumentStats(
       req.file.path,
       req.file.mimetype,
       req.file.originalname
     );
+
+    // Validation: Block blank documents if text is shorter than 3 characters
+    if (!charCount || charCount < 3) {
+      // Remove temporary uploaded file from disk to prevent storage clutter
+      try {
+        if (req.file.path && fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (unlinkErr) {
+        console.warn('[uploadDocument] Could not remove rejected blank file:', unlinkErr.message);
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: "This document is blank or contains less than 3 characters of readable text. Please upload a document with valid study material.",
+      });
+    }
 
     const document = await documentRepository.create({
       title,
