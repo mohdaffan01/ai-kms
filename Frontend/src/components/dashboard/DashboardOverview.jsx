@@ -22,6 +22,7 @@ import RecentActivitySection from './RecentActivitySection';
 import CreateSubjectModal from './CreateSubjectModal';
 import UploadModal from './UploadModal';
 import SubjectDetailModal from './SubjectDetailModal';
+import DashboardSkeleton from './DashboardSkeleton';
 
 import {
   getDashboardDataApi,
@@ -447,10 +448,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
 
       {/* Main Content Body */}
       {isLoading ? (
-        <div className="dashboard-loading-skeleton">
-          <Loader2 size={36} className="spinner" />
-          <p>Loading your study dashboard...</p>
-        </div>
+        <DashboardSkeleton />
       ) : (
         <div className="dashboard-content-layout">
           {/* 1. Overview Section */}

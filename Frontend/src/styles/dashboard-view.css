@@ -57,6 +57,75 @@
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   Dashboard Shimmer Skeleton Animation & Layout
+   ========================================================================== */
+.dashboard-skeleton-layout {
+  pointer-events: none;
+  user-select: none;
+  width: 100%;
+}
+
+.skeleton-card {
+  position: relative;
+  overflow: hidden !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.skeleton-box,
+.skeleton-line,
+.skeleton-circle,
+.skeleton-btn {
+  position: relative;
+  overflow: hidden;
+  background-color: #212928;
+  border-radius: 6px;
+}
+
+.skeleton-circle {
+  border-radius: 50% !important;
+}
+
+.skeleton-heading {
+  margin-bottom: 0.25rem;
+  border-radius: 8px;
+}
+
+/* Shimmer Wave Effect */
+.skeleton-box::after,
+.skeleton-line::after,
+.skeleton-circle::after,
+.skeleton-btn::after,
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: aikms-shimmer-sweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes aikms-shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .dashboard-error-banner {
   display: flex;
   align-items: center;

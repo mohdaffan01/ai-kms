@@ -100,6 +100,7 @@
 - Alert error banners with `AlertCircle` icons.
 
 ### 3.7 Learning Dashboard Overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx))
+- **Shimmer Skeleton Loading State ([DashboardSkeleton.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardSkeleton.jsx))**: High-fidelity dark skeleton with smooth CSS shimmer wave sweep (`.aikms-shimmer-sweep`) rendered during initial dashboard data loading, exactly matching the 3-section layout (5 Overview cards, 3 Vault cards, and Learning Progress cards).
 - **Hero & Quick Actions**: Top header displaying active curriculum status, "+ Add Subject", "Upload Notes", "Reset Defaults", and "Refresh" quick action triggers.
 - **KPI Overview Cards ([OverviewStats.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/OverviewStats.jsx))**:
   - Total Subjects counter with folder badge.

@@ -75,6 +75,7 @@
 - [ ] Interactive Knowledge Graph visualization canvas (Phase 3)
 
 ### 3.5 Learning Dashboard & Curriculum Progress Tracking
+- [x] **Shimmer Skeleton Loading State**: High-fidelity animated Shimmer Skeleton UI ([`DashboardSkeleton.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardSkeleton.jsx)) mirroring Overview KPI stats, My Vaults cards, and Learning Progress charts with animated light-sweep shimmer waves, completely eliminating spinners and blank page delays.
 - [x] Mongoose Progress Model with hierarchical topics and subtopics ([`progress.model.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/models/progress.model.js))
 - [x] Real-time Dashboard data API with fast-path MongoDB caching (Sub-100ms page load; avoids redundant LLM re-extraction on page visits) ([`progress.controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/progress.controller.js))
 - [x] Pure Document-Driven & Dynamic Subjects: Empty demo/placeholder CS subjects purged; workspace starts cleanly and automatically generates subjects from uploaded study materials or user creation.
