@@ -84,7 +84,7 @@ const Register = () => {
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
-            <Brain size={32} />
+            <img src="/logo-128.png" alt="AiKMS" style={{ width: 32, height: 32, objectFit: 'contain' }} />
           </div>
           <h2>Join AiKMS</h2>
           <p>Create your account to start managing smart knowledge</p>

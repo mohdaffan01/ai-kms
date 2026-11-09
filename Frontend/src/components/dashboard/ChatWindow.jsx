@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Brain, User, FileText, Loader2, Volume2, VolumeX } from 'lucide-react';
+import { User, FileText, Loader2, Volume2, VolumeX } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { speakText, stopSpeaking } from '../../utils/voice';
 
@@ -41,7 +41,11 @@ const ChatWindow = ({ messages, isLoading }) => {
         /* Empty State / Welcome Screen */
         <div className="chat-welcome-state">
           <div className="welcome-icon">
-            <Brain size={44} />
+            <img
+              src="/logo.png"
+              alt="AiKMS Logo"
+              style={{ width: '46px', height: '46px', objectFit: 'contain' }}
+            />
           </div>
           <h1>Welcome to AiKMS</h1>
           <p>Ask anything from your uploaded PDF learning materials.</p>
@@ -58,7 +62,11 @@ const ChatWindow = ({ messages, isLoading }) => {
                 {msg.sender === 'user' ? (
                   <User size={18} />
                 ) : (
-                  <Brain size={18} />
+                  <img
+                    src="/logo-white-128.png"
+                    alt="AI"
+                    style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                  />
                 )}
               </div>
 
@@ -111,7 +119,11 @@ const ChatWindow = ({ messages, isLoading }) => {
           {isLoading && (
             <div className="message-row row-ai">
               <div className="message-avatar">
-                <Brain size={18} />
+                <img
+                  src="/logo-white-128.png"
+                  alt="AI"
+                  style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                />
               </div>
               <div className="message-bubble">
                 <div className="message-sender-name">AiKMS Assistant</div>

@@ -18,7 +18,8 @@ import {
   HelpCircle,
   MessageSquare,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  PanelLeftClose
 } from 'lucide-react';
 import UploadModal from './UploadModal';
 import DocumentViewerModal from './DocumentViewerModal';
@@ -53,6 +54,24 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
     setIsDocsExpanded((prev) => {
       const next = !prev;
       localStorage.setItem('aikms_sidebar_docs_expanded', String(next));
+      return next;
+    });
+  };
+
+  // Sidebar Collapsed Mini-Rail state (persisted in localStorage)
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem('aikms_sidebar_collapsed');
+      return saved !== null ? saved === 'true' : false;
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapsed = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('aikms_sidebar_collapsed', String(next));
       return next;
     });
   };
@@ -321,16 +340,49 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
 
       {/* Main Sidebar Element */}
       <aside 
-        className={`chat-sidebar ${isOpen ? 'open' : ''} ${isResizing ? 'resizing' : ''}`}
-        style={!isOpen ? { width: `${sidebarWidth}px` } : undefined}
+        className={`chat-sidebar ${isCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : ''} ${isResizing ? 'resizing' : ''}`}
+        style={!isOpen ? { width: isCollapsed ? '68px' : `${sidebarWidth}px` } : undefined}
       >
         {/* Brand & New Chat Button */}
         <div className="sidebar-top">
-          <div className="sidebar-brand">
-            <div className="brand-logo-icon">
-              <Brain size={20} />
+          <div 
+            className="sidebar-brand"
+            onClick={toggleCollapsed}
+            title={isCollapsed ? "Click to expand sidebar" : "Click to collapse sidebar"}
+            role="button"
+            tabIndex={0}
+            style={{ cursor: 'pointer' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleCollapsed();
+              }
+            }}
+          >
+            <div className="brand-logo-icon" style={{ cursor: 'pointer' }}>
+              <img
+                src="/logo-128.png"
+                alt="AiKMS Logo"
+                style={{ width: 22, height: 22, objectFit: 'contain', display: 'block', cursor: 'pointer' }}
+              />
             </div>
-            <span className="brand-name">AiKMS</span>
+            {!isCollapsed && (
+              <>
+                <span className="brand-name">AiKMS</span>
+                <button 
+                  type="button" 
+                  className="btn-sidebar-collapse-toggle" 
+                  title="Collapse sidebar"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCollapsed();
+                  }}
+                  aria-label="Collapse sidebar"
+                >
+                  <PanelLeftClose size={16} />
+                </button>
+              </>
+            )}
           </div>
 
           {/* 1. New Chat (Fresh Conversation Action) */}
@@ -344,7 +396,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             title="Start a new chat session"
           >
             <Plus size={18} />
-            <span>New Chat</span>
+            {!isCollapsed && <span>New Chat</span>}
           </button>
 
           {/* 2. Chat (Go back to ongoing conversation) */}
@@ -358,7 +410,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             title="Open active chat"
           >
             <MessageSquare size={18} />
-            <span>Chat</span>
+            {!isCollapsed && <span>Chat</span>}
           </button>
 
           {/* 3. Dashboard Overview */}
@@ -372,7 +424,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             title="View Dashboard overview"
           >
             <LayoutDashboard size={18} />
-            <span>Dashboard</span>
+            {!isCollapsed && <span>Dashboard</span>}
           </button>
 
           {/* Quick Modules: Quiz (Left, Future) & Flashcards (Right, Active) */}
@@ -387,7 +439,7 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
               }}
             >
               <HelpCircle size={18} />
-              <span>Quiz</span>
+              {!isCollapsed && <span>Quiz</span>}
             </button>
 
             <button
@@ -400,15 +452,28 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
               }}
             >
               <Layers size={18} />
-              <span>Flashcards</span>
+              {!isCollapsed && <span>Flashcards</span>}
             </button>
           </div>
+
+          {/* Collapsed Mini-Rail: Upload button directly placed in line with other buttons */}
+          {isCollapsed && (
+            <button 
+              type="button" 
+              className="btn-upload-content-collapsed" 
+              onClick={() => setIsUploadModalOpen(true)}
+              title={`Upload Content • ${documents.length} docs uploaded`}
+            >
+              <Upload size={18} />
+            </button>
+          )}
         </div>
 
-        {/* Your Content Section */}
-        <div className="sidebar-content-section">
-          <div 
-            className="section-header"
+        {/* Your Content Section (Visible when expanded) */}
+        {!isCollapsed && (
+          <div className="sidebar-content-section">
+            <div 
+              className="section-header"
             onClick={toggleDocsExpanded}
             role="button"
             tabIndex={0}
@@ -513,14 +578,15 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             </div>
           )}
 
-          <button 
-            className="btn-upload-content" 
-            onClick={() => setIsUploadModalOpen(true)}
-          >
-            <Upload size={16} />
-            <span>Upload Content</span>
-          </button>
-        </div>
+            <button 
+              className="btn-upload-content" 
+              onClick={() => setIsUploadModalOpen(true)}
+            >
+              <Upload size={16} />
+              <span>Upload Content</span>
+            </button>
+          </div>
+        )}
 
         {/* User Footer & Logout */}
         <div className="sidebar-user-footer" ref={profileFooterRef}>
@@ -542,14 +608,18 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             <div className="user-avatar-badge">
               <User size={18} />
             </div>
-            <div className="user-details">
-              <span className="user-display-name">{user.name}</span>
-              <span className="user-display-email">{user.email}</span>
-            </div>
-            <ChevronRight 
-              size={14} 
-              className={`user-profile-chevron ${isProfileWindowOpen ? 'open' : ''}`} 
-            />
+            {!isCollapsed && (
+              <>
+                <div className="user-details">
+                  <span className="user-display-name">{user.name}</span>
+                  <span className="user-display-email">{user.email}</span>
+                </div>
+                <ChevronRight 
+                  size={14} 
+                  className={`user-profile-chevron ${isProfileWindowOpen ? 'open' : ''}`} 
+                />
+              </>
+            )}
           </div>
 
           <button className="btn-sidebar-logout" onClick={handleLogout} title="Logout">
@@ -574,15 +644,17 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
           )}
         </div>
 
-        {/* Sidebar Resize Handle (Drag to adjust width) */}
-        <div
-          className="sidebar-resizer"
-          onMouseDown={handleMouseDown}
-          onDoubleClick={handleResetWidth}
-          title="Drag to resize sidebar • Double-click to reset"
-          role="separator"
-          aria-orientation="vertical"
-        />
+        {/* Sidebar Resize Handle (Drag to adjust width - available when expanded) */}
+        {!isCollapsed && (
+          <div
+            className="sidebar-resizer"
+            onMouseDown={handleMouseDown}
+            onDoubleClick={handleResetWidth}
+            title="Drag to resize sidebar • Double-click to reset"
+            role="separator"
+            aria-orientation="vertical"
+          />
+        )}
       </aside>
 
       {/* Upload Content Modal */}

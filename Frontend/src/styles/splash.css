@@ -52,15 +52,15 @@
 
 .splash-logo-box {
   position: relative;
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #10a37f 0%, #0a7a5e 100%);
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(16, 163, 127, 0.22) 0%, rgba(10, 122, 94, 0.12) 100%);
+  border: 1px solid rgba(16, 163, 127, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 10px 30px rgba(16, 163, 127, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  box-shadow: 0 10px 30px rgba(16, 163, 127, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
   animation: splashLogoFloat 2.4s ease-in-out infinite;
 }
 

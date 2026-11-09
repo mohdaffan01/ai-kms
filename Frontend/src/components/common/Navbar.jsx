@@ -20,7 +20,7 @@ const Navbar = () => {
       <div className="nav-container">
         <Link to={token ? "/dashboard" : "/login"} className="nav-brand">
           <div className="brand-icon-wrapper">
-            <Brain className="brand-icon" size={24} />
+            <img src="/logo-128.png" alt="AiKMS" style={{ width: 22, height: 22, objectFit: 'contain' }} />
           </div>
           <span className="brand-title">Ai<span className="brand-highlight">KMS</span></span>
         </Link>

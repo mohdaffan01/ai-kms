@@ -17,13 +17,12 @@
 
 ### 2.0 Zero-Flash Native Preloader & App Splash Screen ([index.html](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/index.html), [AppSplashScreen.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/AppSplashScreen.jsx))
 - **Zero-Flash Dark Baseline**: `index.html` embeds inline dark styling (`background-color: #171717`) in `<head>` preventing browser white blank page flashes on initial load and slow networks (3G/4G).
-- **0ms Native Preloader**: Renders an animated SVG brain logo, glowing green aura, and progress track inside `#root` before JavaScript bundles parse.
-- **React AppSplashScreen**: Smooth startup brand animation displaying floating brain logo (`#10a37f`), glowing halo, and animated progress bar, transitioning out with a 350ms graceful fade.
+- **0ms Native Preloader**: Renders official AiKMS logo (`logo-128.png`), glowing green aura, and progress track inside `#root` before JavaScript bundles parse.
+- **React AppSplashScreen**: Smooth startup brand animation displaying floating official AiKMS emerald logo (`#10a37f`), glowing halo, and animated progress bar, transitioning out with a 350ms graceful fade.
 
-### 2.1 Navigation Bar ([Navbar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Navbar.jsx))
-- **Position**: Fixed top navigation bar.
-- **Elements**:
-  - **Brand Logo**: Glowing brain icon with gradient text **AiKMS** ([Logo.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Logo.jsx)).
+### 2.1 Brand Identity & Official Logo ([Logo.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Logo.jsx))
+- **Official Brand Mark**: Minimalist human profile outline with an emerald green (`#10a37f`) knowledge ribbon/infinite brain loop symbol inside, seamlessly rendered across authentication headers, splash screen, sidebar, and browser favicon (`/favicon.png`).
+- **Brand Typography**: High-contrast crisp white `Ai` + neon emerald `KMS`.
   - **Navigation Links** (when logged in): **Dashboard** tab link, **Profile** tab link.
   - **User Badge**: Circular user avatar image with fallback error handling, displaying user first name.
   - **Logout Button**: Red/muted icon button triggering session cleanup and redirecting to `/login`.
@@ -41,7 +40,13 @@
 ## 3. Important Components & Interactivity
 
 ### 3.1 Sidebar Component ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
-- **Brand Header**: Compact logo displaying "AiKMS" with gradient brain icon badge and refined spacing.
+- **Brand Header & Click-to-Collapse**: Compact logo displaying "AiKMS" with official logo badge (`logo-128.png`) and `PanelLeftClose` toggle button. Features interactive `cursor: pointer` with emerald glow on hover; clicking the logo toggles sidebar between expanded and collapsed modes (state persisted in `localStorage` as `aikms_sidebar_collapsed`).
+- **Collapsible Mini-Rail Mode (68px width)**:
+  - Shrinks width smoothly with `transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1)`.
+  - Centers all module actions (`+ New Chat`, `Chat`, `Dashboard`, `Quiz`, `Flashcards`) into 44px icon buttons with tooltips.
+  - Places the quick upload button (`.btn-upload-content-collapsed`) directly inside the top action rail alongside Flashcards for a tight, consistent layout without empty vertical gaps.
+  - Stacks user avatar badge and logout button cleanly at the footer (redundant bottom expand button eliminated since the top logo seamlessly controls toggle).
+  - Hides the draggable `.sidebar-resizer` handle and documents accordion while collapsed.
 - **Action & Navigation Buttons**:
   - **`+ New Chat` Button**: Modern squircle action button (`border-radius: 11px`) styled with a dual-stop teal gradient (`background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) ...)`), inward specular light (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`), and soft hover glow. Clicking resets conversation state.
   - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon, translucent surface, and subtle hover transition. Switches to active chat conversation without clearing messages.
