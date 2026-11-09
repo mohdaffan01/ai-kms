@@ -228,11 +228,22 @@
           │                 ├──> Toggles all nested child subtopics simultaneously
           │                 └──> HTTP POST /api/progress/topic/toggle { subjectId, topicId, completed }
           │
-          └──> Add Custom Topic / Subtopic:
-                   ├──> Click "+ Add Topic" inline form
-                   ├──> Select "Top-level Parent Chapter" or select an existing parent to nest as child subtopic
-                   ├──> Enter topic title and submit
-                   └──> HTTP POST /api/progress/topic/add { subjectId, name, parentTopicId }
+          ├──> Add Custom Topic / Subtopic:
+          │        ├──> Click "+ Add Topic" inline form
+          │        ├──> Select "Top-level Parent Chapter" or select an existing parent to nest as child subtopic
+          │        ├──> Enter topic title and submit
+          │        └──> HTTP POST /api/progress/topic/add { subjectId, name, parentTopicId }
+          │
+          └──> Subject Deletion & Cascade Content Wipe:
+                   ├──> Click "Delete Subject" -> Opens GitHub-style safety confirmation modal
+                   ├──> User types exact subject name to confirm deletion
+                   ├──> HTTP DELETE /api/progress/subject/:id
+                   │        ├──> Backend unlinks all associated files from disk (`fs.unlinkSync`)
+                   │        ├──> Backend clears document caches & vector embeddings in ChromaDB (`deleteVectorsByDocument`)
+                   │        ├──> Backend cascade-deletes associated records from MongoDB: `Document`, `Flashcard`, and `Quiz`
+                   │        ├──> Removes subject from `Progress.subjects` and recalculates remaining curriculum stats
+                   │        └──> Returns remaining stats and deleted counts
+                   └──> Dispatches `aikms:refresh-dashboard` & `aikms:document-deleted` events -> All views sync immediately
 ```
 
 ---

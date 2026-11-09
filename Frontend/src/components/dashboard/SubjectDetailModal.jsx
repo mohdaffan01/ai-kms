@@ -755,7 +755,7 @@ const SubjectDetailModal = ({
 
             <div className="delete-confirm-body">
               <div className="delete-warning-banner">
-                <strong>Warning:</strong> This action <strong>cannot</strong> be undone. This will permanently delete the <strong>{subject.name}</strong> curriculum, all {totalTopics} chapters & subtopics, and reset your study progress.
+                <strong>Warning:</strong> This action <strong>cannot</strong> be undone. This will permanently delete the <strong>{subject.name}</strong> vault, all {totalTopics} chapters & subtopics, all uploaded study materials & personal notes, and all associated flashcards and quizzes.
               </div>
 
               <p className="delete-prompt-text">

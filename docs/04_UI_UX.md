@@ -152,10 +152,10 @@
   - "Delete Subject" danger action button (`Trash2` icon) placed directly below the "Study with AI" button.
 - **GitHub-Style Delete Confirmation Modal**:
   - When "Delete Subject" is clicked, an isolated high-safety mini confirmation modal opens with a blurred backdrop.
-  - Displays a warning banner: *"Warning: This action cannot be undone. This will permanently delete the curriculum and reset your study progress."*
+  - Displays a warning banner: *"Warning: This action cannot be undone. This will permanently delete the vault, all chapters & subtopics, all uploaded study materials & personal notes, and all associated flashcards and quizzes."*
   - Requires the user to type the exact subject name (e.g. `General` or `DBMS`) into a focused input box.
   - The destructive "I understand, delete this subject" button remains disabled until the typed text strictly matches the subject name.
-  - Upon deletion, unlinks associated documents to prevent automatic subject re-creation and closes the modal cleanly.
+  - Upon deletion, triggers a cascade wipe of all associated content (uploaded documents, physical disk files, vector embeddings, flashcards, quizzes) and recalculates curriculum stats.
 - **Hierarchical Accordion Structure**:
   - **Parent Chapter Rows**:
     - Expand / Collapse chevron toggle (`ChevronDown` / `ChevronRight`).

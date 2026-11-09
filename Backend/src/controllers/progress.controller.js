@@ -1,6 +1,12 @@
+import fs from 'fs';
+import path from 'path';
 import { progressRepository } from '../repositories/progress.repository.js';
 import { documentRepository } from '../repositories/document.repository.js';
+import Flashcard from '../models/flashcard.model.js';
+import Quiz from '../models/quiz.model.js';
 import { extractTopicsFromDocument } from '../services/topicExtractor.service.js';
+import { clearDocumentCache } from './knowledge.controller.js';
+import { deleteVectorsByDocument } from '../services/chromaService.js';
 
 // Empty default subjects array: subjects are generated dynamically from uploaded documents or user creation
 export const DEFAULT_CS_SUBJECTS = [];
@@ -663,40 +669,102 @@ export const deleteSubject = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Progress record not found' });
     }
 
-    const subjectIndex = progress.subjects.findIndex((s) => s.id === subjectId);
+    const subjectIndex = progress.subjects.findIndex(
+      (s) => s.id === subjectId || (s._id && s._id.toString() === String(subjectId))
+    );
     if (subjectIndex === -1) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
     }
 
     const removedSubject = progress.subjects[subjectIndex];
+    const subjectName = removedSubject.name ? removedSubject.name.trim() : '';
+    const subjectNameRegex = new RegExp(`^${subjectName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    // 1. Remove subject from progress.subjects array
     progress.subjects.splice(subjectIndex, 1);
+    progress.markModified('subjects');
 
-    // Unlink / clean subject reference from documents so subject does not auto-regenerate on next reload
-    await documentRepository.updateMany(
-      {
-        uploadedBy: userId,
-        subject: { $regex: new RegExp(`^${removedSubject.name.trim()}$`, 'i') },
-      },
-      { $set: { subject: 'General' } }
-    );
+    // 2. Find all uploaded documents associated with this subject
+    const matchingDocs = await documentRepository.find({
+      uploadedBy: userId,
+      subject: { $regex: subjectNameRegex },
+    });
 
-    // Log recent activity
+    // 3. Delete physical files from disk, clear ChromaDB vectors, and clear document cache
+    for (const doc of matchingDocs) {
+      if (doc.filePath) {
+        try {
+          const fullPath = path.isAbsolute(doc.filePath) && fs.existsSync(doc.filePath)
+            ? doc.filePath
+            : (fs.existsSync(path.resolve(process.cwd(), doc.filePath))
+                ? path.resolve(process.cwd(), doc.filePath)
+                : path.resolve(process.cwd(), 'Backend', doc.filePath));
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+          }
+        } catch (fsErr) {
+          console.warn('[ProgressController] Could not unlink file from disk:', fsErr.message);
+        }
+      }
+
+      const docIdStr = doc._id ? doc._id.toString() : doc.id;
+      if (docIdStr) {
+        try {
+          clearDocumentCache(docIdStr);
+        } catch {}
+
+        try {
+          await deleteVectorsByDocument(docIdStr);
+        } catch {}
+      }
+    }
+
+    // 4. Delete document records from MongoDB
+    await documentRepository.deleteMany({
+      uploadedBy: userId,
+      subject: { $regex: subjectNameRegex },
+    });
+
+    // 5. Delete all Flashcards associated with this subject
+    await Flashcard.deleteMany({
+      userId,
+      $or: [
+        { subject: { $regex: subjectNameRegex } },
+        { subjectId: removedSubject.id },
+      ],
+    });
+
+    // 6. Delete all Quizzes associated with this subject
+    await Quiz.deleteMany({
+      userId,
+      $or: [
+        { subject: { $regex: subjectNameRegex } },
+        { subjectId: removedSubject.id },
+      ],
+    });
+
+    // 7. Log recent activity
     progress.recentActivities.unshift({
       id: `act-del-sub-${Date.now()}`,
       type: 'subject_created',
-      title: `Deleted subject: "${removedSubject.name}"`,
+      title: `Deleted subject "${removedSubject.name}" and all related materials`,
       subject: 'System',
       timestamp: new Date(),
     });
+    progress.markModified('recentActivities');
 
     await progress.save();
 
-    const userDocs = await documentRepository.find({ uploadedBy: userId });
+    // 8. Re-calculate stats with remaining user documents
+    const userDocs = await documentRepository.findUserDocuments(userId);
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(200).json({
       success: true,
-      message: `Subject "${removedSubject.name}" deleted successfully`,
+      message: `Subject "${removedSubject.name}" and all related study materials deleted successfully`,
+      deletedSubjectId: subjectId,
+      deletedSubjectName: removedSubject.name,
+      deletedDocsCount: matchingDocs.length,
       stats,
     });
   } catch (error) {

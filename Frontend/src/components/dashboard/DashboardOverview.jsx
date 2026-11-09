@@ -425,7 +425,13 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
           ...prev,
           stats: res.stats || prev.stats,
           subjects: prev.subjects.filter((s) => s.id !== subjectId),
+          recentDocuments: (prev.recentDocuments || []).filter(
+            (d) => d.subject?.trim().toLowerCase() !== res.deletedSubjectName?.trim().toLowerCase()
+          ),
         }));
+        window.dispatchEvent(new CustomEvent('aikms:refresh-dashboard'));
+        window.dispatchEvent(new CustomEvent('aikms:document-deleted', { detail: { subject: res.deletedSubjectName } }));
+        await fetchDashboard(false);
       }
     } catch (err) {
       console.error('Failed to delete subject:', err);
