@@ -90,7 +90,7 @@
 - **Footer Disclaimer**: Micro text ("AiKMS Demo Workspace • RAG-based AI answer model will be enabled in Module 2").
 
 ### 3.4 Upload Content Modal ([UploadModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UploadModal.jsx))
-- **Overlay**: Darkened backdrop dismissing modal on click.
+- **Overlay & Modal Stacking**: Darkened backdrop dismissing modal on click. Configured with elevated `z-index: 2000` so that triggering file uploads directly from inside `SubjectDetailModal` (`z-index: 1000`) renders the upload window comfortably on top without getting obscured behind the subject view.
 - **Drop Zone**: Interactive dashed drag-and-drop file target. Highlights on drag over.
   - Displays file icon, name, file size, and "Change" button once a valid file is selected.
 - **Form Fields**:

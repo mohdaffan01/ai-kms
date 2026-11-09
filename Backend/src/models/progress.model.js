@@ -82,6 +82,10 @@ const subjectSchema = new mongoose.Schema({
     type: String,
     default: '#10a37f',
   },
+  isUserCreated: {
+    type: Boolean,
+    default: true,
+  },
   topics: [topicSchema],
   createdAt: {
     type: Date,

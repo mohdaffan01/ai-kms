@@ -390,14 +390,29 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
 
   // Create Subject
   const handleSubjectCreated = async (payload) => {
-    const res = await createSubjectApi(payload);
-    if (res && res.subject) {
-      setDashboardData((prev) => ({
-        ...prev,
-        stats: res.stats || prev.stats,
-        subjects: [...prev.subjects, res.subject],
-      }));
-      fetchDashboard(false);
+    try {
+      const res = await createSubjectApi(payload);
+      if (res && res.subject) {
+        setDashboardData((prev) => {
+          const exists = (prev.subjects || []).some(
+            (s) => s.id === res.subject.id || s.name?.trim().toLowerCase() === res.subject.name?.trim().toLowerCase()
+          );
+          const newSubj = {
+            ...res.subject,
+            documentCount: res.subject.documentCount || 0,
+          };
+          return {
+            ...prev,
+            stats: res.stats || prev.stats,
+            subjects: exists ? prev.subjects : [...(prev.subjects || []), newSubj],
+          };
+        });
+        window.dispatchEvent(new CustomEvent('aikms:refresh-dashboard'));
+        await fetchDashboard(false);
+      }
+    } catch (err) {
+      console.error('Failed to create subject:', err);
+      throw err;
     }
   };
 
@@ -662,25 +677,6 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         </div>
       )}
 
-      {/* Create Subject Modal */}
-      <CreateSubjectModal
-        isOpen={isCreateSubjectOpen}
-        onClose={() => setIsCreateSubjectOpen(false)}
-        onSubjectCreated={handleSubjectCreated}
-      />
-
-      {/* Upload Study Material Modal */}
-      <UploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => {
-          setIsUploadModalOpen(false);
-          setUploadPreselectedSubject('');
-        }}
-        onUploadSuccess={handleUploadSuccess}
-        subjects={dashboardData.subjects}
-        initialSubject={uploadPreselectedSubject}
-      />
-
       {/* Subject Study Progress & Topics Detail Modal */}
       <SubjectDetailModal
         subject={dashboardData.subjects.find((s) => s.id === selectedSubjectId)}
@@ -707,6 +703,25 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
           setIsUploadModalOpen(true);
         }}
         onOpenDocumentViewer={onOpenDocumentViewer}
+      />
+
+      {/* Create Subject Modal */}
+      <CreateSubjectModal
+        isOpen={isCreateSubjectOpen}
+        onClose={() => setIsCreateSubjectOpen(false)}
+        onSubjectCreated={handleSubjectCreated}
+      />
+
+      {/* Upload Study Material Modal */}
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          setUploadPreselectedSubject('');
+        }}
+        onUploadSuccess={handleUploadSuccess}
+        subjects={dashboardData.subjects}
+        initialSubject={uploadPreselectedSubject}
       />
     </div>
   );

@@ -227,19 +227,24 @@ export const getDashboardData = async (req, res) => {
       }
     }
 
-    // C. Remove any demo or placeholder subjects with NO content (0 uploaded documents AND 0 topics)
+    // C. Remove legacy placeholder demo subjects (sub-dbms, sub-os, etc.) if they have NO docs and NO topics
     const activeSubjects = progress.subjects.filter((subj) => {
+      const isLegacyDemoSubject = /^sub-(dbms|os|cn|ds|se)$/i.test(subj.id);
+      if (!isLegacyDemoSubject) {
+        // Any real user-created subject or document-derived vault is ALWAYS preserved!
+        return true;
+      }
       const matchingDocs = userDocs.filter(
         (d) => d.subject && d.subject.trim().toLowerCase() === subj.name.trim().toLowerCase()
       );
       const hasDocs = matchingDocs.length > 0;
       const hasTopics = Array.isArray(subj.topics) && subj.topics.length > 0;
-      const isCustomUserSubject = subj.isUserCreated === true && !/^sub-(dbms|os|cn|ds|se)$/.test(subj.id);
-      return hasDocs || hasTopics || isCustomUserSubject;
+      return hasDocs || hasTopics;
     });
 
     if (activeSubjects.length !== progress.subjects.length) {
       progress.subjects = activeSubjects;
+      progress.markModified('subjects');
       progressModified = true;
     }
 
@@ -558,6 +563,17 @@ export const createSubject = async (req, res) => {
       });
     }
 
+    // Check if subject with same name already exists
+    const duplicate = (progress.subjects || []).find(
+      (s) => s.name?.trim().toLowerCase() === name.trim().toLowerCase()
+    );
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: `A subject named "${name.trim()}" already exists in your curriculum.`,
+      });
+    }
+
     const cleanSubjectId = `sub-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
 
     // Prepare initial topics
@@ -593,6 +609,7 @@ export const createSubject = async (req, res) => {
     };
 
     progress.subjects.push(newSubject);
+    progress.markModified('subjects');
 
     // Log activity
     progress.recentActivities.unshift({
@@ -602,10 +619,11 @@ export const createSubject = async (req, res) => {
       subject: name.trim(),
       timestamp: new Date(),
     });
+    progress.markModified('recentActivities');
 
     await progress.save();
 
-    const userDocs = await documentRepository.find({ uploadedBy: userId });
+    const userDocs = await documentRepository.findUserDocuments(userId);
     const stats = calculateStats(progress.subjects, userDocs.length);
 
     return res.status(201).json({
@@ -616,6 +634,7 @@ export const createSubject = async (req, res) => {
         totalTopics: formattedTopics.length,
         completedTopics: 0,
         progress: 0,
+        documentCount: 0,
       },
       stats,
     });
