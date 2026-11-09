@@ -50,7 +50,11 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard defaultTab="dashboard" />} />
+          <Route path="/chat" element={<Dashboard defaultTab="chat" />} />
+          <Route path="/quiz" element={<Dashboard defaultTab="quiz" />} />
+          <Route path="/flashcards" element={<Dashboard defaultTab="flashcards" />} />
+          <Route path="/notes" element={<Dashboard defaultTab="notes" />} />
           <Route path="/server-offline" element={<NotFound isBackendOffline={true} />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />

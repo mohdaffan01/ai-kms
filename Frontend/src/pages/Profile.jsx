@@ -4,7 +4,6 @@ import {
   User, 
   Mail, 
   Lock, 
-  Image as ImageIcon, 
   CheckCircle, 
   AlertCircle, 
   Shield, 
@@ -13,14 +12,6 @@ import {
   KeyRound
 } from 'lucide-react';
 
-const PRESET_AVATARS = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=300',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=300',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300',
-];
-
 const Profile = () => {
   const { user, updateProfile, changePassword } = useAuth();
 
@@ -28,7 +19,6 @@ const Profile = () => {
   const [profileForm, setProfileForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    profileImage: user?.profileImage || '',
   });
 
   // Password Form State
@@ -62,12 +52,6 @@ const Profile = () => {
     if (profileSuccess) setProfileSuccess('');
   };
 
-  // Handle Avatar Preset Selection
-  const selectAvatar = (url) => {
-    setProfileForm({ ...profileForm, profileImage: url });
-    if (profileError) setProfileError('');
-  };
-
   // Submit Profile Update
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -82,8 +66,7 @@ const Profile = () => {
     try {
       setIsUpdatingProfile(true);
       await updateProfile({
-        name: profileForm.name,
-        profileImage: profileForm.profileImage,
+        name: profileForm.name.trim(),
       });
       setProfileSuccess('Profile updated successfully!');
     } catch (err) {
@@ -150,14 +133,24 @@ const Profile = () => {
         {/* Profile Card & Info Sidebar */}
         <div className="profile-card">
           <div className="profile-avatar-container">
-            <img
-              src={profileForm.profileImage || user?.profileImage || PRESET_AVATARS[0]}
-              alt={user?.name}
-              className="profile-large-avatar"
-              onError={(e) => {
-                e.target.src = PRESET_AVATARS[0];
+            <div
+              className="profile-avatar-icon"
+              style={{
+                width: '88px',
+                height: '88px',
+                borderRadius: '50%',
+                background: 'rgba(16, 163, 127, 0.15)',
+                border: '2px solid rgba(16, 163, 127, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#10a37f',
+                margin: '0 auto 1.25rem auto',
+                boxShadow: '0 0 24px rgba(16, 163, 127, 0.18)',
               }}
-            />
+            >
+              <User size={44} />
+            </div>
           </div>
 
           <h2 className="profile-name">{user?.name}</h2>
@@ -241,38 +234,6 @@ const Profile = () => {
                     />
                   </div>
                   <small className="form-hint">Email address is linked to your account identity.</small>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="profileImage">Profile Image URL</label>
-                  <div className="input-icon-wrapper">
-                    <ImageIcon className="input-icon" size={18} />
-                    <input
-                      type="text"
-                      id="profileImage"
-                      name="profileImage"
-                      placeholder="https://example.com/avatar.jpg"
-                      value={profileForm.profileImage}
-                      onChange={handleProfileChange}
-                    />
-                  </div>
-                </div>
-
-                {/* Preset Avatars Picker */}
-                <div className="avatar-picker">
-                  <label>Or select a default avatar:</label>
-                  <div className="preset-grid">
-                    {PRESET_AVATARS.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`preset-btn ${profileForm.profileImage === url ? 'selected' : ''}`}
-                        onClick={() => selectAvatar(url)}
-                      >
-                        <img src={url} alt={`Avatar ${idx + 1}`} />
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="form-actions">

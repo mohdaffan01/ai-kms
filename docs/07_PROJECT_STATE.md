@@ -31,7 +31,7 @@
 - [x] User login API issuing JWT (`POST /api/auth/login`)
 - [x] Persistent session handling using JWT stored in `localStorage`
 - [x] JWT verification middleware (`protect`)
-- [x] User profile view & preset avatar picker ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
+- [x] User profile view & credentials manager ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
 - [x] Profile update endpoint (`PUT /api/users/profile`)
 - [x] Password change endpoint with current password check (`PUT /api/users/change-password`)
 - [x] **Forgot Password Email Flow**: (`POST /api/auth/forgot-password`) sends rich HTML email with secure 30-minute password reset link using Nodemailer & Gmail SMTP credentials ([`sendEmail.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js))
@@ -59,7 +59,17 @@
   - **`Chat` Navigation Button**: Standard sidebar navigation item (`MessageSquare` icon) that switches view to active chat **without clearing ongoing messages** ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] **Chat Session Persistence**: Ongoing chat messages are automatically synchronized and persisted in `sessionStorage` (`aikms_active_chat_messages`), preventing accidental chat loss when navigating to Dashboard Overview, Quiz, or Flashcards, or when refreshing the page ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - [x] **Chat Scope Selector Bar**: Real-time dropdown above chat feed allowing learners to query across "All Documents" (auto search) or restrict retrieval context to a specific selected document ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
-- [x] **Collapsible Mini-Rail Sidebar**: Implemented click-to-collapse behavior on brand header ("AiKMS") and `PanelLeftClose` button, shrinking the sidebar into a compact 68px icon-only mini-rail. Preserves full navigation (New Chat, Chat, Dashboard, Quiz, Flashcards, integrated Top Upload Content button, User profile flyout, Logout) with smooth 0.25s easing, interactive cursor pointers on logo hover, and persistent state in `localStorage` (`aikms_sidebar_collapsed`) ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx), [dashboard.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/dashboard.css))
+- [x] **First-Class Path-Based Routing Architecture**: Replaced legacy query-param navigation (`?tab=...`) with native URL routes across the entire platform:
+  - **Dashboard Overview**: `/dashboard`
+  - **AI Chat Workspace**: `/chat`
+  - **Study Notes Vault**: `/notes`
+  - **AI Quiz Assessment**: `/quiz`
+  - **Flashcards Revision Deck**: `/flashcards`
+  - **Authentication**: `/login` and `/signup`
+  - *Backward Compatibility*: Automatic redirect replaces legacy `?tab=<view>` URLs with the clean route counterpart seamlessly.
+- [x] **Dedicated Study Notes Vault (`/notes`)**: Full-featured learning material repository view ([NotesView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/NotesView.jsx), [notes.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/notes.css)) with real-time text search, subject pill filtering, study material card grid with status pills and metadata, instant PDF viewer modal, direct "Ask AI" navigation to `/chat`, and safe deletion confirmation dialogs.
+- [x] **Sidebar Notes Integration**: Added direct `Notes` navigation button (`FileText` icon) between Dashboard and Quiz/Flashcards in both expanded and 68px collapsed mini-rail modes ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)).
+- [x] **Collapsible Mini-Rail Sidebar**: Implemented click-to-collapse behavior on brand header ("AiKMS") and `PanelLeftClose` button, shrinking the sidebar into a compact 68px icon-only mini-rail. Preserves full navigation (New Chat, Chat, Dashboard, Notes, Quiz, Flashcards, integrated Top Upload Content button, User profile flyout, Logout) with smooth 0.25s easing, interactive cursor pointers on logo hover, and persistent state in `localStorage` (`aikms_sidebar_collapsed`) ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx), [dashboard.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/dashboard.css))
 - [x] **Resizable Sidebar Drawer**: Draggable sidebar with custom resize handle and persistent width stored in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] **Collapsible Documents Section**: Accordion document list with expand/collapse toggle and state saved in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] User Profile Flyout with Password Change shortcut, Dashboard Overview link, and Logout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))
@@ -87,7 +97,7 @@
 - [x] Hierarchical Accordion Subject Detail Modal ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)) with Parent Chapters, nested Child Subtopics, connecting line guide, and topic builders
 - [x] Inline Subject Renaming ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): Instant inline title editing with Pencil button, Enter/Save controls, and automatic synchronization across all associated documents and dashboard cards (`PUT /api/progress/subject/:subjectId`).
 - [x] GitHub-Style Subject Deletion Modal ([`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx)): High-safety confirmation dialog requiring the user to type the exact subject name before the destructive delete button activates; unlinks documents to prevent auto-recreation (`DELETE /api/progress/subject/:subjectId`).
-- [x] Real-time optimistic Checkbox updates & backend persistence for both chapters and subtopics (`POST /api/progress/topic/toggle`)
+- [x] Real-time optimistic Checkbox updates & backend persistence for both chapters and subtopics (`PUT /api/progress/toggle-topic`): Enhanced with multi-identifier matching (`id`, `_id`, clean/numeric names), automatic Mongoose `markModified('subjects')` deep persistence, and auto-fallback schema defaults to prevent optimistic rollback and sync dropouts.
 - [x] Dynamic Subject Creation Modal ([`CreateSubjectModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/CreateSubjectModal.jsx)) with color palette presets
 - [x] Visual Learning Progress Distribution bar & Recent Activity stream ([`LearningProgressSection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/LearningProgressSection.jsx), [`RecentActivitySection.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/RecentActivitySection.jsx))
 
@@ -115,13 +125,17 @@
 ### 4.1 Frontend Status
 - **Framework**: React 19 + Vite 8 + React Router DOM 7
 - **Health**: Fully operational. Compiles cleanly without errors (`npm run build`).
-- **Pages Built**:
+- **Pages & Routes Built**:
   - `/login`: Public auth login page ([Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx))
   - `/signup`: Public auth registration page ([Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx))
   - `/register`: Standalone registration page with validation ([Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx))
   - `/forgot-password`: Password reset request page ([ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx))
   - `/reset-password/:token`: Secure password reset execution page ([ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx))
-  - `/dashboard`: Protected main workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx)) toggling between New Chat (default), Dashboard Overview, Smart Flashcards, and AI Quizzes
+  - `/dashboard`: Protected curriculum & learning overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx))
+  - `/chat`: Protected AI Chat workspace ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx), [ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
+  - `/notes`: Protected study notes & documents vault ([NotesView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/NotesView.jsx))
+  - `/quiz`: Protected AI assessment & quiz hub ([QuizView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx))
+  - `/flashcards`: Protected spaced revision flashcard deck ([FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx))
   - `/profile`: Protected profile & security management ([Profile.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Profile.jsx))
   - `/404`: Dedicated Not Found error page for broken or non-existent URLs ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx))
   - `/server-offline`: Dedicated 503 Backend Connection Failure screen with live ping tester ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx))
@@ -185,7 +199,6 @@
 ## 5. Known Issues & Technical Debt
 
 1. **Hardcoded API URLs**: Frontend files hardcode `http://localhost:3000/api` in `authApi.js` and `http://localhost:3000` in `DocumentViewerModal.jsx`. Should be migrated to environment variables (`import.meta.env.VITE_API_BASE_URL`).
-2. **Hardcoded Default Profile Avatar**: Default profile picture uses an external Unsplash URL (`https://images.unsplash.com/photo-1534528741775-53994a69daeb...`).
 
 ---
 

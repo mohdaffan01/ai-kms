@@ -27,7 +27,8 @@ or by looking at isolated code.
 > 5. Read **ONLY** those specific, targeted files.
 > 6. Implement the minimal required change.
 > 7. **EVERY SINGLE TIME a change is made, IMMEDIATELY update the relevant `/docs` files** (especially `docs/07_PROJECT_STATE.md` and related doc files) so the documentation is always 100% up to date.
-> 8. This is a permanent instruction that must be followed on every interaction without needing reminders.
+> 8. **Resolved Issues Cleanup**: In `docs/07_PROJECT_STATE.md` under "Known Issues & Technical Debt", when an issue is resolved, **completely remove/delete it from the list** instead of retaining it as "Resolved".
+> 9. This is a permanent instruction that must be followed on every interaction without needing reminders.
 
 ---
 

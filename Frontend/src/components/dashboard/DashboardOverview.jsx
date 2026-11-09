@@ -236,16 +236,30 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       let subjectName = '';
 
       const updatedSubjects = prev.subjects.map((subj) => {
-        if (subj.id !== subjectId) return subj;
+        const isTargetSubj =
+          subj.id === subjectId ||
+          (subj._id && subj._id.toString() === String(subjectId)) ||
+          (subj.name && subjectId && subj.name.trim().toLowerCase() === String(subjectId).trim().toLowerCase());
+        if (!isTargetSubj) return subj;
         subjectName = subj.name;
 
         const updatedTopics = (subj.topics || []).map((t) => {
-          if (t.id !== topicId) return t;
+          const isTargetTopic =
+            t.id === topicId ||
+            (t._id && t._id.toString() === String(topicId)) ||
+            (t.name && topicId && t.name.trim().toLowerCase() === String(topicId).trim().toLowerCase()) ||
+            (t.name && topicId && t.name.replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase() === String(topicId).replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase());
+          if (!isTargetTopic) return t;
 
           if (subtopicId) {
             // Toggling specific child subtopic
             const updatedSubtopics = (t.subtopics || []).map((st) => {
-              if (st.id !== subtopicId) return st;
+              const isTargetSub =
+                st.id === subtopicId ||
+                (st._id && st._id.toString() === String(subtopicId)) ||
+                (st.name && subtopicId && st.name.trim().toLowerCase() === String(subtopicId).trim().toLowerCase()) ||
+                (st.name && subtopicId && st.name.replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase() === String(subtopicId).replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase());
+              if (!isTargetSub) return st;
               itemName = st.name;
               return { ...st, completed: newCompleted, completedAt: newCompleted ? new Date() : null };
             });
@@ -340,7 +354,11 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         setDashboardData((prev) => ({
           ...prev,
           stats: res.stats || prev.stats,
-          subjects: prev.subjects.map((s) => (s.id === subjectId ? { ...s, ...res.subject } : s)),
+          subjects: prev.subjects.map((s) =>
+            s.id === subjectId || (s._id && s._id.toString() === String(subjectId)) || (res.subject && (s.id === res.subject.id || (s._id && res.subject._id && s._id.toString() === res.subject._id.toString())))
+              ? { ...s, ...res.subject }
+              : s
+          ),
         }));
       }
     } catch (err) {
@@ -357,7 +375,11 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
         setDashboardData((prev) => ({
           ...prev,
           stats: res.stats || prev.stats,
-          subjects: prev.subjects.map((s) => (s.id === subjectId ? { ...s, ...res.subject } : s)),
+          subjects: prev.subjects.map((s) =>
+            s.id === subjectId || (s._id && s._id.toString() === String(subjectId)) || (res.subject && (s.id === res.subject.id || (s._id && res.subject._id && s._id.toString() === res.subject._id.toString())))
+              ? { ...s, ...res.subject }
+              : s
+          ),
         }));
       }
     } catch (err) {
@@ -564,14 +586,28 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
                       <FileText size={18} className="docs-header-icon" />
                       <h3>Uploaded Study Materials</h3>
                     </div>
-                    <button
-                      type="button"
-                      className="btn-quick-upload-doc"
-                      onClick={() => setIsUploadModalOpen(true)}
-                    >
-                      <UploadCloud size={14} />
-                      <span>Upload</span>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        className="btn-quick-upload-doc"
+                        style={{ background: 'transparent', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                        onClick={() => {
+                          if (onSelectTab) onSelectTab('notes');
+                        }}
+                        title="Open Notes study vault (/notes)"
+                      >
+                        <BookOpen size={14} />
+                        <span>All Notes</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-quick-upload-doc"
+                        onClick={() => setIsUploadModalOpen(true)}
+                      >
+                        <UploadCloud size={14} />
+                        <span>Upload</span>
+                      </button>
+                    </div>
                   </div>
 
                   {dashboardData.recentDocuments.length === 0 ? (

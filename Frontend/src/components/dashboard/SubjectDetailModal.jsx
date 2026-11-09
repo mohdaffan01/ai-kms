@@ -552,7 +552,7 @@ const SubjectDetailModal = ({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (onToggleTopic) {
-                                    onToggleTopic(subject.id, topic.id, !isParentDone);
+                                    onToggleTopic(subject.id || subject._id, topic.id || topic._id || topic.name, !isParentDone);
                                   }
                                 }}
                                 aria-label={`Toggle all of ${topic.name}`}
@@ -603,9 +603,9 @@ const SubjectDetailModal = ({
                                   onClick={() => {
                                     if (onToggleTopic) {
                                       onToggleTopic(
-                                        subject.id,
-                                        topic.id,
-                                        subtopic.id,
+                                        subject.id || subject._id,
+                                        topic.id || topic._id || topic.name,
+                                        subtopic.id || subtopic._id || subtopic.name,
                                         !subtopic.completed
                                       );
                                     }
@@ -618,6 +618,17 @@ const SubjectDetailModal = ({
                                       className={`index-checkbox child-checkbox ${
                                         subtopic.completed ? 'checked' : ''
                                       }`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (onToggleTopic) {
+                                          onToggleTopic(
+                                            subject.id || subject._id,
+                                            topic.id || topic._id || topic.name,
+                                            subtopic.id || subtopic._id || subtopic.name,
+                                            !subtopic.completed
+                                          );
+                                        }
+                                      }}
                                       aria-label={`Toggle ${subtopic.name}`}
                                     >
                                       {subtopic.completed && <Check size={12} strokeWidth={3} />}

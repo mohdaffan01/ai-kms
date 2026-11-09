@@ -45,14 +45,23 @@ const Navbar = () => {
               </Link>
 
               <div className="nav-user-badge">
-                <img
-                  src={user.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'}
-                  alt={user.name}
-                  className="user-avatar"
-                  onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300';
+                <div 
+                  className="user-avatar-badge"
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'rgba(16, 163, 127, 0.15)',
+                    border: '1px solid rgba(16, 163, 127, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#10a37f',
+                    flexShrink: 0
                   }}
-                />
+                >
+                  <User size={16} />
+                </div>
                 <span className="user-name">{user.name?.split(' ')[0] || 'Student'}</span>
               </div>
 

@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const subtopicSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
+    default: () => `subtop-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
   },
   name: {
     type: String,
@@ -23,7 +23,7 @@ const subtopicSchema = new mongoose.Schema({
 const topicSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
+    default: () => `top-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
   },
   name: {
     type: String,
@@ -52,7 +52,7 @@ const topicSchema = new mongoose.Schema({
 const subjectSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
+    default: () => `sub-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
   },
   name: {
     type: String,
@@ -92,7 +92,7 @@ const subjectSchema = new mongoose.Schema({
 const activitySchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
+    default: () => `act-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
   },
   type: {
     type: String,

@@ -30,7 +30,6 @@ The backend database contains **5 primary collections**:
 | `name` | String | Yes | No | None | `trim: true` | User's full display name |
 | `email` | String | Yes | Yes | None | `lowercase: true`, `trim: true`, Regex validation (`^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$`) | Primary login email address |
 | `password` | String | Yes | No | None | `minlength: 8` | Bcrypt hashed password string |
-| `profileImage` | String | No | No | `'https://images.unsplash.com/...'` | String URL | Profile picture avatar URL |
 | `role` | String | No | No | `'student'` | Enum: `['student', 'teacher', 'admin']` | User access role |
 | `resetPasswordToken` | String | No | No | `undefined` | Hashed token string | Password reset security token |
 | `resetPasswordExpire` | Date | No | No | `undefined` | Date object | Password reset token expiration timestamp (30 mins) |

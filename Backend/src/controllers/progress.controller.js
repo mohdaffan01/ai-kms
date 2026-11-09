@@ -129,8 +129,12 @@ export const getDashboardData = async (req, res) => {
         // Map existing topics to retain completion state of both parents and subtopics
         const existingParentMap = new Map();
         (subj.topics || []).forEach((t) => {
-          if (!/^top-(dbms|os|cn|ds|se)-\d+$/.test(t.id)) {
+          if (t && t.name) {
             existingParentMap.set(t.name.trim().toLowerCase(), t);
+            const cleanName = t.name.replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase();
+            if (cleanName && !existingParentMap.has(cleanName)) {
+              existingParentMap.set(cleanName, t);
+            }
           }
         });
 
@@ -138,27 +142,50 @@ export const getDashboardData = async (req, res) => {
         const seenParentNames = new Set();
 
         hierarchicalChapters.forEach((chapter, pIdx) => {
-          const lowerName = chapter.name.trim().toLowerCase();
-          if (!seenParentNames.has(lowerName)) {
+          const rawChapName = typeof chapter === 'string' ? chapter.trim() : (chapter.name || '').trim();
+          if (!rawChapName) return;
+
+          const lowerName = rawChapName.toLowerCase();
+          const cleanLower = rawChapName.replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase();
+
+          if (!seenParentNames.has(lowerName) && !seenParentNames.has(cleanLower)) {
             seenParentNames.add(lowerName);
-            const existingParent = existingParentMap.get(lowerName);
+            seenParentNames.add(cleanLower);
+            const existingParent = existingParentMap.get(lowerName) || existingParentMap.get(cleanLower);
 
             const existingSubMap = new Map();
             if (existingParent && existingParent.subtopics) {
               existingParent.subtopics.forEach((st) => {
-                existingSubMap.set(st.name.trim().toLowerCase(), st);
+                if (st && st.name) {
+                  existingSubMap.set(st.name.trim().toLowerCase(), st);
+                  const cleanSubName = st.name.replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase();
+                  if (cleanSubName && !existingSubMap.has(cleanSubName)) {
+                    existingSubMap.set(cleanSubName, st);
+                  }
+                }
               });
             }
 
             const synchronizedSubtopics = [];
             (chapter.subtopics || []).forEach((subName, sIdx) => {
-              const subLower = subName.trim().toLowerCase();
-              if (existingSubMap.has(subLower)) {
-                synchronizedSubtopics.push(existingSubMap.get(subLower));
+              const rawSubName = typeof subName === 'string' ? subName.trim() : (subName.name || '').trim();
+              if (!rawSubName) return;
+
+              const subLower = rawSubName.toLowerCase();
+              const cleanSubLower = subLower.replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase();
+              const existingSub = existingSubMap.get(subLower) || existingSubMap.get(cleanSubLower);
+
+              if (existingSub) {
+                synchronizedSubtopics.push({
+                  id: existingSub.id || `subtop-${subj.id}-${pIdx + 1}-${sIdx + 1}`,
+                  name: rawSubName,
+                  completed: Boolean(existingSub.completed),
+                  completedAt: existingSub.completedAt || null,
+                });
               } else {
                 synchronizedSubtopics.push({
                   id: `subtop-${subj.id}-${pIdx + 1}-${sIdx + 1}`,
-                  name: subName.trim(),
+                  name: rawSubName,
                   completed: false,
                   completedAt: null,
                 });
@@ -168,11 +195,11 @@ export const getDashboardData = async (req, res) => {
             // Parent completion: if it has subtopics, completed when all subtopics are completed
             const allCompleted = synchronizedSubtopics.length > 0
               ? synchronizedSubtopics.every((st) => st.completed)
-              : (existingParent ? existingParent.completed : false);
+              : (existingParent ? Boolean(existingParent.completed) : false);
 
             synchronizedTopics.push({
               id: existingParent?.id || `top-${subj.id}-${pIdx + 1}`,
-              name: chapter.name.trim(),
+              name: rawChapName,
               completed: allCompleted,
               completedAt: allCompleted ? (existingParent?.completedAt || new Date()) : null,
               isExtracted: true,
@@ -332,19 +359,45 @@ export const toggleTopic = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Progress not found.' });
     }
 
-    const subject = progress.subjects.find((s) => s.id === subjectId);
+    // Flexible subject lookup (matches by id, _id, or name)
+    const subject = progress.subjects.find(
+      (s) =>
+        s.id === subjectId ||
+        (s._id && s._id.toString() === String(subjectId)) ||
+        (s.name && subjectId && s.name.trim().toLowerCase() === String(subjectId).trim().toLowerCase())
+    );
+
     if (!subject) {
       return res.status(404).json({
         success: false,
-        message: 'Subject not found.',
+        message: `Subject not found for id/name: "${subjectId}"`,
       });
     }
 
-    const topic = subject.topics.find((t) => t.id === topicId);
+    // Flexible topic lookup (matches by id, _id, exact name, or name without leading index numbers like "3. ")
+    const cleanTopicId = typeof topicId === 'string' ? topicId.trim() : String(topicId || '');
+    const cleanTopicIdNoNum = cleanTopicId.replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase();
+
+    let topic = (subject.topics || []).find(
+      (t) =>
+        t.id === cleanTopicId ||
+        (t._id && t._id.toString() === cleanTopicId) ||
+        (t.name && t.name.trim().toLowerCase() === cleanTopicId.toLowerCase()) ||
+        (t.name && cleanTopicIdNoNum && t.name.replace(/^\d+[\.\:\-]?\s*/, '').trim().toLowerCase() === cleanTopicIdNoNum)
+    );
+
+    // Fallback topic index matching if topicId is numeric e.g. "3" or 3
+    if (!topic && /^\d+$/.test(cleanTopicId)) {
+      const idx = parseInt(cleanTopicId, 10);
+      if (idx > 0 && idx <= (subject.topics || []).length) {
+        topic = subject.topics[idx - 1];
+      }
+    }
+
     if (!topic) {
       return res.status(404).json({
         success: false,
-        message: 'Topic not found.',
+        message: `Topic not found for id/name: "${topicId}"`,
       });
     }
 
@@ -353,9 +406,28 @@ export const toggleTopic = async (req, res) => {
 
     // Case 1: Toggling a specific subtopic
     if (subtopicId) {
-      const subtopic = (topic.subtopics || []).find((st) => st.id === subtopicId);
+      const cleanSubId = typeof subtopicId === 'string' ? subtopicId.trim() : String(subtopicId || '');
+      const cleanSubIdNoNum = cleanSubId.replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase();
+
+      let subtopic = (topic.subtopics || []).find(
+        (st) =>
+          st.id === cleanSubId ||
+          (st._id && st._id.toString() === cleanSubId) ||
+          (st.name && st.name.trim().toLowerCase() === cleanSubId.toLowerCase()) ||
+          (st.name && cleanSubIdNoNum && st.name.replace(/^\d+[\.\:\-]?\d*[\.\:\-]?\s*/, '').trim().toLowerCase() === cleanSubIdNoNum)
+      );
+
+      // Fallback subtopic index e.g. "3.3" -> 3rd subtopic
+      if (!subtopic && /^\d+\.\d+$/.test(cleanSubId)) {
+        const parts = cleanSubId.split('.');
+        const subIndex = parseInt(parts[1], 10) - 1;
+        if (topic.subtopics && topic.subtopics[subIndex]) {
+          subtopic = topic.subtopics[subIndex];
+        }
+      }
+
       if (!subtopic) {
-        return res.status(404).json({ success: false, message: 'Subtopic not found.' });
+        return res.status(404).json({ success: false, message: `Subtopic not found for id/name: "${subtopicId}"` });
       }
 
       newCompletedState = typeof completed === 'boolean' ? completed : !subtopic.completed;
@@ -403,6 +475,19 @@ export const toggleTopic = async (req, res) => {
       progress.recentActivities = progress.recentActivities.slice(0, 50);
     }
 
+    // Ensure all subjects, topics, and subtopics have valid string IDs before saving
+    (progress.subjects || []).forEach((s) => {
+      if (!s.id) s.id = s._id ? s._id.toString() : `sub-${Date.now()}`;
+      (s.topics || []).forEach((t) => {
+        if (!t.id) t.id = t._id ? t._id.toString() : `top-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+        (t.subtopics || []).forEach((st) => {
+          if (!st.id) st.id = st._id ? st._id.toString() : `subtop-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+        });
+      });
+    });
+
+    progress.markModified('subjects');
+    progress.markModified('recentActivities');
     await progress.save();
 
     // Recalculate stats
@@ -427,6 +512,7 @@ export const toggleTopic = async (req, res) => {
       message: `Status updated`,
       subject: {
         id: subject.id,
+        _id: subject._id,
         name: subject.name,
         totalTopics: total,
         completedTopics: completedCount,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ChevronDown, Globe, FileText, Check, RotateCcw } from 'lucide-react';
 import Sidebar from '../components/dashboard/Sidebar';
 import ChatWindow from '../components/dashboard/ChatWindow';
@@ -8,15 +8,27 @@ import DashboardOverview from '../components/dashboard/DashboardOverview';
 import DocumentViewerModal from '../components/dashboard/DocumentViewerModal';
 import FlashcardsView from '../components/dashboard/FlashcardsView';
 import QuizView from '../components/dashboard/QuizView';
+import NotesView from '../components/dashboard/NotesView';
 import { queryKnowledgeChatApi } from '../api/knowledgeApi';
 import { getMyDocumentsApi } from '../api/documentApi';
 import '../styles/dashboard-view.css';
 
-const Dashboard = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const initialTab = ['chat', 'flashcards', 'quiz', 'dashboard'].includes(tabParam) ? tabParam : 'chat';
-  const [activeTab, setActiveTab] = useState(initialTab); // 'chat' (default) | 'dashboard' | 'flashcards' | 'quiz'
+const Dashboard = ({ defaultTab = 'dashboard' }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  // Resolve current active view directly from path
+  const getTabFromPath = (pathname) => {
+    if (pathname.startsWith('/dashboard')) return 'dashboard';
+    if (pathname.startsWith('/chat')) return 'chat';
+    if (pathname.startsWith('/quiz')) return 'quiz';
+    if (pathname.startsWith('/flashcards')) return 'flashcards';
+    if (pathname.startsWith('/notes')) return 'notes';
+    return defaultTab;
+  };
+
+  const activeTab = getTabFromPath(location.pathname);
   const [messages, setMessages] = useState(() => {
     try {
       const saved = sessionStorage.getItem('aikms_active_chat_messages');
@@ -32,7 +44,6 @@ const Dashboard = () => {
   const [selectedChatDocId, setSelectedChatDocId] = useState('all');
   const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
   const scopeDropdownRef = useRef(null);
-  const navigate = useNavigate();
 
   // Close scope dropdown on click outside
   useEffect(() => {
@@ -82,23 +93,22 @@ const Dashboard = () => {
     };
   }, []);
 
-  // Keep activeTab in sync with tab query parameter
+  // Backward compatibility: If a legacy ?tab= URL is requested, redirect to clean path route
   useEffect(() => {
-    const currentTab = searchParams.get('tab');
-    if (currentTab && ['chat', 'flashcards', 'quiz', 'dashboard'].includes(currentTab)) {
-      setActiveTab(currentTab);
-    } else if (!currentTab) {
-      setActiveTab('chat');
+    const legacyTab = searchParams.get('tab');
+    if (legacyTab && ['chat', 'flashcards', 'quiz', 'dashboard', 'notes'].includes(legacyTab)) {
+      const remaining = {};
+      searchParams.forEach((v, k) => {
+        if (k !== 'tab') remaining[k] = v;
+      });
+      const q = Object.keys(remaining).length > 0 ? '?' + new URLSearchParams(remaining).toString() : '';
+      navigate(`/${legacyTab}${q}`, { replace: true });
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   const handleSelectTab = (tab, extraParams = {}) => {
-    setActiveTab(tab);
-    if (tab === 'chat' && Object.keys(extraParams).length === 0) {
-      setSearchParams({});
-    } else {
-      setSearchParams({ tab, ...extraParams });
-    }
+    const query = Object.keys(extraParams).length > 0 ? '?' + new URLSearchParams(extraParams).toString() : '';
+    navigate(`/${tab}${query}`);
   };
 
   const handleSendMessage = async (userText) => {
@@ -147,7 +157,7 @@ const Dashboard = () => {
     try {
       sessionStorage.removeItem('aikms_active_chat_messages');
     } catch {}
-    handleSelectTab('chat');
+    navigate('/chat');
   };
 
   const handleOpenDocumentViewer = (doc) => {
@@ -172,6 +182,11 @@ const Dashboard = () => {
           <FlashcardsView initialSubject={searchParams.get('subject') || ''} />
         ) : activeTab === 'quiz' ? (
           <QuizView initialSubject={searchParams.get('subject') || ''} />
+        ) : activeTab === 'notes' ? (
+          <NotesView 
+            onSelectTab={handleSelectTab} 
+            onOpenDocumentViewer={handleOpenDocumentViewer} 
+          />
         ) : (
           <>
             {chatDocuments.length > 0 && (() => {

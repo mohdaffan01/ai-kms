@@ -187,7 +187,17 @@ const UserProfileFlyout = ({
 
           {/* Quick Stats Grid */}
           <div className="flyout-stats-grid">
-            <div className="flyout-stat-card">
+            <div 
+              className="flyout-stat-card clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (onSelectTab) onSelectTab('notes');
+                onClose();
+              }}
+              style={{ cursor: 'pointer' }}
+              title="Click to view all study notes & documents"
+            >
               <div className="stat-card-icon docs">
                 <FileText size={15} />
               </div>
@@ -197,7 +207,17 @@ const UserProfileFlyout = ({
               </div>
             </div>
 
-            <div className="flyout-stat-card">
+            <div 
+              className="flyout-stat-card clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                if (onSelectTab) onSelectTab('dashboard');
+                onClose();
+              }}
+              style={{ cursor: 'pointer' }}
+              title="Click to view dashboard subjects"
+            >
               <div className="stat-card-icon subjects">
                 <Folder size={15} />
               </div>

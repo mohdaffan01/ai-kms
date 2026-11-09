@@ -427,6 +427,20 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
             {!isCollapsed && <span>Dashboard</span>}
           </button>
 
+          {/* 4. Notes & Study Materials */}
+          <button 
+            type="button"
+            className={`btn-sidebar-nav ${activeTab === 'notes' ? 'active' : ''}`}
+            onClick={() => {
+              if (onSelectTab) onSelectTab('notes');
+              setIsOpen(false);
+            }}
+            title="View study notes and materials"
+          >
+            <FileText size={18} />
+            {!isCollapsed && <span>Notes</span>}
+          </button>
+
           {/* Quick Modules: Quiz (Left, Future) & Flashcards (Right, Active) */}
           <div className="sidebar-action-grid">
             <button

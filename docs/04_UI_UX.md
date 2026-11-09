@@ -24,16 +24,25 @@
 - **Official Brand Mark**: Minimalist human profile outline with an emerald green (`#10a37f`) knowledge ribbon/infinite brain loop symbol inside, seamlessly rendered across authentication headers, splash screen, sidebar, and browser favicon (`/favicon.png`).
 - **Brand Typography**: High-contrast crisp white `Ai` + neon emerald `KMS`.
   - **Navigation Links** (when logged in): **Dashboard** tab link, **Profile** tab link.
-  - **User Badge**: Circular user avatar image with fallback error handling, displaying user first name.
+  - **User Badge**: Circular vector user avatar badge with emerald accent (`User` from Lucide), displaying user first name.
   - **Logout Button**: Red/muted icon button triggering session cleanup and redirecting to `/login`.
 
-### 2.2 Workspace Layout ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+### 2.2 Workspace Layout & First-Class Path Routing ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx), [App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx))
+- **Standard Clean Path Architecture**: All core study modules are mapped to clean browser paths:
+  - **Dashboard Overview**: `/dashboard`
+  - **AI Chat Workspace**: `/chat`
+  - **Study Notes Vault**: `/notes`
+  - **Quiz Assessment**: `/quiz`
+  - **Flashcards Deck**: `/flashcards`
+  - **Authentication**: `/login` & `/signup`
 - **Structure**: Split-screen two-column layout.
 - **Left Column**: Collapsible navigation sidebar ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)) containing document list, subject links, and upload triggers.
-- **Right Column**: Dynamically renders active tab content:
-  - **AI Chat Workspace**: Conversational RAG interface ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx) + [ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)).
-  - **Learning Dashboard**: Comprehensive curriculum and progress overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx)) featuring Overview KPI stats, Subject cards, Hierarchical Topic & Subtopic Progress Accordions, Learning Progress breakdown, and Recent Study Activity feeds.
-  - **Smart Flashcards Workspace**: 3D interactive revision card deck ([FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with AI generation from completed topics, deck grid search, and keyboard shortcut navigation.
+- **Right Column**: Dynamically renders active route view:
+  - **AI Chat Workspace (`/chat`)**: Conversational RAG interface ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx) + [ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)).
+  - **Learning Dashboard (`/dashboard`)**: Comprehensive curriculum and progress overview ([DashboardOverview.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DashboardOverview.jsx)) featuring Overview KPI stats, Subject cards, Hierarchical Topic & Subtopic Progress Accordions, Learning Progress breakdown, and Recent Study Activity feeds.
+  - **Study Notes Vault (`/notes`)**: Complete document and note repository ([NotesView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/NotesView.jsx)) featuring dynamic subject filter pills, real-time search, study card grid with metadata badges, instant PDF viewer modal, and direct "Ask AI" navigation.
+  - **Smart Flashcards Workspace (`/flashcards`)**: 3D interactive revision card deck ([FlashcardsView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/FlashcardsView.jsx)) with AI generation from completed topics, deck grid search, and keyboard shortcut navigation.
+  - **Interactive Quiz Hub (`/quiz`)**: MCQ assessment engine ([QuizView.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/QuizView.jsx)) with timer, analytics, and instant feedback.
 
 ---
 
@@ -43,17 +52,18 @@
 - **Brand Header & Click-to-Collapse**: Compact logo displaying "AiKMS" with official logo badge (`logo-128.png`) and `PanelLeftClose` toggle button. Features interactive `cursor: pointer` with emerald glow on hover; clicking the logo toggles sidebar between expanded and collapsed modes (state persisted in `localStorage` as `aikms_sidebar_collapsed`).
 - **Collapsible Mini-Rail Mode (68px width)**:
   - Shrinks width smoothly with `transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1)`.
-  - Centers all module actions (`+ New Chat`, `Chat`, `Dashboard`, `Quiz`, `Flashcards`) into 44px icon buttons with tooltips.
+  - Centers all module actions (`+ New Chat`, `Chat`, `Dashboard`, `Notes`, `Quiz`, `Flashcards`) into 44px icon buttons with tooltips.
   - Places the quick upload button (`.btn-upload-content-collapsed`) directly inside the top action rail alongside Flashcards for a tight, consistent layout without empty vertical gaps.
   - Stacks user avatar badge and logout button cleanly at the footer (redundant bottom expand button eliminated since the top logo seamlessly controls toggle).
   - Hides the draggable `.sidebar-resizer` handle and documents accordion while collapsed.
 - **Action & Navigation Buttons**:
   - **`+ New Chat` Button**: Modern squircle action button (`border-radius: 11px`) styled with a dual-stop teal gradient (`background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) ...)`), inward specular light (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`), and soft hover glow. Clicking resets conversation state.
-  - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon, translucent surface, and subtle hover transition. Switches to active chat conversation without clearing messages.
-  - **`Dashboard` Button**: Modern nav button with `LayoutDashboard` icon switching view to Curriculum Overview. Highlights with emerald gradient surface and crisp border when active.
+  - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon, translucent surface, and subtle hover transition. Switches to active chat conversation without clearing messages (`/chat`).
+  - **`Dashboard` Button**: Modern nav button with `LayoutDashboard` icon switching view to Curriculum Overview (`/dashboard`). Highlights with emerald gradient surface and crisp border when active.
+  - **`Notes` Navigation Button**: Modern nav button with `FileText` icon switching view to the Notes study vault (`/notes`). Displays all study files, subject filters, and preview modals.
   - **Bluish Study Module Action Grid**: 2-column square button container styled with dashboard-inspired cyan/blue & indigo tones:
-    - **Quiz Button (Left)**: Sky-blue themed card (`#38bdf8`) with `HelpCircle` icon, glowing hover state, and cyan active border launching AI Assessment hub.
-    - **Flashcards Button (Right)**: Indigo-blue themed card (`#818cf8`) with `Layers` icon, glowing hover state, and blue active border launching Spaced Revision workspace.
+    - **Quiz Button (Left)**: Sky-blue themed card (`#38bdf8`) with `HelpCircle` icon, glowing hover state, and cyan active border launching AI Assessment hub (`/quiz`).
+    - **Flashcards Button (Right)**: Indigo-blue themed card (`#818cf8`) with `Layers` icon, glowing hover state, and blue active border launching Spaced Revision workspace (`/flashcards`).
 - **Content Section (Documents Drawer)**:
   - Collapsible accordion header with title, count badge, and animated chevron arrow. Expansion state is remembered in `localStorage` (`aikms_sidebar_docs_expanded`).
   - **Modern Upload Content Button**: Sleek dashed pill/squircle with subtle surface hover.
@@ -207,7 +217,7 @@
 | `LoginForm` | Email & Password inputs | Disables submit when submitting; displays inline alert banner on invalid credentials |
 | `SignupForm` / `Register` | Full Name, Email, Password, Confirm Password | Validates email regex, min 8 char password, and password equality before API submit |
 | `UploadModal` | Drag-and-drop & file picker | Validates file extension whitelist and 20MB max size; autofills title |
-| `Profile` | Name & Avatar picker | Supports 5 preset avatar selection buttons or custom URL string |
+| `Profile` | Name & Security settings | Name updating and secure password change with emerald vector user badge |
 | `Profile` (Security) | Password update fields | Verifies non-empty fields, min 8 length, and password match |
 | `CreateSubjectModal` | Subject name, color presets, syllabus topics | Requires subject name; validates non-duplicate topics |
 | `SubjectDetailModal` | Accordion toggles, Parent/Child checkboxes | Optimistic checkbox toggle with instant stats calculation; filters by All/Pending/Completed |
