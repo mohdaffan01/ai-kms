@@ -1,8 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL =
+export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   `${window.location.protocol}//${window.location.hostname}:3000/api`;
+
+export const API_STATIC_BASE =
+  import.meta.env.VITE_SERVER_URL ||
+  API_BASE_URL.replace(/\/api\/?$/, '');
 
 const authApi = axios.create({
   baseURL: API_BASE_URL,
@@ -30,7 +34,7 @@ authApi.interceptors.response.use(
     if (!error.response && (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error'))) {
       window.dispatchEvent(
         new CustomEvent('aikms:backend-offline', {
-          detail: { message: 'Backend server is not reachable on port 3000', error },
+          detail: { message: `Backend server is not reachable at ${API_STATIC_BASE}`, error },
         })
       );
     }

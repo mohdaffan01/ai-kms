@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
+import { API_STATIC_BASE } from '../api/authApi';
 import '../styles/not-found.css';
 
 /**
@@ -23,22 +24,17 @@ const NotFound = ({ isBackendOffline = false }) => {
   const [serverStatus, setServerStatus] = useState(isOfflineMode ? 'offline' : 'unknown');
   const [statusMessage, setStatusMessage] = useState('');
 
-  const backendUrl =
-    import.meta.env.VITE_API_BASE_URL ||
-    `${window.location.protocol}//${window.location.hostname}:3000/api`;
-
   // Function to ping backend server
   const testBackendConnection = async () => {
     setIsChecking(true);
     setServerStatus('testing');
-    setStatusMessage('Pinging server on port 3000...');
+    setStatusMessage(`Pinging backend server at ${API_STATIC_BASE}...`);
 
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const rootUrl = backendUrl.replace(/\/api\/?$/, '');
-      const response = await fetch(`${rootUrl}/`, {
+      const response = await fetch(`${API_STATIC_BASE}/`, {
         method: 'GET',
         signal: controller.signal,
       });
@@ -99,7 +95,7 @@ const NotFound = ({ isBackendOffline = false }) => {
 
         <p className="minimal-404-subtitle">
           {isOfflineMode
-            ? 'Unable to establish a connection with the AiKMS backend API server. Please ensure the server is running on port 3000.'
+            ? 'Unable to establish a connection with the AiKMS backend API server. Please ensure the backend server is running.'
             : "The page you are looking for doesn't exist, has been removed, or is temporarily unavailable."}
         </p>
 
@@ -111,7 +107,7 @@ const NotFound = ({ isBackendOffline = false }) => {
               {serverStatus === 'online'
                 ? 'Server Online • Redirecting to workspace...'
                 : serverStatus === 'testing'
-                ? 'Checking port 3000...'
+                ? 'Checking server connection...'
                 : statusMessage || 'Server Unreachable'}
             </span>
           </div>

@@ -145,5 +145,5 @@ The project is currently positioned at the transition point to **Phase 3: Knowle
 ## 4. Environment & Technical Refactoring Tasks
 
 Before commencing Phase 2 feature development, the following minor environment improvements should be addressed:
-1. **Environment Variables for Frontend**: Move hardcoded backend base URLs (`http://localhost:3000`) in `authApi.js` and `DocumentViewerModal.jsx` to Vite environment variables (`import.meta.env.VITE_API_BASE_URL`).
+1. [x] **Environment Variables for Frontend**: Move hardcoded backend base URLs (`http://localhost:3000`) in `authApi.js` and `DocumentViewerModal.jsx` to Vite environment variables (`import.meta.env.VITE_API_BASE_URL` / `VITE_SERVER_URL`).
 2. **CORS Configuration**: Restrict CORS origin in `Backend/src/index.js` explicitly to `process.env.CLIENT_URL || 'http://localhost:5173'`.

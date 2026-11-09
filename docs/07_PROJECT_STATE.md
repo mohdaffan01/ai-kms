@@ -72,6 +72,7 @@
 - [x] **Collapsible Mini-Rail Sidebar**: Implemented click-to-collapse behavior on brand header ("AiKMS") and `PanelLeftClose` button, shrinking the sidebar into a compact 68px icon-only mini-rail. Preserves full navigation (New Chat, Chat, Dashboard, Notes, Quiz, Flashcards, integrated Top Upload Content button, User profile flyout, Logout) with smooth 0.25s easing, interactive cursor pointers on logo hover, and persistent state in `localStorage` (`aikms_sidebar_collapsed`) ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx), [dashboard.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/dashboard.css))
 - [x] **Resizable Sidebar Drawer**: Draggable sidebar with custom resize handle and persistent width stored in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] **Collapsible Documents Section**: Accordion document list with expand/collapse toggle and state saved in `localStorage` ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
+- [x] **Centralized Environment Configuration**: Migrated all backend endpoints and static asset base URLs to Vite environment variables (`VITE_API_BASE_URL`, `VITE_SERVER_URL`) with automatic hostname fallbacks ([authApi.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/api/authApi.js), [DocumentViewerModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DocumentViewerModal.jsx), [NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx), [.env](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/.env), [.env.example](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/.env.example))
 - [x] User Profile Flyout with Password Change shortcut, Dashboard Overview link, and Logout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))
 - [x] Manual Voice / Text-to-Speech Control (`Listen` / `Stop` button on AI response bubbles with SpeechSynthesis cleanup) ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx))
 - [x] **Minimalist 404 & Backend Connection Error Screen**: Clean, editorial dark-themed error view ([NotFound.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/NotFound.jsx), [not-found.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/not-found.css)) featuring giant faint background watermark (`404` / `503`), architectural background guide lines, centered typography ("Page Not Found" / "Backend Disconnected"), and pill-shaped action buttons (`Go to Dashboard →`, `Retry Connection →`, `Go Home`) with live connection ping recovery.
@@ -198,7 +199,7 @@
 
 ## 5. Known Issues & Technical Debt
 
-1. **Hardcoded API URLs**: Frontend files hardcode `http://localhost:3000/api` in `authApi.js` and `http://localhost:3000` in `DocumentViewerModal.jsx`. Should be migrated to environment variables (`import.meta.env.VITE_API_BASE_URL`).
+*No active known issues or technical debt.*
 
 ---
 

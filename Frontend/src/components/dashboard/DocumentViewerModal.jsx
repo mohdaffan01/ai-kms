@@ -18,9 +18,8 @@ import {
   AlignJustify
 } from 'lucide-react';
 import { deleteDocumentApi, getDocumentStatsApi } from '../../api/documentApi';
+import { API_STATIC_BASE } from '../../api/authApi';
 import DeleteConfirmModal from './DeleteConfirmModal';
-
-const API_STATIC_BASE = 'http://localhost:3000';
 
 const DocumentViewerModal = ({ document: doc, isOpen, onClose, onDeleteSuccess }) => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);

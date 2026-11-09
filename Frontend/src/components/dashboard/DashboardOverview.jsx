@@ -78,7 +78,7 @@ const DashboardOverview = ({ onSelectTab, onOpenDocumentViewer }) => {
       const isConnectionError = !err.response || err.code === 'ERR_NETWORK';
       setError({
         message: isConnectionError
-          ? 'Backend API server is offline or unreachable on port 3000.'
+          ? 'Backend API server is offline or unreachable. Please check your backend connection.'
           : (err.response?.data?.message || 'Could not connect to backend server.'),
         isConnectionError,
       });
