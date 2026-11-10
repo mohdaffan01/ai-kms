@@ -75,11 +75,8 @@
 - **User Footer**: Profile avatar badge, user name, user email, and profile flyout trigger with change password and logout options.
   - **User Profile Flyout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))**: Compact popover menu floating comfortably to the right of the sidebar (`left: calc(100% + 24px)`, `bottom: 12px`, `width: 308px`), with reduced vertical padding, 40px avatar, and balanced stats/actions list to avoid overcrowding the sidebar border.
 
-### 3.2 Chat Window & Scope Bar ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
-- **Chat Scope Bar**: Context bar above the conversation feed featuring a dropdown selector:
-  - **All Documents (Default)**: Searches across all indexed PDF materials with auto-search globe icon.
-  - **Specific Document**: Filters context down strictly to a selected document file with subject tag badge.
-  - **Reset to All**: Reset button appearing whenever a single document is selected.
+### 3.2 Chat Workspace ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- **Clean Full-Height Layout (No Top Navbar)**: The chat workspace operates without any top horizontal bar or navbar background strip, providing an uninterrupted, full-height conversational viewport that matches the rest of the application. RAG naturally queries across all uploaded user study materials automatically.
 - **Empty State**: Centered welcome screen featuring a large glowing Brain icon, "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded PDF learning materials.").
 - **Message Stream**: Vertical feed with smooth auto-scroll to bottom.
   - **User Row**: Right-aligned distinct bubble displaying user icon and message text.
