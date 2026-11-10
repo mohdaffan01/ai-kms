@@ -1,4 +1,4 @@
-# Project State Snapshot (PROJECT_STATE)
+# Project Status & Master Tracker (PROJECT_STATUS)
 
 ## 1. Executive Summary
 
@@ -18,6 +18,7 @@
   - Smart Flashcards & Spaced Revision Module — **100% Completed**
   - AI Assessment & Interactive Quiz Module — **100% Completed**
   - Workspace Routing, Dual-Button Chat Navigation & Session Persistence — **100% Completed**
+  - Project Documentation & AI Agent Instruction Restructuring — **100% Completed**
   - Phase 3: Knowledge Graph Canvas — **Ready to Start**
   - Phase 4: Knowledge Gap Detection & Analytics — **In Pipeline**
 

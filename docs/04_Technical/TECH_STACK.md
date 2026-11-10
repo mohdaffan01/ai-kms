@@ -1,7 +1,9 @@
-# Technical Requirement Document (TRD)
+# Technical Stack & Infrastructure (TECH_STACK)
 
 ## 1. Overview
-This document describes the technical architecture, stack, data communication patterns, authentication implementation, API endpoints, and technical constraints of the **AI-KMS** repository.
+This document describes the technical stack, frameworks, libraries, runtime environments, hardware/network requirements, data communication patterns, and technical constraints of the **AI-KMS** repository.
+
+For architectural diagrams and data flows, see [`SYSTEM_ARCHITECTURE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/SYSTEM_ARCHITECTURE.md). For complete API route definitions, see [`API_REFERENCE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/API_REFERENCE.md).
 
 ---
 

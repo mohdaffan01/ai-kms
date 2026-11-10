@@ -65,6 +65,9 @@ Students and researchers often struggle with **scattered study materials** (PDFs
 
 ```
 ai-kms/
+├── .agents/                 # AI agent rules & development workflows
+│   ├── rules/               # Project rules, coding standards, doc rules
+│   └── workflows/           # Feature development, bug fixing, refactoring
 ├── Backend/                 # Express 5 REST API Server
 │   ├── src/
 │   │   ├── config/          # MongoDB connection handler
@@ -88,7 +91,16 @@ ai-kms/
 │   │   └── main.jsx         # Application root
 │   ├── package.json
 │   └── vite.config.js
-└── docs/                    # Detailed technical and design documentation
+├── docs/                    # Authoritative technical, design & product documentation
+│   ├── 01_Product/          # PRD & Roadmap
+│   ├── 02_Architecture/     # System architecture & App flow
+│   ├── 03_Design/           # UI/UX specifications
+│   ├── 04_Technical/        # Tech stack, database schema & API reference
+│   ├── 05_Development/      # Implementation plan
+│   ├── 06_Project_Management/ # Project status & master tracker
+│   └── 07_Decisions/ADR/    # Architecture Decision Records
+├── AGENTS.md                # Central AI agent instruction entry point
+└── README.md
 ```
 
 ---
@@ -233,12 +245,26 @@ npm run build
 
 ## 11. Documentation Links
 
-Comprehensive technical specifications and architectural design documents are available in the [`docs/`](docs/) directory:
+Comprehensive technical specifications, design patterns, and agent instructions are organized inside the [`docs/`](docs/) directory and [`AGENTS.md`](AGENTS.md):
 
-- [Product Requirement Document (PRD)](docs/01_PRD.md)
-- [Technical Requirement Document (TRD)](docs/02_TRD.md)
-- [Application Flow (APP_FLOW)](docs/03_APP_FLOW.md)
-- [UI/UX Specifications (UI_UX)](docs/04_UI_UX.md)
-- [Backend Data Schema (BACKEND_SCHEMA)](docs/05_BACKEND_SCHEMA.md)
-- [Implementation Plan (IMPLEMENTATION_PLAN)](docs/06_IMPLEMENTATION_PLAN.md)
-- [Project State Snapshot (PROJECT_STATE)](docs/07_PROJECT_STATE.md)
+- **Product Specifications**:
+  - [Product Requirements Document (PRD)](docs/01_Product/PRD.md)
+  - [Product Roadmap & Milestones](docs/01_Product/ROADMAP.md)
+- **Architecture & System Design**:
+  - [System Architecture](docs/02_Architecture/SYSTEM_ARCHITECTURE.md)
+  - [Application Flow & User Journeys](docs/02_Architecture/APP_FLOW.md)
+- **Design & UI**:
+  - [UI/UX Specifications](docs/03_Design/UI_UX.md)
+- **Technical & API Reference**:
+  - [Technology Stack & Constraints](docs/04_Technical/TECH_STACK.md)
+  - [Database Schema & Mongoose Models](docs/04_Technical/DATABASE_SCHEMA.md)
+  - [Complete REST API Reference](docs/04_Technical/API_REFERENCE.md)
+- **Development & Project Management**:
+  - [Implementation Plan](docs/05_Development/IMPLEMENTATION_PLAN.md)
+  - [Living Project Status & Master Tracker](docs/06_Project_Management/PROJECT_STATUS.md)
+- **Architecture Decisions**:
+  - [Architecture Decision Records (ADRs)](docs/07_Decisions/ADR/README.md)
+- **AI Agent Guidelines & Workflows**:
+  - [Central Agent Instructions (AGENTS.md)](AGENTS.md)
+  - [Agent Rules (.agents/rules/)](.agents/rules/)
+  - [Agent Workflows (.agents/workflows/)](.agents/workflows/)
