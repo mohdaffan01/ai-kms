@@ -57,10 +57,13 @@
   - Stacks user avatar badge and logout button cleanly at the footer (redundant bottom expand button eliminated since the top logo seamlessly controls toggle).
   - Hides the draggable `.sidebar-resizer` handle and documents accordion while collapsed.
 - **Action & Navigation Buttons**:
-  - **`+ New Chat` Button**: Modern squircle action button (`border-radius: 11px`) styled with a dual-stop teal gradient (`background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) ...)`), inward specular light (`inset 0 1px 0 rgba(255, 255, 255, 0.08)`), and soft hover glow. Clicking resets conversation state.
-  - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon, translucent surface, and subtle hover transition. Switches to active chat conversation without clearing messages (`/chat`).
-  - **`Dashboard` Button**: Modern nav button with `LayoutDashboard` icon switching view to Curriculum Overview (`/dashboard`). Highlights with emerald gradient surface and crisp border when active.
-  - **`Notes` Navigation Button**: Modern nav button with `FileText` icon switching view to the Notes study vault (`/notes`). Displays all study files, subject filters, and preview modals.
+  - **Colorless Transparent Surface at Rest**: `+ New Chat`, `Chat`, `Dashboard`, and `Notes` navigation buttons feature a clean, colorless design at rest with `background: transparent`, `border: 1px solid transparent`, and neutral typography (`#94a3b8`), eliminating heavy background fills and persistent borders.
+  - **Dynamic Green Border on Hover**: Hovering over any particular navigation button reveals a crisp emerald green border (`border: 1px solid #10b981`) exclusively on that hovered button, while maintaining a transparent background and brightening text to `#f8fafc`.
+  - **Active State Highlighting**: The active navigation item displays emerald text (`#34d399`) with zero background clutter or persistent border, cleanly transitioning to the green border when hovered.
+  - **`+ New Chat` Button**: Sits at the top of the action rail, resetting conversation state on click.
+  - **`Chat` Navigation Button**: Sleek modern nav button with `MessageSquare` icon switching to active chat without clearing messages (`/chat`).
+  - **`Dashboard` Button**: Modern nav button with `LayoutDashboard` icon switching view to Curriculum Overview (`/dashboard`).
+  - **`Notes` Navigation Button**: Modern nav button with `FileText` icon switching view to the Notes study vault (`/notes`).
   - **Bluish Study Module Action Grid**: 2-column square button container styled with dashboard-inspired cyan/blue & indigo tones:
     - **Quiz Button (Left)**: Sky-blue themed card (`#38bdf8`) with `HelpCircle` icon, glowing hover state, and cyan active border launching AI Assessment hub (`/quiz`).
     - **Flashcards Button (Right)**: Indigo-blue themed card (`#818cf8`) with `Layers` icon, glowing hover state, and blue active border launching Spaced Revision workspace (`/flashcards`).
