@@ -276,12 +276,13 @@
 - **Body**:
   ```json
   {
-    "query": "Explain ACID properties with an example",
+    "message": "Explain ACID properties with an example",
     "documentId": null,
-    "scope": "all"
+    "subject": "Operating Systems"
   }
   ```
-- **Description**: Performs vector retrieval in ChromaDB, builds grounded context, queries Google Gemini 2.5 Flash, and returns response with citations.
+  *(Note: `subject` is optional. When specified, RAG vector retrieval & keyword grounding filter strictly to documents associated with that subject).*
+- **Description**: Performs vector retrieval in ChromaDB with subject isolation, builds grounded context, queries Google Gemini 2.5 Flash, and returns response with citations.
 - **Response `200 OK`**:
   ```json
   {

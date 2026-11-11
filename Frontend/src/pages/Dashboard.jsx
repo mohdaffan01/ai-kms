@@ -64,17 +64,17 @@ const Dashboard = ({ defaultTab = 'dashboard' }) => {
     navigate(`/${tab}${query}`);
   };
 
-  const handleSendMessage = async (userText) => {
+  const handleSendMessage = async (userText, subject = null) => {
     if (!userText || !userText.trim() || isLoading) return;
 
     // 1. Append User Message
-    const userMessage = { sender: 'user', text: userText };
+    const userMessage = { sender: 'user', text: userText, subject: subject || undefined };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
     try {
-      // 2. Query RAG Chat API with auto-detection across all documents
-      const data = await queryKnowledgeChatApi(userText, 'all');
+      // 2. Query RAG Chat API with auto-detection across all documents or scoped subject
+      const data = await queryKnowledgeChatApi(userText, 'all', subject);
 
       const aiText = data.answer || "I couldn't process an answer for that query.";
       const aiMessage = {
@@ -143,7 +143,12 @@ const Dashboard = ({ defaultTab = 'dashboard' }) => {
         ) : (
           <>
             <ChatWindow messages={messages} isLoading={isLoading} />
-            <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+            <ChatInput 
+              onSendMessage={handleSendMessage} 
+              disabled={isLoading}
+              initialSubject={searchParams.get('subject') || ''} 
+              isNewChat={messages.length === 0}
+            />
           </>
         )}
       </main>

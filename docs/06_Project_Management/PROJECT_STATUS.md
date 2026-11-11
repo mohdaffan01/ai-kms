@@ -61,6 +61,7 @@
   - **`Chat` Navigation Button**: Standard sidebar navigation item (`MessageSquare` icon) that switches view to active chat **without clearing ongoing messages** ([Sidebar.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx))
 - [x] **Chat Session Persistence**: Ongoing chat messages are automatically synchronized and persisted in `sessionStorage` (`aikms_active_chat_messages`), preventing accidental chat loss when navigating to Dashboard Overview, Quiz, or Flashcards, or when refreshing the page ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - [x] **Full-Height Chat Viewport (Eliminated Redundant Top Navbar)**: Removed the top horizontal navbar bar from the chat interface, providing an unobstructed full-height conversational workspace matching all other app views while RAG automatically queries across all uploaded user study materials ([Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
+- [x] **Chat Subject Scope Selector (`+` Button & Popover)**: Integrated a circular `+` button on the left inside the chat input pill bar ([ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx)). Clicking `+` opens a floating frosted-glass popover menu listing user study subjects and "All Subjects". Selecting a subject displays a scoped badge `[📚 Subject ×]`, dynamically adjusts the textarea placeholder to *"Ask anything about <Subject>..."*, and transmits `subject` to `POST /api/knowledge/chat` to ground AI responses exclusively in that subject's study materials ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js), [dashboard.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/dashboard.css))
 - [x] **First-Class Path-Based Routing Architecture**: Replaced legacy query-param navigation (`?tab=...`) with native URL routes across the entire platform:
   - **Dashboard Overview**: `/dashboard`
   - **AI Chat Workspace**: `/chat`
@@ -147,6 +148,7 @@
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
+- **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for instantly starting both Backend and Frontend in separate parallel consoles with automated browser launching to `http://localhost:5173`.
 - **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
 

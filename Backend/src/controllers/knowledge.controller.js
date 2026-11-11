@@ -361,7 +361,7 @@ const generateDocumentSummary = (docTitle, rawText) => {
  */
 export const queryRagChat = async (req, res) => {
   try {
-    const { message, documentId } = req.body;
+    const { message, documentId, subject } = req.body;
     const userId = req.user._id || req.user.id;
     const geminiApiKey = process.env.GEMINI_API_KEY || '';
 
@@ -385,9 +385,16 @@ export const queryRagChat = async (req, res) => {
       });
     }
 
-    // Determine target documents (Specific document or ALL documents)
+    // Determine target documents (Specific Subject, Specific document, or ALL documents)
     let targetDocs = userDocs;
-    if (documentId && documentId !== 'all') {
+    if (subject && subject !== 'all') {
+      const bySubject = userDocs.filter(
+        (d) => d.subject && d.subject.trim().toLowerCase() === subject.trim().toLowerCase()
+      );
+      if (bySubject.length > 0) {
+        targetDocs = bySubject;
+      }
+    } else if (documentId && documentId !== 'all') {
       const selected = userDocs.filter((d) => d._id.toString() === documentId.toString());
       if (selected.length > 0) {
         targetDocs = selected;

@@ -77,17 +77,27 @@
 
 ### 3.2 Chat Workspace ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - **Clean Full-Height Layout (No Top Navbar)**: The chat workspace operates without any top horizontal bar or navbar background strip, providing an uninterrupted, full-height conversational viewport that matches the rest of the application. RAG naturally queries across all uploaded user study materials automatically.
-- **Empty State**: Centered welcome screen featuring a large glowing Brain icon, "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded PDF learning materials.").
+- **Empty State (New Chat)**: Elevated welcome screen positioned comfortably above dead-center (`transform: translateY(-45px)`) featuring the official glowing logo icon (`.welcome-icon`), "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded PDF learning materials.").
 - **Message Stream**: Vertical feed with smooth auto-scroll to bottom.
   - **User Row**: Right-aligned distinct bubble displaying user icon and message text.
   - **AI Row**: Left-aligned bubble featuring Brain icon avatar, sender label ("AiKMS Assistant"), listen/stop voice synthesis toggle button, and markdown response text.
   - **Chat Session Persistence**: Messages stay synced in `sessionStorage` (`aikms_active_chat_messages`) during tab switches and page refreshes.
 
 ### 3.3 Chat Input ([ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx))
-- **Input Textarea**: Auto-expanding single-row textarea with placeholder ("Ask anything about your study material...").
+- **Floating Pill Container**: Centered, rounded pill (`border-radius: 28px`, `background: rgba(30, 32, 35, 0.85)`) with emerald focus glow (`#10b981`), housing the scope selector, input textarea, and action buttons.
+- **Elevated New Chat Positioning**: When starting a new conversation (`isNewChat = true` / `messages.length === 0`), the search bar automatically shifts upwards with elevated bottom spacing (`padding-bottom: 4.5rem`, `margin-bottom: 1.5rem`), providing a spacious, centered aesthetic aligned with modern AI tools. As soon as a message is sent, it smoothly transitions to standard bottom docked positioning.
+- **Subject Scope Selector (`+` Button)**:
+  - Clean circular `+` button positioned at the left of the input bar.
+  - Clicking `+` opens a floating frosted-glass popover (`.chat-subject-popover`, `z-index: 100`) listing available user study subjects and an "🌐 All Subjects" option.
+  - Auto-closes on outside click or option selection.
+- **Scoped Subject Pill Badge**:
+  - When a subject is chosen, a clean emerald badge (`[📚 SubjectName ×]`) appears inside the input prefix.
+  - Clicking `×` instantly clears the subject filter back to the full workspace scope.
+- **Dynamic Input Textarea**: Auto-expanding textarea whose placeholder dynamically adapts to the selected scope (e.g. *"Ask anything about Operating Systems..."* or *"Ask anything about your study material..."*).
 - **Keyboard Shortcut**: Submits on `Enter` key (without `Shift`).
-- **Send Button**: Circular icon button with `Send` icon, disabled when input string is empty or whitespace.
-- **Footer Disclaimer**: Micro text ("AiKMS Demo Workspace • RAG-based AI answer model will be enabled in Module 2").
+- **Send & Voice Actions**:
+  - Direct clean vector icons for Speech-to-Text (`Mic`/`MicOff`) and submission (`Send`), glowing emerald on hover.
+  - Submits the question accompanied by the selected subject parameter directly to `/api/knowledge/chat`.
 
 ### 3.4 Upload Content Modal ([UploadModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UploadModal.jsx))
 - **Overlay & Modal Stacking**: Darkened backdrop dismissing modal on click. Configured with elevated `z-index: 2000` so that triggering file uploads directly from inside `SubjectDetailModal` (`z-index: 1000`) renders the upload window comfortably on top without getting obscured behind the subject view.

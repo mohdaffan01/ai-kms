@@ -4,11 +4,15 @@ import authApi from './authApi';
  * Send a question to RAG Chat endpoint to answer using uploaded PDF/document content
  * @param {string} message - User query text
  * @param {string} [documentId] - Optional specific document ID to target (or 'all' / null)
+ * @param {string} [subject] - Optional subject name to scope knowledge query
  */
-export const queryKnowledgeChatApi = async (message, documentId = null) => {
+export const queryKnowledgeChatApi = async (message, documentId = null, subject = null) => {
   const payload = { message };
   if (documentId && documentId !== 'all') {
     payload.documentId = documentId;
+  }
+  if (subject && subject !== 'all') {
+    payload.subject = subject;
   }
   const response = await authApi.post('/knowledge/chat', payload);
   return response.data;

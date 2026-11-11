@@ -1,17 +1,90 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff } from 'lucide-react';
+import { Send, Mic, MicOff, Plus, X, BookOpen, Check, Globe } from 'lucide-react';
 import {
   supportsVoiceInput,
   getVoiceRecognitionCtor,
   extractVoiceTranscript,
 } from '../../utils/voice';
+import { getDashboardDataApi } from '../../api/progressApi';
+import { getMyDocumentsApi } from '../../api/documentApi';
 
-const ChatInput = ({ onSendMessage }) => {
+const ChatInput = ({ onSendMessage, disabled = false, initialSubject = '', isNewChat = false }) => {
   const [input, setInput] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState(initialSubject || '');
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [subjects, setSubjects] = useState([]);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
+
   const [isListening, setIsListening] = useState(false);
   const [voiceError, setVoiceError] = useState('');
   const recognitionRef = useRef(null);
+  const popoverRef = useRef(null);
+  const textareaRef = useRef(null);
   const voiceSupported = supportsVoiceInput();
+
+  // Sync initialSubject when prop updates
+  useEffect(() => {
+    if (initialSubject !== undefined) {
+      setSelectedSubject(initialSubject || '');
+    }
+  }, [initialSubject]);
+
+  // Fetch subjects from progress dashboard API and fallback to documents
+  const loadSubjects = async () => {
+    try {
+      setIsLoadingSubjects(true);
+      const data = await getDashboardDataApi();
+      if (data && data.success && Array.isArray(data.subjects) && data.subjects.length > 0) {
+        setSubjects(data.subjects);
+        return;
+      }
+    } catch (err) {
+      console.warn('[ChatInput] Could not load subjects from progress:', err.message);
+    }
+
+    try {
+      const docData = await getMyDocumentsApi();
+      if (docData && docData.success && Array.isArray(docData.documents)) {
+        const unique = [...new Set(docData.documents.map((d) => d.subject).filter(Boolean))];
+        setSubjects(unique.map((s) => ({ id: s, name: s })));
+      }
+    } catch (err) {
+      console.warn('[ChatInput] Could not load subjects from documents:', err.message);
+    } finally {
+      setIsLoadingSubjects(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSubjects();
+
+    const handleRefresh = () => loadSubjects();
+    window.addEventListener('aikms:refresh-dashboard', handleRefresh);
+    window.addEventListener('aikms:document-uploaded', handleRefresh);
+    window.addEventListener('aikms:document-deleted', handleRefresh);
+
+    return () => {
+      window.removeEventListener('aikms:refresh-dashboard', handleRefresh);
+      window.removeEventListener('aikms:document-uploaded', handleRefresh);
+      window.removeEventListener('aikms:document-deleted', handleRefresh);
+    };
+  }, []);
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target)) {
+        setIsPopoverOpen(false);
+      }
+    };
+
+    if (isPopoverOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isPopoverOpen]);
 
   useEffect(() => {
     const RecognitionCtor = getVoiceRecognitionCtor();
@@ -46,11 +119,27 @@ const ChatInput = ({ onSendMessage }) => {
     };
   }, []);
 
+  const handleSelectSubject = (subjectName) => {
+    setSelectedSubject(subjectName);
+    setIsPopoverOpen(false);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const handleClearSubject = (e) => {
+    e.stopPropagation();
+    setSelectedSubject('');
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || disabled) return;
 
-    onSendMessage(input.trim());
+    onSendMessage(input.trim(), selectedSubject || null);
     setInput('');
     setVoiceError('');
   };
@@ -79,18 +168,111 @@ const ChatInput = ({ onSendMessage }) => {
     setIsListening(true);
   };
 
+  const placeholderText = selectedSubject
+    ? `Ask anything about ${selectedSubject}...`
+    : 'Ask anything about your study material...';
+
   return (
-    <div className="chat-input-wrapper">
-      <form onSubmit={handleSubmit} className="chat-input-form">
+    <div className={`chat-input-wrapper ${isNewChat ? 'new-chat-mode' : ''}`}>
+      <form onSubmit={handleSubmit} className="chat-input-form" ref={popoverRef}>
+        {/* Subject Selection Popover */}
+        {isPopoverOpen && (
+          <div className="chat-subject-popover" role="dialog" aria-label="Select Subject Filter">
+            <div className="subject-popover-header">
+              <span className="subject-popover-title">Scope by Subject</span>
+              <span className="subject-popover-subtitle">Filter answers to specific study material</span>
+            </div>
+
+            <div className="subject-popover-list">
+              <button
+                type="button"
+                className={`subject-popover-item ${!selectedSubject ? 'active' : ''}`}
+                onClick={() => handleSelectSubject('')}
+              >
+                <div className="subject-popover-item-left">
+                  <Globe size={15} className="popover-item-icon" />
+                  <span>All Subjects (Entire Workspace)</span>
+                </div>
+                {!selectedSubject && <Check size={14} className="popover-check-icon" />}
+              </button>
+
+              <div className="subject-popover-divider" />
+
+              {isLoadingSubjects ? (
+                <div className="subject-popover-empty">Loading subjects...</div>
+              ) : subjects.length > 0 ? (
+                subjects.map((sub) => {
+                  const subName = sub.name || sub;
+                  const isSelected = selectedSubject.toLowerCase() === subName.toLowerCase();
+                  return (
+                    <button
+                      key={sub.id || sub._id || subName}
+                      type="button"
+                      className={`subject-popover-item ${isSelected ? 'active' : ''}`}
+                      onClick={() => handleSelectSubject(subName)}
+                    >
+                      <div className="subject-popover-item-left">
+                        <span
+                          className="subject-color-dot"
+                          style={{ backgroundColor: sub.color || '#10b981' }}
+                        />
+                        <span className="subject-item-name">{subName}</span>
+                      </div>
+                      {isSelected && <Check size={14} className="popover-check-icon" />}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="subject-popover-empty">
+                  No subjects found. Upload materials or add subjects in Dashboard.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Left Section: Plus Button and Active Subject Badge */}
+        <div className="chat-input-prefix">
+          <button
+            type="button"
+            className={`btn-chat-scope-add ${isPopoverOpen ? 'active' : ''} ${selectedSubject ? 'has-subject' : ''}`}
+            onClick={() => setIsPopoverOpen((prev) => !prev)}
+            title={selectedSubject ? `Change subject scope (Current: ${selectedSubject})` : "Select subject to scope your questions"}
+            aria-label="Filter by subject"
+          >
+            <Plus size={18} />
+          </button>
+
+          {selectedSubject && (
+            <div className="chat-scoped-subject-badge" title={`Chat scoped to: ${selectedSubject}`}>
+              <BookOpen size={13} className="subject-badge-icon" />
+              <span className="subject-badge-name">{selectedSubject}</span>
+              <button
+                type="button"
+                className="btn-clear-scoped-subject"
+                onClick={handleClearSubject}
+                title="Remove subject filter"
+                aria-label="Remove subject filter"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Textarea Input */}
         <textarea
+          ref={textareaRef}
           rows={1}
-          placeholder="Ask anything about your study material..."
+          placeholder={placeholderText}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           className="chat-textarea"
+          disabled={disabled}
         />
 
+        {/* Actions (Voice + Send) */}
         <div className="chat-input-actions">
           {voiceSupported && (
             <button
@@ -98,6 +280,7 @@ const ChatInput = ({ onSendMessage }) => {
               className={`btn-voice-toggle ${isListening ? 'active' : ''}`}
               onClick={toggleVoiceInput}
               aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+              disabled={disabled}
             >
               {isListening ? <MicOff size={19} /> : <Mic size={19} />}
             </button>
@@ -105,7 +288,7 @@ const ChatInput = ({ onSendMessage }) => {
 
           <button
             type="submit"
-            disabled={!input.trim()}
+            disabled={!input.trim() || disabled}
             className="btn-send-message"
             aria-label="Send message"
           >
@@ -115,7 +298,6 @@ const ChatInput = ({ onSendMessage }) => {
       </form>
 
       {voiceError && <div className="voice-status-error">{voiceError}</div>}
-      
     </div>
   );
 };
