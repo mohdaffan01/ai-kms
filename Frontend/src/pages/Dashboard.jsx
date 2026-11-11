@@ -125,7 +125,7 @@ const Dashboard = ({ defaultTab = 'dashboard' }) => {
         activeTab={activeTab} 
         onSelectTab={handleSelectTab} 
       />
-      <main className="chat-main-area">
+      <main className={`chat-main-area ${activeTab === 'chat' && messages.length === 0 ? 'new-chat-centered-layout' : ''}`}>
         {activeTab === 'dashboard' ? (
           <DashboardOverview 
             onSelectTab={handleSelectTab} 

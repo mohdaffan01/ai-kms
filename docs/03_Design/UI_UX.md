@@ -77,7 +77,7 @@
 
 ### 3.2 Chat Workspace ([ChatWindow.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatWindow.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
 - **Clean Full-Height Layout (No Top Navbar)**: The chat workspace operates without any top horizontal bar or navbar background strip, providing an uninterrupted, full-height conversational viewport that matches the rest of the application. RAG naturally queries across all uploaded user study materials automatically.
-- **Empty State (New Chat)**: Elevated welcome screen positioned comfortably above dead-center (`transform: translateY(-45px)`) featuring the official glowing logo icon (`.welcome-icon`), "Welcome to AiKMS" heading, and subtitle instruction ("Ask anything from your uploaded PDF learning materials.").
+- **Empty State (New Chat)**: The entire welcome hero section (official glowing logo icon `.welcome-icon`, "Welcome to AiKMS" heading, and subtitle) and the query input bar (`ChatInput`) are unified in a vertically and horizontally centered layout (`.new-chat-centered-layout`), matching the modern UX of ChatGPT, Claude, and Gemini.
 - **Message Stream**: Vertical feed with smooth auto-scroll to bottom.
   - **User Row**: Right-aligned distinct bubble displaying user icon and message text.
   - **AI Row**: Left-aligned bubble featuring Brain icon avatar, sender label ("AiKMS Assistant"), listen/stop voice synthesis toggle button, and markdown response text.
@@ -85,7 +85,10 @@
 
 ### 3.3 Chat Input ([ChatInput.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/ChatInput.jsx))
 - **Floating Pill Container**: Centered, rounded pill (`border-radius: 28px`, `background: rgba(30, 32, 35, 0.85)`) with emerald focus glow (`#10b981`), housing the scope selector, input textarea, and action buttons.
-- **Elevated New Chat Positioning**: When starting a new conversation (`isNewChat = true` / `messages.length === 0`), the search bar automatically shifts upwards with elevated bottom spacing (`padding-bottom: 4.5rem`, `margin-bottom: 1.5rem`), providing a spacious, centered aesthetic aligned with modern AI tools. As soon as a message is sent, it smoothly transitions to standard bottom docked positioning.
+- **Dynamic Dual-State Positioning (ChatGPT / Claude / Gemini Pattern)**:
+  - **New Chat Mode (`messages.length === 0`)**: The query bar floats in the optical center of the screen directly beneath the welcome greeting.
+  - **Active Conversation Mode (`messages.length > 0`)**: As soon as a query is submitted, the query bar smoothly drops down and docks cleanly at the bottom of the screen (`padding: 1rem 1.5rem 1.5rem; margin-bottom: 0;`), giving maximum scrollable height to the conversational feed.
+  - **Sidebar `+ New Chat` Click**: Clicking `+ New Chat` resets conversation state, smoothly transitioning the query bar back up into the screen center.
 - **Subject Scope Selector (`+` Button)**:
   - Clean circular `+` button positioned at the left of the input bar.
   - Clicking `+` opens a floating frosted-glass popover (`.chat-subject-popover`, `z-index: 100`) listing available user study subjects and an "🌐 All Subjects" option.
