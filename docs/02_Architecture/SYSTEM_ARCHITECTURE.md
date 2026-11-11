@@ -48,21 +48,32 @@
 - **Icons**: Lucide React 1.42.0
 - **Markdown Rendering**: `react-markdown` 10.1.0
 
-### 2.2 Client Routing Map
-| Route Path | View / Component | Purpose | Access Control |
-|---|---|---|---|
-| `/` | `RootRedirect` in `App.jsx` | Redirects authenticated users to `/dashboard`, unauthenticated to `/login` | Public |
-| `/login` | `Login.jsx` | User sign-in with email & password | Public |
-| `/signup` | `Signup.jsx` | User registration with input validation | Public |
-| `/forgot-password` | `ForgotPassword.jsx` | Password reset email request | Public |
-| `/reset-password/:token` | `ResetPassword.jsx` | Password update with 30-min security token | Public |
-| `/dashboard` | `Dashboard.jsx` (tab: `'dashboard'`) | Curriculum progress, subject vaults, study metrics | Protected (JWT) |
-| `/chat` | `Dashboard.jsx` (tab: `'chat'`) | RAG conversational workspace with scope selector | Protected (JWT) |
-| `/quiz` | `Dashboard.jsx` (tab: `'quiz'`) | AI assessment hub, timed player, scoring | Protected (JWT) |
-| `/flashcards` | `Dashboard.jsx` (tab: `'flashcards'`) | 3D interactive flip deck & spaced revision | Protected (JWT) |
-| `/notes` | `Dashboard.jsx` (tab: `'notes'`) | Study materials repository & notes vault | Protected (JWT) |
-| `/server-offline` | `NotFound.jsx` (`isBackendOffline: true`) | Dedicated 503 backend disconnection screen | Public |
-| `*` | `NotFound.jsx` | 404 Knowledge Node Not Found error screen | Public |
+### 2.2 Client Routing Map & Layout Hierarchy
+```text
+App Shell (App.jsx)
+├── Public Routes (Login, Signup, ForgotPassword, ResetPassword, NotFound)
+└── Protected Routes Wrapped in AppLayout (Frontend/src/layouts/AppLayout.jsx)
+    ├── /dashboard   ──> Dashboard.jsx (Curriculum progress, subject vaults, study metrics)
+    ├── /chat        ──> Chat.jsx (RAG conversational workspace with dual-state layout)
+    ├── /quiz        ──> Quiz.jsx (AI assessment hub, timed player, scoring)
+    ├── /flashcards  ──> Flashcards.jsx (3D interactive flip deck & spaced revision)
+    └── /notes       ──> Notes.jsx (Study materials repository & notes vault)
+```
+
+| Route Path | Layout | Page View | Purpose | Access Control |
+|---|---|---|---|---|
+| `/` | — | `RootRedirect` in `App.jsx` | Redirects authenticated users to `/dashboard`, unauthenticated to `/login` | Public |
+| `/login` | `AuthLayout.jsx` | `Login.jsx` | User sign-in with email & password | Public |
+| `/signup` | `AuthLayout.jsx` | `Signup.jsx` | User registration with input validation | Public |
+| `/forgot-password` | `AuthLayout.jsx` | `ForgotPassword.jsx` | Password reset email request | Public |
+| `/reset-password/:token` | `AuthLayout.jsx` | `ResetPassword.jsx` | Password update with 30-min security token | Public |
+| `/dashboard` | `AppLayout.jsx` | `Dashboard.jsx` | Curriculum progress, subject vaults, study metrics | Protected (JWT) |
+| `/chat` | `AppLayout.jsx` | `Chat.jsx` | RAG conversational workspace with scope selector & dual-state layout | Protected (JWT) |
+| `/quiz` | `AppLayout.jsx` | `Quiz.jsx` | AI assessment hub, timed player, scoring | Protected (JWT) |
+| `/flashcards` | `AppLayout.jsx` | `Flashcards.jsx` | 3D interactive flip deck & spaced revision | Protected (JWT) |
+| `/notes` | `AppLayout.jsx` | `Notes.jsx` | Study materials repository & notes vault | Protected (JWT) |
+| `/server-offline` | — | `NotFound.jsx` (`isBackendOffline: true`) | Dedicated 503 backend disconnection screen | Public |
+| `*` | — | `NotFound.jsx` | 404 Knowledge Node Not Found error screen | Public |
 
 ### 2.3 State Management & Synchronization
 1. **`AuthContext` (`Frontend/src/context/AuthContext.jsx`)**:

@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+// Layouts
+import AppLayout from './layouts/AppLayout';
+
+// Pages
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Chat from './pages/Chat';
+import Quiz from './pages/Quiz';
+import Flashcards from './pages/Flashcards';
+import Notes from './pages/Notes';
 import NotFound from './pages/NotFound';
 import AppSplashScreen from './components/common/AppSplashScreen';
 
+// Global Styles
 import './styles/index.css';
 import './styles/auth.css';
 import './styles/dashboard.css';
 import './styles/splash.css';
 
-// Route entry redirect: authenticated users go directly to dashboard (new chat), others to login
+// Route entry redirect: authenticated users go directly to dashboard, others to login
 const RootRedirect = () => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
@@ -50,11 +59,16 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard defaultTab="dashboard" />} />
-          <Route path="/chat" element={<Dashboard defaultTab="chat" />} />
-          <Route path="/quiz" element={<Dashboard defaultTab="quiz" />} />
-          <Route path="/flashcards" element={<Dashboard defaultTab="flashcards" />} />
-          <Route path="/notes" element={<Dashboard defaultTab="notes" />} />
+
+          {/* Authenticated Workspace Pages wrapped in AppLayout */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/quiz" element={<Quiz />} />
+            <Route path="/flashcards" element={<Flashcards />} />
+            <Route path="/notes" element={<Notes />} />
+          </Route>
+
           <Route path="/server-offline" element={<NotFound isBackendOffline={true} />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />

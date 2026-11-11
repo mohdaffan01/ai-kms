@@ -59,7 +59,8 @@ ai-kms/
 │       ├── api/                           # Axios API service instances with JWT interceptors
 │       ├── components/                    # Modular UI components (auth, common, dashboard)
 │       ├── context/                       # React Context providers (AuthContext)
-│       ├── pages/                         # Route views (Dashboard, Login, Signup, ResetPassword, NotFound)
+│       ├── layouts/                       # Layout shells (AppLayout with Sidebar & Modals, AuthLayout)
+│       ├── pages/                         # Route views (Dashboard, Chat, Notes, Quiz, Flashcards, Login, Signup)
 │       ├── styles/                        # Modular vanilla CSS stylesheets (dark-mode tokens)
 │       └── App.jsx                        # App shell and React Router tree
 │
