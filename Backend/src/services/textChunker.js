@@ -25,7 +25,7 @@ export const chunkText = (text, options = {}) => {
     return [];
   }
 
-  // If total length is smaller than target chunkSize, return as single chunk
+  // If total length is smaller than target chunkSize, return as single chunk or Is text <= 800 chars? ➔ Return as single chunk
   if (trimmedText.length <= chunkSize) {
     return [
       {
@@ -65,8 +65,8 @@ export const chunkText = (text, options = {}) => {
     const chunkContent = trimmedText.substring(startIndex, endIndex).trim();
 
     if (chunkContent.length > 0) {
-      chunks.push({
-        chunkIndex,
+      chunks.push({ //save in chunks array
+        chunkIndex, //0 , 1 ,2 ....
         text: chunkContent,
         charCount: chunkContent.length,
       });

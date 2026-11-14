@@ -7,13 +7,13 @@ const uploadDir = path.resolve("uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
-
+//storage configuration for multer to specify where and how files should be stored when uploaded
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (!fs.existsSync("uploads")) {
       fs.mkdirSync("uploads", { recursive: true });
     }
-    cb(null, "uploads/");
+    cb(null, "uploads/");//cb(null, "uploads/") specifies the destination folder for uploaded files. The first argument is an error (null means no error), and the second argument is the destination path.
   },
 
   filename: (req, file, cb) => {
@@ -45,6 +45,7 @@ const allowedExtensions = [
   ".md",
 ];
 
+//filefilter = function that checks the file type and extension of the uploaded file to ensure it matches the allowed types. If the file is valid, it calls the callback with true; otherwise, it calls the callback with an error message.
 const fileFilter = (req, file, cb) => {
   const extension = path.extname(file.originalname).toLowerCase();
 

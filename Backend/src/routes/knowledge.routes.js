@@ -16,3 +16,6 @@ router.post('/chat', protect, queryRagChat);
 router.delete('/:documentId', protect, deleteDocumentKnowledge);
 
 export default router;
+
+
+
