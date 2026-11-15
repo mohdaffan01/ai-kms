@@ -1,11 +1,22 @@
-# AI-KMS (AI Knowledge Management System)
+<p align="center">
+  <img src="Frontend/public/logo.png" alt="AiKMS Logo" width="130" />
+</p>
 
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-[![React](https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Backend-Node.js%20%7C%20Express%205-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/Database-MongoDB%20%7C%20Mongoose%209-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Google Gemini](https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
-[![ChromaDB](https://img.shields.io/badge/Vector%20Store-ChromaDB-FF6600)](https://www.trychroma.com/)
+<h1 align="center">AI-KMS (AI Knowledge Management System)</h1>
+
+<p align="center">
+  <strong>Your Personal AI Learning Workspace & Intelligent Study Companion</strong>
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/ISC"><img src="https://img.shields.io/badge/License-ISC-blue.svg" alt="License: ISC" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/Frontend-React%2019-61DAFB?logo=react&logoColor=black" alt="React" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Backend-Node.js%20%7C%20Express%205-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://www.mongodb.com/"><img src="https://img.shields.io/badge/Database-MongoDB%20%7C%20Mongoose%209-47A248?logo=mongodb&logoColor=white" alt="MongoDB" /></a>
+  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/LLM-Gemini%202.5%20Flash-4285F4?logo=google&logoColor=white" alt="Google Gemini" /></a>
+  <a href="https://www.trychroma.com/"><img src="https://img.shields.io/badge/Vector%20Store-ChromaDB-FF6600" alt="ChromaDB" /></a>
+  <a href="https://vitest.dev/"><img src="https://img.shields.io/badge/Testing-Vitest%20%7C%20Supertest-FCCE3F?logo=vitest&logoColor=black" alt="Testing: Vitest" /></a>
+</p>
 
 > **An AI-powered academic knowledge management system that transforms course materials into an interactive learning environment with context-grounded Semantic Search (RAG), dynamic syllabus topic extraction, 3D spaced revision flashcards, and self-assessment quizzes.**
 
@@ -220,17 +231,23 @@ Open your browser and navigate to **`http://localhost:5173`**.
 
 ## 9. Testing Instructions
 
-```bash
-# Test backend service pipeline (Cleaner, Chunker, Ollama, ChromaDB)
-cd Backend
-node testServices.js
+The AIKMS backend features an automated test suite powered by **Vitest** and **Supertest** with 114 tests (100% pass rate). See [`BACKEND_TESTING.md`](BACKEND_TESTING.md) for full architecture and coverage details.
 
-# Test topic hierarchy extraction
-node scripts/test_hierarchy.js
+```bash
+# Run all automated tests (Unit + Integration)
+npm test --prefix Backend
+
+# Run only unit tests
+npm run test:unit --prefix Backend
+
+# Run only integration API tests
+npm run test:integration --prefix Backend
+
+# Generate code coverage report
+npm run test:coverage --prefix Backend
 
 # Validate Frontend build
-cd ../Frontend
-npm run build
+npm run build --prefix Frontend
 ```
 
 ---
