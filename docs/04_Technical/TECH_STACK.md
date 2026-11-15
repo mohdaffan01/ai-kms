@@ -50,6 +50,11 @@ For architectural diagrams and data flows, see [`SYSTEM_ARCHITECTURE.md`](file:/
     "nodemailer": "^10.2.1",
     "nodemon": "^3.1.14",
     "pdf-parse": "^2.4.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.1.0",
+    "supertest": "^7.3.2",
+    "vitest": "^5.1.0"
   }
 }
 ```

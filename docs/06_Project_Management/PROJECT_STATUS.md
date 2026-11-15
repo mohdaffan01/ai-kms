@@ -3,8 +3,8 @@
 ## 1. Executive Summary
 
 - **Project Name**: AI-KMS (AI Knowledge Management System)
-- **Current Version**: 1.1.0 (Interactive AI Study Workspace & Curriculum Hub)
-- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, and Chat Session Architecture are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
+- **Current Version**: 1.2.0 (Automated Testing Suite & Enterprise Quality Assurance)
+- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, Chat Session Architecture, and **Full Backend Automated Testing Suite (Vitest + Supertest, 114 tests, 100% pass rate)** are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
 - **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs, spaced revision flashcards, adaptive quizzes, and curriculum progress tracking.
 
 ---
@@ -19,6 +19,7 @@
   - AI Assessment & Interactive Quiz Module — **100% Completed**
   - Workspace Routing, Dual-Button Chat Navigation & Session Persistence — **100% Completed**
   - Project Documentation & AI Agent Instruction Restructuring — **100% Completed**
+  - Backend Automated Unit & Integration Testing Suite (Vitest, Supertest, V8 Coverage) — **100% Completed**
   - Phase 3: Knowledge Graph Canvas — **Ready to Start**
   - Phase 4: Knowledge Gap Detection & Analytics — **In Pipeline**
 
@@ -124,6 +125,14 @@
 - [x] Quiz Hub: Overview stats (total quizzes, attempted, avg score %, total attempts), subject filters, text search, start/retake actions, and direct deletion without popups.
 - [x] Sidebar & Modal Integration: Activated Quiz square button in [`Sidebar.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx) and added "Take AI Quiz" CTA button in [`SubjectDetailModal.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/SubjectDetailModal.jsx).
 
+### 3.8 Automated Backend Testing Suite
+- [x] **Vitest & Supertest Integration**: Modern test runner with native ES-modules, isolated test suites, and Supertest HTTP API assertions ([`vitest.config.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/vitest.config.js), [`package.json`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/package.json)).
+- [x] **Architectural App Decoupling**: Separated Express app creation and routing into [`src/app.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/app.js) while maintaining zero-regression server boot in [`src/index.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/index.js).
+- [x] **Comprehensive Unit Test Suite**: 17 unit test files containing 76 tests covering Utils (`generateToken`, `sendEmail`), Middlewares (`auth`, `error`, `upload`), Models (`user`), Services (`textCleaner`, `textChunker`, `embeddingService`, `chromaService`, `documentProcessor`, `topicExtractor`), and Controllers (`auth`, `document`, `flashcard`, `quiz`, `progress`).
+- [x] **Comprehensive Integration Test Suite**: 4 integration test files containing 38 tests exercising Auth API workflows, Document upload/validation/deletion, Grounded RAG Chat & Vector Search, and Study Hub (Progress/Flashcards/Quizzes).
+- [x] **100% Mock Isolation of External Services**: Zero dependency on live ChromaDB, Ollama, Gmail SMTP, or local MongoDB daemons during test execution.
+- [x] **Verified Metrics**: 21 test files, 114 tests executed, 114 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/BACKEND_TESTING.md)).
+
 ---
 
 ## 4. Current Component & Subsystem Status
@@ -149,6 +158,7 @@
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
+- **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 114 tests passing across 21 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
 - **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for instantly starting both Backend and Frontend in separate parallel consoles with automated browser launching to `http://localhost:5173`.
 - **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
