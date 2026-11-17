@@ -21,7 +21,7 @@
 - **React AppSplashScreen**: Smooth startup brand animation displaying floating official AiKMS emerald logo (`#10a37f`), glowing halo, and animated progress bar, transitioning out with a 350ms graceful fade.
 
 ### 2.1 Brand Identity & Official Logo ([Logo.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Logo.jsx))
-- **Official Brand Mark**: Minimalist human profile outline with an emerald green (`#10a37f`) knowledge ribbon/infinite brain loop symbol inside, seamlessly rendered across authentication headers, splash screen, sidebar, and browser favicon (`/favicon.png`).
+- **Official Brand Mark**: Minimalist human profile outline with an authentic brain convolution outline inside, styled in emerald green (`#10a37f`) with smooth antialiased curves, seamlessly rendered across authentication headers, splash screen, sidebar, AI chat response avatars, and browser favicon (`/favicon.png`).
 - **Brand Typography**: High-contrast crisp white `Ai` + neon emerald `KMS`.
   - **Navigation Links** (when logged in): **Dashboard** tab link, **Profile** tab link.
   - **User Badge**: Circular vector user avatar badge with emerald accent (`User` from Lucide), displaying user first name.
