@@ -144,21 +144,62 @@
 
 ---
 
-### 3.4 Interactive Chat Flow
+### 3.4 Interactive Chat & RAG Query Flow
 
-```
-[ User on /dashboard (Active tab: 'chat') ]
+```text
+[ User on /chat or /dashboard ('chat' tab) ]
           │
-          ├──> User types query into ChatInput textarea
-          │    (e.g., "Summarize Unit 3 Database Indexing")
+          ├──> User enters question into ChatInput textarea (e.g., "What is B+ tree indexing in DBMS?")
+          │    - Optional: Selects subject scope via "+" selector (e.g. "[📚 DBMS]")
           │
-          ├──> Press Enter or click Send button
+          ├──> Press Enter or click Send Button
           │
-          ├──> User message appended immediately to ChatWindow stream
+          ├──> [ Frontend UI Optimistic Action ]
+          │    - User query immediately appended to messages array in ChatWindow
+          │    - Conversation state persisted to sessionStorage ('aikms_active_chat_messages')
+          │    - Layout shifts from centered hero bar to docked bottom input bar
+          │    - Animated typing indicator activated (isGenerating = true)
           │
-          ├──> Input textarea clears & sends query to RAG backend (POST /api/knowledge/chat)
+          ├──> HTTP POST /api/knowledge/chat
+          │    - Headers: Authorization: Bearer <JWT Token>
+          │    - Payload: { message: "...", subject: "DBMS", documentId: "all" }
           │
-          └──> Grounded AI Assistant response streamed back from ChromaDB chunks with TTS voice control
+          ├──> [ Express Middleware Layer ]
+          │    - authMiddleware (protect) verifies JWT against secret
+          │    - Attaches authenticated user object (req.user._id)
+          │
+          ├──> [ Backend Controller: queryRagChat in knowledge.controller.js ]
+          │    │
+          │    ├──> 1. Input Validation: Check non-empty query string
+          │    ├──> 2. Fetch User Documents: documentRepository.findUserDocuments(userId)
+          │    │       (If 0 documents found -> returns helpful upload guide)
+          │    ├──> 3. Fast Intent Classification:
+          │    │       - Greeting Detection (isGreeting) -> Returns instant greeting + document list
+          │    │       - Document Summary Detection (isSummaryRequest) -> Generates structured doc summary
+          │    │
+          │    ├──> 4. Semantic Vector Retrieval (ChromaDB):
+          │    │       - generateEmbedding(userQuery) converts query into vector
+          │    │       - searchVectors(userId, queryVector, topK=8) finds most relevant chunks
+          │    │       - Strictly scoped by userId & optional subject filter
+          │    │
+          │    ├──> 5. Context Grounding & Prompt Assembly:
+          │    │       - Fetches source document records for matched chunks
+          │    │       - Assembles structured prompt with DOCUMENT CONTEXT & USER QUESTION
+          │    │
+          │    ├──> 6. LLM Inference (Google Gemini 2.5 Flash):
+          │    │       - Calls Gemini API with context-grounded instructions
+          │    │       - Formats output with bold terms, definitions, and bullet points
+          │    │       - Fallbacks: Ollama (local llama3) -> Multi-document keyword scoring
+          │    │
+          │    └──> 7. API Response: Returns HTTP 200 JSON
+          │            { success: true, answer: "...", sources: ["DBMS_Unit3.pdf"] }
+          │
+          └──> [ Frontend UI Rendering & Interaction ]
+               - Appends AI response message with Markdown rendering (react-markdown)
+               - Displays source document reference pills
+               - Enables TTS Voice Synthesis ("Listen" / "Stop" button)
+               - Automatically scrolls chat view to bottom
+               - Updates sessionStorage ('aikms_active_chat_messages')
 ```
 
 ---

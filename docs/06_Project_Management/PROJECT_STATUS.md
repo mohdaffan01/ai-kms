@@ -90,6 +90,7 @@
 - [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
 - [x] Gemini 2.5 Flash LLM Integration (`gemini-2.5-flash` API endpoint for grounded Q&A and summary generation)
+- [x] Documented End-to-End RAG Query & Control Flow Architecture in [`APP_FLOW.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/APP_FLOW.md#L147-L200) and [`SYSTEM_ARCHITECTURE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/SYSTEM_ARCHITECTURE.md)
 - [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, and fragments through linguistic sanitization.
 - [ ] Concept & relationship extraction for Knowledge Graphs (Phase 3)
 - [ ] Interactive Knowledge Graph visualization canvas (Phase 3)
