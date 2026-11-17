@@ -30,35 +30,46 @@ const ChatInput = ({ onSendMessage, disabled = false, initialSubject = '', isNew
   }, [initialSubject]);
 
   // Fetch subjects from progress dashboard API and fallback to documents
-  const loadSubjects = async () => {
-    try {
+  const loadSubjects = async (showLoading = true) => {
+    if (showLoading) {
       setIsLoadingSubjects(true);
-      const data = await getDashboardDataApi();
-      if (data && data.success && Array.isArray(data.subjects) && data.subjects.length > 0) {
-        setSubjects(data.subjects);
-        return;
-      }
-    } catch (err) {
-      console.warn('[ChatInput] Could not load subjects from progress:', err.message);
     }
-
     try {
-      const docData = await getMyDocumentsApi();
-      if (docData && docData.success && Array.isArray(docData.documents)) {
-        const unique = [...new Set(docData.documents.map((d) => d.subject).filter(Boolean))];
-        setSubjects(unique.map((s) => ({ id: s, name: s })));
+      let subjectList = [];
+
+      try {
+        const data = await getDashboardDataApi();
+        if (data && data.success && Array.isArray(data.subjects) && data.subjects.length > 0) {
+          subjectList = data.subjects;
+        }
+      } catch (err) {
+        console.warn('[ChatInput] Could not load subjects from progress:', err.message);
       }
+
+      if (subjectList.length === 0) {
+        try {
+          const docData = await getMyDocumentsApi();
+          if (docData && docData.success && Array.isArray(docData.documents)) {
+            const unique = [...new Set(docData.documents.map((d) => d.subject).filter(Boolean))];
+            subjectList = unique.map((s) => ({ id: s, name: s }));
+          }
+        } catch (err) {
+          console.warn('[ChatInput] Could not load subjects from documents:', err.message);
+        }
+      }
+
+      setSubjects(subjectList);
     } catch (err) {
-      console.warn('[ChatInput] Could not load subjects from documents:', err.message);
+      console.warn('[ChatInput] Error loading subjects:', err.message);
     } finally {
       setIsLoadingSubjects(false);
     }
   };
 
   useEffect(() => {
-    loadSubjects();
+    loadSubjects(true);
 
-    const handleRefresh = () => loadSubjects();
+    const handleRefresh = () => loadSubjects(false);
     window.addEventListener('aikms:refresh-dashboard', handleRefresh);
     window.addEventListener('aikms:document-uploaded', handleRefresh);
     window.addEventListener('aikms:document-deleted', handleRefresh);
@@ -198,12 +209,15 @@ const ChatInput = ({ onSendMessage, disabled = false, initialSubject = '', isNew
 
               <div className="subject-popover-divider" />
 
-              {isLoadingSubjects ? (
+              {isLoadingSubjects && subjects.length === 0 ? (
                 <div className="subject-popover-empty">Loading subjects...</div>
               ) : subjects.length > 0 ? (
                 subjects.map((sub) => {
-                  const subName = sub.name || sub;
-                  const isSelected = selectedSubject.toLowerCase() === subName.toLowerCase();
+                  const subName = typeof sub === 'string' ? sub : (sub.name || sub.title || '');
+                  if (!subName) return null;
+                  const isSelected = selectedSubject && subName
+                    ? selectedSubject.trim().toLowerCase() === subName.trim().toLowerCase()
+                    : false;
                   return (
                     <button
                       key={sub.id || sub._id || subName}
@@ -236,7 +250,15 @@ const ChatInput = ({ onSendMessage, disabled = false, initialSubject = '', isNew
           <button
             type="button"
             className={`btn-chat-scope-add ${isPopoverOpen ? 'active' : ''} ${selectedSubject ? 'has-subject' : ''}`}
-            onClick={() => setIsPopoverOpen((prev) => !prev)}
+            onClick={() => {
+              setIsPopoverOpen((prev) => {
+                const nextState = !prev;
+                if (nextState) {
+                  loadSubjects(subjects.length === 0);
+                }
+                return nextState;
+              });
+            }}
             title={selectedSubject ? `Change subject scope (Current: ${selectedSubject})` : "Select subject to scope your questions"}
             aria-label="Filter by subject"
           >
