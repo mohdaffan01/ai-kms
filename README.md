@@ -231,7 +231,7 @@ Open your browser and navigate to **`http://localhost:5173`**.
 
 ## 9. Testing Instructions
 
-The AIKMS backend features an automated test suite powered by **Vitest** and **Supertest** with 114 tests (100% pass rate). See [`BACKEND_TESTING.md`](BACKEND_TESTING.md) for full architecture and coverage details.
+The AIKMS backend features an automated test suite powered by **Vitest** and **Supertest** with 114 tests (100% pass rate). See [`docs/04_Technical/BACKEND_TESTING.md`](docs/04_Technical/BACKEND_TESTING.md) for full architecture and coverage details.
 
 ```bash
 # Run all automated tests (Unit + Integration)

@@ -79,7 +79,8 @@ ai-kms/
 │   ├── 04_Technical/
 │   │   ├── TECH_STACK.md                  # Comprehensive Technology Stack & Constraints
 │   │   ├── DATABASE_SCHEMA.md             # Mongoose Models, Schemas & Validation
-│   │   └── API_REFERENCE.md               # Complete REST API Reference
+│   │   ├── API_REFERENCE.md               # Complete REST API Reference
+│   │   └── BACKEND_TESTING.md             # Automated Vitest & Supertest Testing Architecture
 │   │
 │   ├── 05_Development/
 │   │   └── IMPLEMENTATION_PLAN.md         # Implementation Roadmap & Milestone Steps
@@ -121,6 +122,7 @@ Before undertaking any task, consult the appropriate documentation file:
 - **Tech Stack & Environment Details**: [`docs/04_Technical/TECH_STACK.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/TECH_STACK.md)
 - **Database Models & Schemas**: [`docs/04_Technical/DATABASE_SCHEMA.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/DATABASE_SCHEMA.md)
 - **Backend API Endpoints**: [`docs/04_Technical/API_REFERENCE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/API_REFERENCE.md)
+- **Backend Testing Architecture**: [`docs/04_Technical/BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)
 - **Implementation Sequence**: [`docs/05_Development/IMPLEMENTATION_PLAN.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/05_Development/IMPLEMENTATION_PLAN.md)
 - **Living Project Status**: [`docs/06_Project_Management/PROJECT_STATUS.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/06_Project_Management/PROJECT_STATUS.md)
 - **Architecture Decision Records**: [`docs/07_Decisions/ADR/`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/07_Decisions/ADR/)

@@ -132,7 +132,7 @@
 - [x] **Comprehensive Unit Test Suite**: 17 unit test files containing 76 tests covering Utils (`generateToken`, `sendEmail`), Middlewares (`auth`, `error`, `upload`), Models (`user`), Services (`textCleaner`, `textChunker`, `embeddingService`, `chromaService`, `documentProcessor`, `topicExtractor`), and Controllers (`auth`, `document`, `flashcard`, `quiz`, `progress`).
 - [x] **Comprehensive Integration Test Suite**: 4 integration test files containing 38 tests exercising Auth API workflows, Document upload/validation/deletion, Grounded RAG Chat & Vector Search, and Study Hub (Progress/Flashcards/Quizzes).
 - [x] **100% Mock Isolation of External Services**: Zero dependency on live ChromaDB, Ollama, Gmail SMTP, or local MongoDB daemons during test execution.
-- [x] **Verified Metrics**: 21 test files, 114 tests executed, 114 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/BACKEND_TESTING.md)).
+- [x] **Verified Metrics**: 21 test files, 114 tests executed, 114 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)).
 
 ---
 
