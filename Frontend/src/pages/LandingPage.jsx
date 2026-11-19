@@ -338,10 +338,10 @@ const LandingPage = () => {
       {/* ===================== SECTION 1: WHAT OUR PRODUCT IS ===================== */}
       <section id="about" className="landing-section">
         <div className="landing-content-wrapper">
-          <div className="section-header">
-            <span className="section-pill">Product Architecture</span>
-            <h2 className="section-title">What is AiKMS?</h2>
-            <p className="section-subtitle">
+          <div className="landing-section-header">
+            <span className="landing-section-pill">Product Architecture</span>
+            <h2 className="landing-section-title">What is AiKMS?</h2>
+            <p className="landing-section-subtitle">
               An intelligent, privacy-first personal learning workspace that converts static study
               materials into a dynamic, context-grounded AI knowledge companion.
             </p>
@@ -402,10 +402,10 @@ const LandingPage = () => {
       {/* ===================== SECTION 2: HOW IT IS USEFUL ===================== */}
       <section id="features" className="landing-section section-alternate">
         <div className="landing-content-wrapper">
-          <div className="section-header">
-            <span className="section-pill">Why Use AiKMS</span>
-            <h2 className="section-title">How It Elevates Your Study Routine</h2>
-            <p className="section-subtitle">
+          <div className="landing-section-header">
+            <span className="landing-section-pill">Why Use AiKMS</span>
+            <h2 className="landing-section-title">How It Elevates Your Study Routine</h2>
+            <p className="landing-section-subtitle">
               Traditional studying is slow, passive, and fragmented. AiKMS introduces a proven
               comprehension flywheel that turns hours of reading into minutes of mastery.
             </p>
@@ -496,10 +496,10 @@ const LandingPage = () => {
       {/* ===================== SECTION 3: WHO USES IT ===================== */}
       <section id="audience" className="landing-section">
         <div className="landing-content-wrapper">
-          <div className="section-header">
-            <span className="section-pill">Target Users</span>
-            <h2 className="section-title">Who is AiKMS Built For?</h2>
-            <p className="section-subtitle">
+          <div className="landing-section-header">
+            <span className="landing-section-pill">Target Users</span>
+            <h2 className="landing-section-title">Who is AiKMS Built For?</h2>
+            <p className="landing-section-subtitle">
               Engineered for anyone dealing with high volumes of technical, academic, or professional learning materials.
             </p>
           </div>
@@ -583,10 +583,10 @@ const LandingPage = () => {
       {/* ===================== SECTION 4: HOW TO USE IT ===================== */}
       <section id="how-it-works" className="landing-section section-alternate">
         <div className="landing-content-wrapper">
-          <div className="section-header">
-            <span className="section-pill">Simple Workflow</span>
-            <h2 className="section-title">How to Use AiKMS in 3 Steps</h2>
-            <p className="section-subtitle">
+          <div className="landing-section-header">
+            <span className="landing-section-pill">Simple Workflow</span>
+            <h2 className="landing-section-title">How to Use AiKMS in 3 Steps</h2>
+            <p className="landing-section-subtitle">
               Get from raw PDF files to an active conversational learning deck in under two minutes.
             </p>
           </div>

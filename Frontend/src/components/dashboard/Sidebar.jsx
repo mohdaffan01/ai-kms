@@ -488,110 +488,115 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
         {!isCollapsed && (
           <div className="sidebar-content-section">
             <div 
-              className="section-header"
-            onClick={toggleDocsExpanded}
-            role="button"
-            tabIndex={0}
-            aria-expanded={isDocsExpanded}
-            title={isDocsExpanded ? "Click to collapse documents" : "Click to view documents"}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleDocsExpanded();
-              }
-            }}
-          >
-            <div className="section-header-title-row">
-              <span className="section-title">Documents</span>
-              {documents.length > 0 && (
-                <span className="content-count-badge">{documents.length}</span>
-              )}
-              <div className="section-arrow-badge">
-                <ChevronDown 
-                  size={14} 
-                  className={`section-toggle-arrow ${isDocsExpanded ? 'expanded' : ''}`} 
-                />
+              className="sidebar-docs-header"
+              onClick={toggleDocsExpanded}
+              role="button"
+              tabIndex={0}
+              aria-expanded={isDocsExpanded}
+              title={isDocsExpanded ? "Click to collapse documents" : "Click to view documents"}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  toggleDocsExpanded();
+                }
+              }}
+            >
+              <div className="sidebar-docs-title-row">
+                <span className="sidebar-docs-title">Documents</span>
+                {documents.length > 0 && (
+                  <span className="content-count-badge">{documents.length}</span>
+                )}
+                <div className="sidebar-docs-arrow-badge">
+                  <ChevronDown 
+                    size={14} 
+                    className={`sidebar-docs-toggle-arrow ${isDocsExpanded ? 'expanded' : ''}`} 
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {isDocsExpanded && (
-            <div className="content-list">
-              {isLoadingDocs ? (
-                <div className="content-loading-state">Loading files...</div>
-              ) : documents.length === 0 ? (
-                <div className="empty-content-state">
-                  <Folder size={24} className="empty-icon" />
-                  <p>No documents uploaded yet.</p>
-                </div>
-              ) : (
-                documentsByFolder.map(({ folder, items }) => (
-                  <section className="content-folder-group" key={folder}>
-                    <div className="content-folder-heading">
-                      <Folder size={14} />
-                      <span className="content-folder-name">{folder}</span>
-                      <span className="content-folder-count">{items.length}</span>
-                    </div>
-                    {items.map((item) => {
-                      const docId = item._id || item.id;
-                      const isDeleting = isDeletingDoc && (docToDelete?._id || docToDelete?.id) === docId;
+            {isDocsExpanded && (
+              <div className="content-list">
+                {isLoadingDocs ? (
+                  <div className="content-loading-state">Loading files...</div>
+                ) : documents.length === 0 ? (
+                  <div className="empty-content-state">
+                    <Folder size={24} className="empty-icon" />
+                    <p>No documents uploaded yet.</p>
+                  </div>
+                ) : (
+                  documentsByFolder.map(({ folder, items }) => (
+                    <section className="content-folder-group" key={folder}>
+                      <div className="content-folder-heading" title={`Folder: ${folder}`}>
+                        <Folder size={13} className="folder-icon" />
+                        <span className="content-folder-name">{folder}</span>
+                        <span className="content-folder-count">{items.length}</span>
+                      </div>
+                      <div className="content-folder-items">
+                        {items.map((item) => {
+                          const docId = item._id || item.id;
+                          const isDeleting = isDeletingDoc && (docToDelete?._id || docToDelete?.id) === docId;
+                          const isDiffSubject = item.subject && item.subject.trim().toLowerCase() !== folder.trim().toLowerCase();
 
-                      return (
-                        <div
-                          key={docId}
-                          className="content-item"
-                          title={`Click to view ${item.title} (${item.subject})`}
-                          onClick={() => handleOpenViewer(item)}
-                        >
-                          <FileText size={16} className="content-icon" />
-                          <div className="content-item-info">
-                            <span className="content-title">{item.title}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              <span className="content-subject-tag">{item.subject}</span>
-                              {item.processingStatus === 'processing' && (
-                                <span style={{ fontSize: '0.68rem', color: '#fde047', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                                  <Loader2 size={10} className="spinner" /> Processing...
-                                </span>
-                              )}
+                          return (
+                            <div
+                              key={docId}
+                              className="content-item"
+                              title={`Click to view ${item.title}`}
+                              onClick={() => handleOpenViewer(item)}
+                            >
+                              <FileText size={14} className="content-icon" />
+                              <div className="content-item-info">
+                                <span className="content-title">{item.title}</span>
+                                {isDiffSubject && (
+                                  <span className="content-subject-badge">{item.subject}</span>
+                                )}
+                                {item.processingStatus === 'processing' && (
+                                  <span className="doc-processing-pill">
+                                    <Loader2 size={10} className="spinner" /> Processing...
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="content-item-actions">
+                                <button
+                                  type="button"
+                                  className="btn-view-doc"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenViewer(item);
+                                  }}
+                                  title="View Document"
+                                >
+                                  <Eye size={13} />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="btn-delete-doc"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDocToDelete(item);
+                                  }}
+                                  title="Delete Document"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? (
+                                    <Loader2 size={13} className="spinner" />
+                                  ) : (
+                                    <Trash2 size={13} />
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                          </div>
-
-                          <div className="content-item-actions">
-                            <button
-                              className="btn-view-doc"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenViewer(item);
-                              }}
-                              title="View Document"
-                            >
-                              <Eye size={14} />
-                            </button>
-
-                            <button
-                              className="btn-delete-doc"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDocToDelete(item);
-                              }}
-                              title="Delete Document"
-                              disabled={isDeleting}
-                            >
-                              {isDeleting ? (
-                                <Loader2 size={14} className="spinner" />
-                              ) : (
-                                <Trash2 size={14} />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </section>
-                ))
-              )}
-            </div>
-          )}
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ))
+                )}
+              </div>
+            )}
 
             <button 
               className="btn-upload-content" 

@@ -88,9 +88,13 @@
     - **Quiz Button (Left)**: Sky-blue themed card (`#38bdf8`) with `HelpCircle` icon, glowing hover state, and cyan active border launching AI Assessment hub (`/quiz`).
     - **Flashcards Button (Right)**: Indigo-blue themed card (`#818cf8`) with `Layers` icon, glowing hover state, and blue active border launching Spaced Revision workspace (`/flashcards`).
 - **Content Section (Documents Drawer)**:
-  - Collapsible accordion header with title, count badge, and animated chevron arrow. Expansion state is remembered in `localStorage` (`aikms_sidebar_docs_expanded`).
-  - **Modern Upload Content Button**: Sleek dashed pill/squircle with subtle surface hover.
-  - Folder grouping and scrollable document list item cards featuring file title, subject tag, quick view eye icon button, and delete garbage bin button.
+  - Collapsible left-aligned accordion header (`.sidebar-docs-header`) with title, capsule count badge, and animated chevron arrow pinned to the far right. Expansion state is remembered in `localStorage` (`aikms_sidebar_docs_expanded`).
+  - **Zero Vertical Void**: Content sits directly beneath the header (`margin-top: 0.15rem`) without empty gap spaces.
+  - **Modern Single-Line File Tree Structure**:
+    - **Folder Group**: Clean folder header with folder vector icon, folder name, and count badge.
+    - **Indented Tree Guides**: Documents nested within each folder are indented by `0.85rem` with a subtle vertical guide line (`border-left: 1px solid rgba(255, 255, 255, 0.08)`).
+    - **Single-Line File Items**: Clean single-line row displaying file icon, truncated document title, subtle emerald badge only if subject differs from folder name (eliminating redundant duplicate green subject text), and hover-triggered action buttons (`Eye` for preview and `Trash2` for delete).
+  - **Modern Upload Content Button**: Sleek dashed box button with subtle hover elevation and emerald border glow.
 - **Sidebar Resize Handle**: Custom draggable right edge (`.sidebar-resizer`) allowing user to adjust sidebar width between 220px and 520px (persisted in `localStorage` as `aikms_sidebar_width`).
 - **User Footer**: Profile avatar badge, user name, user email, and profile flyout trigger with change password and logout options.
   - **User Profile Flyout ([UserProfileFlyout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/UserProfileFlyout.jsx))**: Compact popover menu floating comfortably to the right of the sidebar (`left: calc(100% + 24px)`, `bottom: 12px`, `width: 308px`), with reduced vertical padding, 40px avatar, and balanced stats/actions list to avoid overcrowding the sidebar border.
