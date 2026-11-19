@@ -174,14 +174,15 @@ export const getExistingFilePath = (filePath) => {
 /**
  * Helper: Call Google Gemini API with automatic model fallback
  */
-const callGemini = async (prompt, apiKey) => {
+const callGemini = async (prompt, apiKey, preferredModel = null) => {
   if (!apiKey) return null;
   const models = [
-    process.env.GEMINI_MODEL,
-    'gemini-2.5-flash',
-    'gemini-flash-latest',
-    'gemini-2.5-pro',
-    'gemini-pro-latest',
+    preferredModel,
+    process.env.MODEL_CHAT,
+    process.env.MODEL_SUMMARIZATION,
+    'gemini-3.5-flash-lite',
+    'gemini-flash-lite-latest',
+    'gemini-3.8-flash',
   ].filter(Boolean);
 
   for (const model of models) {
@@ -438,7 +439,7 @@ export const queryRagChat = async (req, res) => {
       if (docText) {
         if (geminiApiKey) {
           const geminiPrompt = `You are an expert AI Study Assistant and Tutor. Provide a comprehensive, beautifully structured summary (with clear headings, bold key concepts, and bullet points) of the following study document.\n\nDOCUMENT ("${docToSummarize.title}" - Subject: ${docToSummarize.subject || 'General'}):\n${docText.substring(0, 80000)}`;
-          const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+          const gAnswer = await callGemini(geminiPrompt, geminiApiKey, process.env.MODEL_SUMMARIZATION || 'gemini-3.5-flash-lite');
           if (gAnswer) {
             return res.status(200).json({
               success: true,
@@ -501,7 +502,7 @@ ${contextTexts}
 USER QUESTION:
 ${userQuery}`;
 
-        const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+        const gAnswer = await callGemini(geminiPrompt, geminiApiKey, process.env.MODEL_CHAT || 'gemini-3.5-flash-lite');
         if (gAnswer) {
           return res.status(200).json({
             success: true,
@@ -615,7 +616,7 @@ ${contextSections.substring(0, 35000)}
 USER QUESTION:
 ${userQuery}`;
 
-      const gAnswer = await callGemini(geminiPrompt, geminiApiKey);
+      const gAnswer = await callGemini(geminiPrompt, geminiApiKey, process.env.MODEL_CHAT || 'gemini-3.5-flash-lite');
       if (gAnswer) {
         return res.status(200).json({
           success: true,

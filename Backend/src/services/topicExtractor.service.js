@@ -244,11 +244,11 @@ DOCUMENT TEXT:
 ${snippet}`;
 
     const models = [
-      process.env.GEMINI_MODEL,
-      'gemini-2.5-flash',
-      'gemini-flash-latest',
-      'gemini-2.5-pro',
-      'gemini-pro-latest',
+      process.env.MODEL_TOPICS,
+      process.env.MODEL_SUMMARIZATION,
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.8-flash',
     ].filter(Boolean);
 
     for (const model of models) {

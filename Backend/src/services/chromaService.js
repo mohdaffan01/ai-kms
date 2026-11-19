@@ -97,7 +97,9 @@ export const upsertVectors = async (points) => {
     console.log(`[ChromaService] Successfully upserted ${ids.length} chunks into ChromaDB collection '${COLLECTION_NAME}'`);
     return { success: true, count: ids.length };
   } catch (error) {
-    console.warn(`[ChromaService] Upsert skipped (ChromaDB offline on ${CHROMA_URL})`);
+    if (process.env.DEBUG === 'true') {
+      console.warn(`[ChromaService] Upsert skipped (ChromaDB offline on ${CHROMA_URL})`);
+    }
     return { success: false, count: 0 };
   }
 };
@@ -152,7 +154,9 @@ export const searchVectors = async (userId, queryVector, limit = 5) => {
 
     return matches;
   } catch (error) {
-    console.warn(`[ChromaService] Vector search skipped (ChromaDB offline on ${CHROMA_URL})`);
+    if (process.env.DEBUG === 'true') {
+      console.warn(`[ChromaService] Vector search skipped (ChromaDB offline on ${CHROMA_URL})`);
+    }
     return [];
   }
 };
@@ -173,7 +177,9 @@ export const deleteVectorsByDocument = async (documentId) => {
     console.log(`[ChromaService] Successfully deleted vectors for documentId: ${documentId}`);
     return { success: true, documentId };
   } catch (error) {
-    console.warn(`[ChromaService] Delete vectors skipped (ChromaDB offline on ${CHROMA_URL})`);
+    if (process.env.DEBUG === 'true') {
+      console.warn(`[ChromaService] Delete vectors skipped (ChromaDB offline on ${CHROMA_URL})`);
+    }
     return { success: false, documentId };
   }
 };

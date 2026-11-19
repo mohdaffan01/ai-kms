@@ -45,7 +45,9 @@ export const generateEmbedding = async (text) => {
 
     return data.embedding;
   } catch (error) {
-    console.warn(`[EmbeddingService] Ollama offline or unreachable (${error.message}). Using fallback vector.`);
+    if (process.env.DEBUG === 'true') {
+      console.warn(`[EmbeddingService] Ollama offline or unreachable (${error.message}). Using fallback vector.`);
+    }
     return new Array(VECTOR_SIZE).fill(0);
   }
 };

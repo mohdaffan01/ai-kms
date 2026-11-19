@@ -5,7 +5,8 @@
 - **Initial Routing Logic**: When a user accesses the root `/` or any unmatched route, `App.jsx` evaluates the `RootRedirect` component. 
   - If **authenticated** (`localStorage.getItem('isAuthenticated') === 'true'`), the user is immediately navigated to `/dashboard`.
   - On `/dashboard`, the active view defaults to **`chat`** (New Chat screen with welcome header & chat input) rather than the dashboard overview.
-  - If **unauthenticated**, the user is redirected to `/login`.
+  - If **unauthenticated** (first-time visitor or user who has logged out), the user lands on the **Landing Page** ([`LandingPage.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx)).
+  - When the user logs out from the application ([`Sidebar.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/Sidebar.jsx)), session keys are cleared and the user is redirected to `/`, viewing the Landing Page.
 
 ---
 
@@ -13,6 +14,8 @@
 
 | Page Route | Component File | Description | Access Control |
 |---|---|---|---|
+| `/` | [LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx) | Public product landing page with Notion-style hero, product overview, use cases, target audience, and workflow guide | Public (Redirects to `/dashboard` if logged in) |
+| `/landing` | [LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx) | Dedicated landing page route | Public |
 | `/login` | [Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx) | Account login page with credentials form | Public (Redirects to `/dashboard` if logged in) |
 | `/signup` | [Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx) | Registration page with account setup form | Public (Redirects to `/dashboard` if logged in) |
 | `/register` | [Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx) | Standalone registration view with full validation | Public (Redirects to `/dashboard` if logged in) |

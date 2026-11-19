@@ -15,6 +15,7 @@ import Quiz from './pages/Quiz';
 import Flashcards from './pages/Flashcards';
 import Notes from './pages/Notes';
 import NotFound from './pages/NotFound';
+import LandingPage from './pages/LandingPage';
 import AppSplashScreen from './components/common/AppSplashScreen';
 
 // Global Styles
@@ -23,10 +24,10 @@ import './styles/auth.css';
 import './styles/dashboard.css';
 import './styles/splash.css';
 
-// Route entry redirect: authenticated users go directly to dashboard, others to login
+// Route entry redirect: authenticated users go directly to dashboard, unauthenticated users see LandingPage
 const RootRedirect = () => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />;
 };
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<RootRedirect />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />

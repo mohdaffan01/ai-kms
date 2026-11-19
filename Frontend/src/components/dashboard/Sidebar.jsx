@@ -278,7 +278,8 @@ const Sidebar = ({ onNewChat, activeTab = 'chat', onSelectTab }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
-    navigate('/login');
+    sessionStorage.removeItem('aikms_active_chat_messages');
+    navigate('/');
   };
 
   const handleUploadSuccess = (uploadedDoc) => {

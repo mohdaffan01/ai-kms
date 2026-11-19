@@ -53,6 +53,17 @@
 - [x] Document viewer modal with PDF iframe preview, download link, and metadata list ([DocumentViewerModal.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/dashboard/DocumentViewerModal.jsx))
 
 ### 3.3 UI / UX & Workspace Navigation Architecture
+- [x] **Public Product Landing Page ([LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx), [landing.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/landing.css))**: Implemented high-impact public product landing page styled after Notion's modern editorial aesthetic and AiKMS dark design tokens (`#171717` base, `#212121` surface, `#10a37f` emerald accents). Features:
+  - **Sticky Navbar**: Project logo on left (`/logo-128.png` + "AiKMS" typography), smooth section links in center (`What is AiKMS`, `Why Use It`, `Who It's For`, `How It Works`), and dual auth buttons on right ("Log in" and "Sign up").
+  - **Notion-Style Hero Section**: Glow auras, feature badge, headline with organic highlight pill (`Where study materials and AI [● Learn together.]`), value proposition subtitle, dual CTA buttons (`Get Started Free`, `See How It Works`), and trust highlights (0 Hallucination RAG, Multi-format, Gemini 2.5 Flash).
+  - **Interactive Workspace Mockup Window**: Mac-style window controls (`● ● ●`), active study vault sidebar with progress bars, PDF-grounded chat conversation with source citation chip, and interactive active recall cards (AI Flashcards & Quizzes).
+  - **4 Product Story Sections**:
+    1. *What is AiKMS* (Universal ingestion, Grounded Gemini RAG, Dynamic curriculum, Active recall).
+    2. *Why Use It* (Instant Q&A, structured roadmaps, automated spaced repetition, exam simulation).
+    3. *Who Uses It* (College students, researchers, developers/self-learners, competitive exam candidates).
+    4. *How to Use It* (3-step workflow: Upload materials, Auto-Curriculum, Chat & Master).
+  - **Bottom CTA Banner & Dark Footer**: High-conversion conversion banner with direct registration links and dark footer with branding and navigation anchors.
+  - **Entry & Logout Routing**: First-time unauthenticated visitors arriving at `/` and users logging out from the workspace are seamlessly routed to this landing page, while authenticated users land directly in `/dashboard`.
 - [x] **Zero-Flash Branded Splash Screen & Preloader**: Eliminated white blank page flash completely with native inline preloader in `index.html` (immediate dark background `#171717`) and `AppSplashScreen` component featuring the official animated glowing AiKMS logo (`logo.png`), AiKMS typography, and glowing progress bar on every app startup/reload ([index.html](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/index.html), [AppSplashScreen.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/AppSplashScreen.jsx), [App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx))
 - [x] **Official Brand Logo Asset Integration**: Integrated updated official AiKMS logo (human head profile with refined brain convolution outline) seamlessly across `Logo.jsx`, `Sidebar.jsx`, `AppSplashScreen.jsx`, `index.html` preloader, `ChatWindow.jsx` (welcome state & AI response avatar), `Register.jsx`, browser `favicon.png`, and centered hero banner in root [`README.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/README.md). Generated high-resolution, anti-aliased assets for `logo.png`, `logo-128.png`, `logo-white.png`, `logo-white-128.png`, `favicon.png`, and `favicon.svg`.
 - [x] **Default Landing on New Chat**: Platform entry (`/`) directly evaluates authentication state — authenticated users land straight on `/dashboard` with active tab defaulting to `'chat'` (New Chat screen) rather than Dashboard Overview ([App.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/App.jsx), [Dashboard.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Dashboard.jsx))
@@ -89,9 +100,9 @@
 - [x] Document processing API endpoint (`POST /api/knowledge/process/:documentId`) ([knowledge.controller.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/knowledge.controller.js))
 - [x] ChromaDB vector database store setup & collection indexing integration (`chromadb` npm package)
 - [x] RAG-based semantic search endpoint (`POST /api/knowledge/search`)
-- [x] Gemini 2.5 Flash LLM Integration (`gemini-2.5-flash` API endpoint for grounded Q&A and summary generation)
+- [x] Feature-Specific AI Model Architecture: AI Chat & Note Summarization (`gemini-3.5-flash-lite`), Flashcard & Quiz Generation (`gemma-4-26b-a4b-it`), Knowledge Gap Detection (`gemma-4-31b-it`), and Embeddings (`nomic-embed-text` with fallback vector).
 - [x] Documented End-to-End RAG Query & Control Flow Architecture in [`APP_FLOW.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/APP_FLOW.md#L147-L200) and [`SYSTEM_ARCHITECTURE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/SYSTEM_ARCHITECTURE.md)
-- [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material using Gemini 2.5 Flash to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, and fragments through linguistic sanitization.
+- [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material using Gemini Flash LLM to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, and fragments through linguistic sanitization. Enhanced with graceful regex heuristic fallback if API quotas are exhausted.
 - [ ] Concept & relationship extraction for Knowledge Graphs (Phase 3)
 - [ ] Interactive Knowledge Graph visualization canvas (Phase 3)
 
@@ -142,6 +153,8 @@
 - **Framework**: React 19 + Vite 8 + React Router DOM 7
 - **Health**: Fully operational. Compiles cleanly without errors (`npm run build`).
 - **Pages & Routes Built**:
+  - `/`: Public product landing page with Notion-style hero & feature showcase ([LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx))
+  - `/landing`: Explicit landing page route ([LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx))
   - `/login`: Public auth login page ([Login.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Login.jsx))
   - `/signup`: Public auth registration page ([Signup.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Signup.jsx))
   - `/register`: Standalone registration page with validation ([Register.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx))
@@ -160,7 +173,7 @@
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
 - **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 114 tests passing across 21 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
-- **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for instantly starting both Backend and Frontend in separate parallel consoles with automated browser launching to `http://localhost:5173`.
+- **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for automatically launching all local services (Ollama local service, ChromaDB server if present, Express Backend on port 3000, Vite Frontend on port 5173, and automated browser launch to `http://localhost:5173`).
 - **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
 

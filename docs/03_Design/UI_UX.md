@@ -20,6 +20,26 @@
 - **0ms Native Preloader**: Renders official AiKMS logo (`logo-128.png`), glowing green aura, and progress track inside `#root` before JavaScript bundles parse.
 - **React AppSplashScreen**: Smooth startup brand animation displaying floating official AiKMS emerald logo (`#10a37f`), glowing halo, and animated progress bar, transitioning out with a 350ms graceful fade.
 
+### 2.0.1 Public Product Landing Page ([LandingPage.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/LandingPage.jsx), [landing.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/landing.css))
+- **Entry & Public Gate**: The default landing page for unauthenticated visitors and users after logout. Authenticated users navigating to `/` are forwarded seamlessly to `/dashboard`.
+- **Top Sticky Navbar**:
+  - **Left**: Official brand logo icon (`/logo-128.png`), emerald aura box, and "AiKMS" typography linking to `/`.
+  - **Center**: Smooth-scrolling anchor navigation links (`What is AiKMS`, `Why Use It`, `Who It's For`, `How It Works`).
+  - **Right**: Distinct dual auth action buttons: subtle ghost "Log in" button (`/login`) and high-prominence emerald pill "Sign up" CTA button (`/signup`).
+  - **Mobile Menu**: Responsive hamburger toggle with animated slide-down sheet.
+- **Notion-Style Hero Section**:
+  - Glowing background gradient radial auras (`#10a37f` emerald and `#0284c7` cyan blur).
+  - Category pill badge: `✨ AI Knowledge Management System`.
+  - High-impact editorial headline featuring an organic highlight pill: `Where study materials and AI [● Learn together.]`.
+  - Clear value proposition subtitle and dual CTA buttons (`Get Started Free →` and `See How It Works ↓`).
+  - High-fidelity interactive dark-mode macOS workspace mockup window with window controls (`● ● ●`), study vault sidebar with progress bars, grounded citation chat stream, and floating active recall cards (AI Flashcards & Quizzes).
+- **Core Product Story Sections**:
+  - **What is AiKMS**: 4-pillar architectural grid (Multi-format ingestion, Grounded Gemini RAG, Dynamic curriculum extractor, Active recall).
+  - **Why Use It / Benefits**: 6 benefit cards detailing instant contextual Q&A, structured roadmaps, automated spaced repetition, and 0 hallucination.
+  - **Who It's For**: 4 targeted persona profiles (University students, academic researchers, software engineers/self-learners, exam candidates).
+  - **How It Works**: 3-step structured timeline (Upload, Auto-Curriculum, Chat & Master).
+  - **Call to Action (CTA)**: High-conversion bottom banner and footer with deep-dark background (`#141414`), links, and copyright.
+
 ### 2.1 Brand Identity & Official Logo ([Logo.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/common/Logo.jsx))
 - **Official Brand Mark**: Minimalist human profile outline with an authentic brain convolution outline inside, styled in emerald green (`#10a37f`) with smooth antialiased curves, seamlessly rendered across authentication headers, splash screen, sidebar, AI chat response avatars, and browser favicon (`/favicon.png`).
 - **Brand Typography**: High-contrast crisp white `Ai` + neon emerald `KMS`.
