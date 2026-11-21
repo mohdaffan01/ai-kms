@@ -2,6 +2,7 @@ import express from 'express';
 import {
   registerUser,
   loginUser,
+  googleAuth,
   getUserProfile,
   updateUserProfile,
   changeUserPassword,
@@ -17,6 +18,7 @@ const userRoutes = express.Router();
 // Auth Routes: /api/auth
 authRoutes.post('/register', registerUser);
 authRoutes.post('/login', loginUser);
+authRoutes.post('/google', googleAuth);
 authRoutes.post('/forgot-password', forgotPassword);
 authRoutes.post('/reset-password-otp', resetPasswordWithOtp);
 authRoutes.post('/reset-password/:token', resetPassword);

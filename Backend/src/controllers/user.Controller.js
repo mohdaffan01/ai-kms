@@ -431,3 +431,103 @@ export const resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Authenticate with Google OAuth ID token
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { credential, idToken, token } = req.body;
+    const googleToken = credential || idToken || token;
+
+    if (!googleToken || typeof googleToken !== 'string' || !googleToken.trim()) {
+      res.status(400);
+      throw new Error('Google credential/ID token is required');
+    }
+
+    // Verify token with Google's official tokeninfo API
+    const googleVerifyUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(googleToken.trim())}`;
+    const googleResponse = await fetch(googleVerifyUrl);
+
+    if (!googleResponse.ok) {
+      const errorData = await googleResponse.json().catch(() => ({}));
+      res.status(401);
+      throw new Error(errorData.error_description || 'Invalid or expired Google token');
+    }
+
+    const payload = await googleResponse.json();
+
+    // Verify audience if GOOGLE_CLIENT_ID is configured in environment
+    if (process.env.GOOGLE_CLIENT_ID && payload.aud && payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+      res.status(401);
+      throw new Error('Google token client ID mismatch');
+    }
+
+    // Ensure email is verified by Google
+    if (payload.email_verified === false || payload.email_verified === 'false') {
+      res.status(400);
+      throw new Error('Google account email is not verified');
+    }
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+      res.status(400);
+      throw new Error('No email found associated with Google account');
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user already exists with this googleId
+    let user = await userRepository.findByGoogleId(googleId);
+
+    // If not found by googleId, check by email
+    if (!user) {
+      user = await userRepository.findByEmail(normalizedEmail);
+      if (user) {
+        // Link existing user account to Google
+        user.googleId = googleId;
+        if (!user.profileImage && picture) {
+          user.profileImage = picture;
+        }
+        await user.save();
+      }
+    }
+
+    // If user still does not exist, create a new Google user
+    if (!user) {
+      // Sanitize name to match schema requirement /^[A-Za-z\s]+$/
+      let sanitizedName = (name || '').replace(/[^A-Za-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!sanitizedName || sanitizedName.length < 2) {
+        sanitizedName = normalizedEmail.split('@')[0].replace(/[^A-Za-z\s]/g, ' ').replace(/\s+/g, ' ').trim() || 'Google User';
+      }
+      if (sanitizedName.length < 2) {
+        sanitizedName = 'Google Student';
+      }
+
+      user = await userRepository.create({
+        name: sanitizedName,
+        email: normalizedEmail,
+        googleId,
+        authProvider: 'google',
+        profileImage: picture || null,
+        role: 'student',
+      });
+    }
+
+    const jwtToken = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      profileImage: user.profileImage,
+      role: user.role,
+      authProvider: user.authProvider || 'google',
+      token: jwtToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

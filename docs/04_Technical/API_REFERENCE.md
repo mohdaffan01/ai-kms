@@ -98,7 +98,34 @@
   }
   ```
 
-### 3.3 Forgot Password (Request Reset Email)
+### 3.3 Google OAuth 2.0 Sign-In & Registration
+- **Route**: `POST /api/auth/google`
+- **Access**: Public
+- **Description**: Authenticates users using a Google Identity Services ID token. Verifies the token against Google's tokeninfo API, ensures email verification and client ID match, and either links an existing user account or creates a new Google student account, returning an AiKMS JWT session token.
+- **Body**:
+  ```json
+  {
+    "credential": "<Google_ID_Token_JWT>"
+  }
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "_id": "67301...",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "profileImage": "https://lh3.googleusercontent.com/a/...",
+    "role": "student",
+    "authProvider": "google",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request`: Missing credential or unverified Google email.
+  - `401 Unauthorized`: Invalid or expired Google token, or Google client ID mismatch.
+
+### 3.4 Forgot Password (Request Reset Email)
 - **Route**: `POST /api/auth/forgot-password`
 - **Access**: Public
 - **Body**: `{ "email": "jane@example.com" }`

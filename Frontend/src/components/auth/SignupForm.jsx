@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { registerApi } from '../../api/authApi';
+import GoogleAuthButton from './GoogleAuthButton';
 
 const SignupForm = () => {
   const [fullName, setFullName] = useState('');
@@ -90,6 +91,12 @@ const SignupForm = () => {
           <span>{error}</span>
         </div>
       )}
+
+      <GoogleAuthButton mode="signup" onError={setError} />
+
+      <div className="auth-divider">
+        <span>or register with email</span>
+      </div>
 
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="form-field">

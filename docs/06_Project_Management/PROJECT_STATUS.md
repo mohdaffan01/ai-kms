@@ -3,8 +3,8 @@
 ## 1. Executive Summary
 
 - **Project Name**: AI-KMS (AI Knowledge Management System)
-- **Current Version**: 1.2.0 (Automated Testing Suite & Enterprise Quality Assurance)
-- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, Chat Session Architecture, and **Full Backend Automated Testing Suite (Vitest + Supertest, 114 tests, 100% pass rate)** are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
+- **Current Version**: 1.2.0 (Google OAuth 2.0 & Automated Testing Suite)
+- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, Chat Session Architecture, **Google OAuth 2.0 Web Integration**, and **Full Backend Automated Testing Suite (Vitest + Supertest, 122 tests, 100% pass rate)** are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
 - **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs, spaced revision flashcards, adaptive quizzes, and curriculum progress tracking.
 
 ---
@@ -40,6 +40,7 @@
 - [x] **Token-Based Password Reset**: (`POST /api/auth/reset-password/:token`) validates hashed reset token, checks expiration, and updates password ([`user.Controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/user.Controller.js))
 - [x] **OTP-Based Password Reset**: (`POST /api/auth/reset-password-otp`) alternative OTP code verification for password recovery
 - [x] Public Forgot Password & Reset Password frontend pages ([ForgotPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ForgotPassword.jsx), [ResetPassword.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/ResetPassword.jsx))
+- [x] **Google OAuth 2.0 Sign-In & SSO**: (`POST /api/auth/google`) Google Identity Services (GSI) web integration with backend token verification via Google tokeninfo API ([`user.Controller.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/controllers/user.Controller.js)). Features automatic account linking by email, new Google student provisioning with sanitized naming, and seamless dark-mode Google auth buttons across Login ([`LoginForm.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/auth/LoginForm.jsx)), Signup ([`SignupForm.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/auth/SignupForm.jsx)), and Standalone Registration ([`Register.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/pages/Register.jsx)) powered by [`GoogleAuthButton.jsx`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/auth/GoogleAuthButton.jsx).
 
 ### 3.2 Document Management & Storage
 - [x] Multipart file upload middleware using Multer (`diskStorage` to `Backend/uploads/`)
@@ -143,7 +144,7 @@
 - [x] **Comprehensive Unit Test Suite**: 17 unit test files containing 76 tests covering Utils (`generateToken`, `sendEmail`), Middlewares (`auth`, `error`, `upload`), Models (`user`), Services (`textCleaner`, `textChunker`, `embeddingService`, `chromaService`, `documentProcessor`, `topicExtractor`), and Controllers (`auth`, `document`, `flashcard`, `quiz`, `progress`).
 - [x] **Comprehensive Integration Test Suite**: 4 integration test files containing 38 tests exercising Auth API workflows, Document upload/validation/deletion, Grounded RAG Chat & Vector Search, and Study Hub (Progress/Flashcards/Quizzes).
 - [x] **100% Mock Isolation of External Services**: Zero dependency on live ChromaDB, Ollama, Gmail SMTP, or local MongoDB daemons during test execution.
-- [x] **Verified Metrics**: 21 test files, 114 tests executed, 114 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)).
+- [x] **Verified Metrics**: 21 test files, 122 tests executed, 122 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)).
 
 ---
 
@@ -172,7 +173,7 @@
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
-- **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 114 tests passing across 21 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
+- **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 122 tests passing across 21 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
 - **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for automatically launching all local services (Ollama local service, ChromaDB server if present, Express Backend on port 3000, Vite Frontend on port 5173, and automated browser launch to `http://localhost:5173`).
 - **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).
@@ -189,11 +190,12 @@
   - `knowledge_chunks`: ChromaDB collection storing text chunks & vector embeddings with metadata payload (`userId`, `documentId`, `chunkIndex`).
 
 ### 4.4 API Status
-- **Total Operational Endpoints**: 34 active endpoints.
+- **Total Operational Endpoints**: 35 active endpoints.
   1. `GET /`: Healthcheck response
   2. `POST /api/auth/register`: Public registration (with alphabet name validation, password strength check)
   3. `POST /api/auth/login`: Public login
-  4. `GET /api/auth/me`: Authenticated profile fetch
+  4. `POST /api/auth/google`: Google OAuth 2.0 ID token authentication & automatic account linking
+  5. `GET /api/auth/me`: Authenticated profile fetch
   5. `POST /api/auth/forgot-password`: Request password reset email with token link via Nodemailer
   6. `POST /api/auth/reset-password/:token`: Reset password using URL token
   7. `POST /api/auth/reset-password-otp`: Reset password using email OTP verification

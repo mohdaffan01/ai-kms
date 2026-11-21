@@ -127,4 +127,63 @@ describe('Integration: Authentication & User API', () => {
       expect(response.body.name).toBe(mockUser.name);
     });
   });
+
+  describe('POST /api/auth/google', () => {
+    it('should return 400 if credential is missing', async () => {
+      const response = await request(app)
+        .post('/api/auth/google')
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('credential/ID token is required');
+    });
+
+    it('should return 401 if Google rejects credential', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({ error_description: 'Bad token' }),
+      });
+
+      const response = await request(app)
+        .post('/api/auth/google')
+        .send({ credential: 'invalid_token_123' });
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toContain('Bad token');
+    });
+
+    it('should authenticate valid Google credential and return 200 with JWT token', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          sub: 'google_sub_999',
+          email: 'googleuser@gmail.com',
+          name: 'Google Student',
+          picture: 'https://lh3.googleusercontent.com/avatar.png',
+          email_verified: true,
+        }),
+      });
+
+      vi.spyOn(userRepository, 'findByGoogleId').mockResolvedValue(null);
+      vi.spyOn(userRepository, 'findByEmail').mockResolvedValue(null);
+      vi.spyOn(userRepository, 'create').mockResolvedValue({
+        _id: 'user_created_via_google_api',
+        name: 'Google Student',
+        email: 'googleuser@gmail.com',
+        googleId: 'google_sub_999',
+        authProvider: 'google',
+        role: 'student',
+        profileImage: 'https://lh3.googleusercontent.com/avatar.png',
+      });
+
+      const response = await request(app)
+        .post('/api/auth/google')
+        .send({ credential: 'valid_google_jwt_credential' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('token');
+      expect(response.body.email).toBe('googleuser@gmail.com');
+      expect(response.body.authProvider).toBe('google');
+    });
+  });
 });

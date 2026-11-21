@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import {
   loginApi,
   registerApi,
+  googleAuthApi,
   getMeApi,
   updateProfileApi,
   changePasswordApi,
@@ -52,6 +53,36 @@ export const AuthProvider = ({ children }) => {
       return data;
     } catch (err) {
       const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(message);
+      setLoading(false);
+      throw new Error(message);
+    }
+  };
+
+  // Google OAuth Login handler
+  const googleLogin = async (credential) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await googleAuthApi(credential);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          id: data._id,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          profileImage: data.profileImage,
+        })
+      );
+      setToken(data.token);
+      setUser(data);
+      setLoading(false);
+      return data;
+    } catch (err) {
+      const message = err.response?.data?.message || 'Google authentication failed. Please try again.';
       setError(message);
       setLoading(false);
       throw new Error(message);
@@ -123,6 +154,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         login,
+        googleLogin,
         register,
         logout,
         updateProfile,

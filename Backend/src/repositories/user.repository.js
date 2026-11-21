@@ -22,6 +22,17 @@ export class UserRepository extends BaseRepository {
   }
 
   /**
+   * Find a user by their Google OAuth ID
+   * @param {string} googleId
+   * @param {Object|string} [projection]
+   * @returns {import('mongoose').Query}
+   */
+  findByGoogleId(googleId, projection = null) {
+    if (!googleId) return null;
+    return this.findOne({ googleId }, projection);
+  }
+
+  /**
    * Find a user by ID without sensitive password field
    * @param {string|import('mongoose').Types.ObjectId} id
    * @returns {import('mongoose').Query}
