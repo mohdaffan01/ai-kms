@@ -92,12 +92,6 @@ const SignupForm = () => {
         </div>
       )}
 
-      <GoogleAuthButton mode="signup" onError={setError} />
-
-      <div className="auth-divider">
-        <span>or register with email</span>
-      </div>
-
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="form-field">
           <label htmlFor="fullName">Full Name</label>
@@ -169,13 +163,19 @@ const SignupForm = () => {
         <button type="submit" className="btn-accent" disabled={isSubmitting}>
           {isSubmitting ? (
             <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-              <Loader2 size={18} className="spinner" /> Creating Account...
+              <Loader2 size={18} className="spinner" /> Signing up...
             </span>
           ) : (
-            'Create Account'
+            'Sign up'
           )}
         </button>
       </form>
+
+      <div className="auth-divider">
+        <span>or register with google</span>
+      </div>
+
+      <GoogleAuthButton mode="signup" onError={setError} />
 
       <div className="auth-footer">
         <span>Already have an account? </span>

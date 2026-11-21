@@ -10,7 +10,7 @@ const AuthLayout = ({ children }) => {
     <div className="auth-container dotted-background">
       <div className="auth-box">
         <div className="auth-logo-header">
-          <Logo size="large" showSubtitle={true} />
+          <Logo size="large" showSubtitle={false} />
         </div>
         {children || <Outlet />}
       </div>

@@ -245,6 +245,15 @@
   - **Secondary Outlined Pill (Right)**: Translucent glass pill (`border-radius: 9999px`, `border: 1px solid rgba(255, 255, 255, 0.25)`) routing to home (`Go Home`).
 - **Subtle Live Health Status**: Minimal pill indicator with pulsing status dot (`● Server Online` in emerald, `● Checking...` in amber, or `● Server Unreachable` in crimson) displayed non-intrusively in offline mode.
 
+### 3.13 Frameless DeepSeek-Inspired Authentication Views ([AuthLayout.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/layouts/AuthLayout.jsx), [auth.css](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/styles/auth.css), [LoginForm.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/auth/LoginForm.jsx), [SignupForm.jsx](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Frontend/src/components/auth/SignupForm.jsx))
+- **Frameless Canvas Philosophy**: Styled after DeepSeek's minimalist authentication layout, eliminating container borders, card backgrounds, and heavy box shadows from the middle form section.
+- **Visual Style & Components**:
+  - **Seamless Dark Canvas**: Pure uniform dark background (`#171717`) with dotted background removed for a sleek, distraction-free appearance.
+  - **Frameless Middle Form Section**: `.auth-form-card` renders with `background: transparent`, `border: none`, `padding: 0`, and `box-shadow: none`, letting form elements float directly on the canvas.
+  - **Pill-Shaped Inputs & Buttons**: Input fields, primary action buttons (`.btn-accent`), and Google authentication buttons (`.btn-google` & GIS) feature full pill curvature (`border-radius: 9999px`) with 48px height, subtle dark fill (`#212124`), and soft borders.
+  - **Borderless Navigation Links**: Removed card top dividers from footer links ("Sign up", "Log in", "Forgot password?"), creating a clean vertical rhythm.
+  - **Refined Signup Flow & Minimal Header**: Google authentication button placed below the form with "or register with google" divider; primary registration submit button labeled "Sign up"; subtitle "Your Personal AI Learning Workspace" removed for an ultra-clean, minimal brand header.
+
 ---
 
 ## 4. Forms & Interactive Elements

@@ -105,12 +105,6 @@ const Register = () => {
           </div>
         )}
 
-        <GoogleAuthButton mode="signup" onError={(msg) => setValidationError(msg)} />
-
-        <div className="auth-divider">
-          <span>or register with email</span>
-        </div>
-
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
@@ -189,9 +183,15 @@ const Register = () => {
             className="btn-submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Account...' : 'Create Account'}
+            {isSubmitting ? 'Signing up...' : 'Sign up'}
           </button>
         </form>
+
+        <div className="auth-divider">
+          <span>or register with google</span>
+        </div>
+
+        <GoogleAuthButton mode="signup" onError={(msg) => setValidationError(msg)} />
 
         <div className="auth-footer">
           <p>

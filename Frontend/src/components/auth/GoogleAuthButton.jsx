@@ -125,7 +125,7 @@ const GoogleAuthButton = ({ mode = 'login', onError, onSuccess }) => {
         window.google.accounts.id.renderButton(googleBtnRef.current, {
           theme: 'filled_black',
           size: 'large',
-          shape: 'rectangular',
+          shape: 'pill',
           text: mode === 'signup' ? 'signup_with' : 'signin_with',
           logo_alignment: 'left',
           width: '100%',

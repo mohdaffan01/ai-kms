@@ -1,25 +1,25 @@
 /* Auth Layout Container */
-.auth-container {
+.auth-container,
+.auth-page {
   min-height: 100vh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   position: relative;
-  background-color: var(--bg-dark-sidebar);
+  background-color: #171717;
 }
 
-/* Dotted Grid Background - ONLY on Auth pages */
+/* Dotted Grid Background - Plain dark canvas matching DeepSeek */
 .dotted-background {
   background-color: #171717;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.2px, transparent 1.2px);
-  background-size: 24px 24px;
+  background-image: none;
 }
 
 .auth-box {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
@@ -39,19 +39,21 @@
 }
 
 .auth-logo-header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
-/* Auth Card Form */
-.auth-form-card {
-  background: var(--bg-dark);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 2.25rem;
-  box-shadow: var(--shadow-card);
+/* Auth Middle Section (Frameless DeepSeek-inspired style: no border, no background, no shadow) */
+.auth-form-card,
+.auth-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 100%;
 }
 
 .auth-title {
@@ -93,40 +95,51 @@
   color: var(--text-muted);
 }
 
-.input-wrapper {
+.input-wrapper,
+.input-icon-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.field-icon {
+.field-icon,
+.input-icon {
   position: absolute;
-  left: 0.9rem;
+  left: 1.15rem;
   color: var(--text-dim);
   pointer-events: none;
 }
 
-.input-wrapper input {
+.input-wrapper input,
+.input-icon-wrapper input {
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem 0.75rem 2.6rem;
+  height: 48px;
+  background: #212124;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 0.75rem 2.85rem 0.75rem 2.85rem;
   color: var(--text-main);
   font-family: inherit;
   font-size: 0.95rem;
   transition: var(--transition);
 }
 
-.input-wrapper input:focus {
+.input-wrapper input:focus,
+.input-icon-wrapper input:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.25);
+  border-color: var(--accent-green);
+  background: #25262a;
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.2);
+}
+
+.input-wrapper input::placeholder,
+.input-icon-wrapper input::placeholder {
+  color: #6b7280;
 }
 
 .toggle-eye {
   position: absolute;
-  right: 0.75rem;
+  right: 1.15rem;
   background: none;
   border: none;
   color: var(--text-dim);
@@ -143,21 +156,26 @@
 /* Green Accent Button */
 .btn-accent {
   width: 100%;
+  height: 48px;
   background: var(--accent-green);
   color: #ffffff;
   border: none;
-  padding: 0.85rem;
-  border-radius: var(--radius-sm);
+  padding: 0 1.5rem;
+  border-radius: 9999px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.975rem;
   cursor: pointer;
   transition: var(--transition);
   margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-accent:hover {
   background: var(--accent-green-hover);
   transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 163, 127, 0.35);
 }
 
 .btn-accent:active {
@@ -169,9 +187,9 @@
   text-align: center;
   font-size: 0.875rem;
   color: var(--text-muted);
-  border-top: 1px solid var(--border-color);
-  padding-top: 1.25rem;
-  margin-top: 0.5rem;
+  border-top: none;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .auth-forgot-link {
@@ -226,12 +244,12 @@
 /* Custom & Fallback Google Button */
 .btn-google {
   width: 100%;
-  height: 44px;
-  background-color: #202124;
+  height: 48px;
+  background-color: #212124;
   color: #e8eaed;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-sm);
-  padding: 0 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 0 1.25rem;
   font-family: inherit;
   font-size: 0.925rem;
   font-weight: 500;
@@ -241,14 +259,13 @@
   gap: 0.75rem;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: none;
   user-select: none;
 }
 
 .btn-google:hover:not(:disabled) {
-  background-color: #2b2d31;
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  background-color: #28292d;
+  border-color: rgba(255, 255, 255, 0.22);
   transform: translateY(-1px);
 }
 

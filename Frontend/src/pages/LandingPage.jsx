@@ -198,10 +198,6 @@ const LandingPage = () => {
               <CheckCircle2 size={15} className="trust-icon" />
               <span>Multi-Format Ingestion</span>
             </div>
-            <div className="trust-item">
-              <CheckCircle2 size={15} className="trust-icon" />
-              <span>Google Gemini 2.5 Flash</span>
-            </div>
           </div>
 
           {/* ===================== HERO WORKSPACE MOCKUP ===================== */}
