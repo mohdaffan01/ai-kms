@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { PDFParse } from 'pdf-parse';
+import { extractOfficeDocumentText } from './officeExtractor.js';
 
 /**
  * Clean and normalize a topic or subtopic name string
@@ -324,6 +325,20 @@ export const extractTopicsFromDocument = async (doc) => {
           rawText = res.text || '';
           if (typeof parser.destroy === 'function') {
             await parser.destroy();
+          }
+        } else if (
+          fullPath.endsWith('.pptx') ||
+          fullPath.endsWith('.ppt') ||
+          fullPath.endsWith('.docx') ||
+          fullPath.endsWith('.doc') ||
+          doc.mimeType?.includes('presentation') ||
+          doc.mimeType?.includes('powerpoint') ||
+          doc.mimeType?.includes('word') ||
+          doc.mimeType?.includes('officedocument')
+        ) {
+          rawText = extractOfficeDocumentText(fullPath, doc.mimeType);
+          if (!rawText) {
+            rawText = fs.readFileSync(fullPath, 'utf-8');
           }
         } else {
           // TXT, MD

@@ -3,6 +3,7 @@ import { processDocument, extractTextFromPdf } from '../services/documentProcess
 import { cleanText } from '../services/textCleaner.js';
 import { generateEmbedding } from '../services/embeddingService.js';
 import { searchVectors, deleteVectorsByDocument } from '../services/chromaService.js';
+import { extractOfficeDocumentText } from '../services/officeExtractor.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -246,6 +247,20 @@ export const getDocumentTextCached = async (doc) => {
     let text = '';
     if (doc.mimeType?.includes('pdf') || absPath.endsWith('.pdf')) {
       text = await extractTextFromPdf(absPath);
+    } else if (
+      absPath.endsWith('.pptx') ||
+      absPath.endsWith('.ppt') ||
+      absPath.endsWith('.docx') ||
+      absPath.endsWith('.doc') ||
+      doc.mimeType?.includes('presentation') ||
+      doc.mimeType?.includes('powerpoint') ||
+      doc.mimeType?.includes('word') ||
+      doc.mimeType?.includes('officedocument')
+    ) {
+      text = extractOfficeDocumentText(absPath, doc.mimeType);
+      if (!text) {
+        text = fs.readFileSync(absPath, 'utf-8');
+      }
     } else {
       text = fs.readFileSync(absPath, 'utf-8');
     }

@@ -51,6 +51,7 @@ Backend/
 │   │   │   ├── embeddingService.test.js            # Ollama API 768-dim embeddings & offline zero vector
 │   │   │   ├── chromaService.test.js               # Upsert, query with userId filter, delete vectors
 │   │   │   ├── documentProcessor.test.js           # Text extraction, chunking, and ChromaDB pipeline
+│   │   │   ├── officeExtractor.test.js             # Native Open XML slide & document extraction for PPTX & DOCX
 │   │   │   └── topicExtractor.test.js              # Universal topic sanitizer & MCQ noise rejection
 │   │   └── controllers/
 │   │       ├── authController.test.js              # Registration validation, login, profile fetch
@@ -110,11 +111,11 @@ npm run test:coverage --prefix Backend
 
 ## 6. Current Testing Status
 
-- **Total Test Files**: 21 files (17 unit + 4 integration)
-- **Total Executed Tests**: 114 tests
-- **Passed Tests**: 114 (100% Pass Rate)
+- **Total Test Files**: 22 files (18 unit + 4 integration)
+- **Total Executed Tests**: 125 tests (91 unit + 34 integration)
+- **Passed Tests**: 125 (100% Pass Rate)
 - **Failed / Skipped Tests**: 0
-- **Execution Time**: ~6.5 seconds
+- **Execution Time**: ~7.2 seconds
 
 ### Coverage Summary Table
 | Module / Layer | Statement Coverage | Function Coverage | Line Coverage |

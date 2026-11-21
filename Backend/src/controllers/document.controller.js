@@ -5,6 +5,7 @@ import { documentRepository } from "../repositories/document.repository.js";
 import { progressRepository } from "../repositories/progress.repository.js";
 import { extractTopicsFromDocument } from "../services/topicExtractor.service.js";
 import { clearDocumentCache } from "./knowledge.controller.js";
+import { extractOfficeDocumentText } from "../services/officeExtractor.js";
 
 /**
  * Resolves the statistics (pageCount, wordCount, lineCount) of a document file.
@@ -63,11 +64,38 @@ export const resolveDocumentStats = async (filePath, mimeType = '', originalFile
           }
         }
       } else {
-        const text = fs.readFileSync(fullPath, 'utf-8').trim();
+        const lowerPath = (filePath || originalFileName || '').toLowerCase();
+        const lowerMime = (mimeType || '').toLowerCase();
+        const isOffice =
+          lowerPath.endsWith('.pptx') ||
+          lowerPath.endsWith('.ppt') ||
+          lowerPath.endsWith('.docx') ||
+          lowerPath.endsWith('.doc') ||
+          lowerMime.includes('presentation') ||
+          lowerMime.includes('powerpoint') ||
+          lowerMime.includes('word') ||
+          lowerMime.includes('officedocument');
+
+        let text = '';
+        if (isOffice) {
+          text = extractOfficeDocumentText(fullPath, mimeType);
+          // If PPTX, count slides
+          const slideMatches = text.match(/\[Slide \d+\]/g);
+          if (slideMatches && slideMatches.length > 0) {
+            pageCount = slideMatches.length;
+          } else {
+            pageCount = 1;
+          }
+        }
+
+        if (!text) {
+          text = fs.readFileSync(fullPath, 'utf-8').trim();
+          pageCount = 1;
+        }
+
         charCount = text.length;
         wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
         lineCount = text ? text.split(/\r\n|\r|\n/).filter((l) => l.trim().length > 0).length : 0;
-        pageCount = 1;
       }
     }
   } catch (err) {

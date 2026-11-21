@@ -10,6 +10,7 @@ import { cleanText } from './textCleaner.js';
 import { chunkText } from './textChunker.js';
 import { generateBatchEmbeddings } from './embeddingService.js';
 import { upsertVectors } from './chromaService.js';
+import { extractOfficeDocumentText } from './officeExtractor.js';
 
 /**
  * Extract raw text from a PDF file using PDFParse.
@@ -49,6 +50,20 @@ export const processDocument = async (filePath, mimeType, documentId, userId) =>
   let rawText = '';
   if (mimeType.includes('pdf') || filePath.endsWith('.pdf')) {
     rawText = await extractTextFromPdf(filePath);
+  } else if (
+    filePath.endsWith('.pptx') ||
+    filePath.endsWith('.ppt') ||
+    filePath.endsWith('.docx') ||
+    filePath.endsWith('.doc') ||
+    mimeType.includes('presentation') ||
+    mimeType.includes('powerpoint') ||
+    mimeType.includes('word') ||
+    mimeType.includes('officedocument')
+  ) {
+    rawText = extractOfficeDocumentText(filePath, mimeType);
+    if (!rawText) {
+      rawText = fs.readFileSync(filePath, 'utf-8');
+    }
   } else {
     // Basic text file reading fallback for .txt, .md
     rawText = fs.readFileSync(filePath, 'utf-8');

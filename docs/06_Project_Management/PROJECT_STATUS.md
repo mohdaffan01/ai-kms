@@ -4,7 +4,7 @@
 
 - **Project Name**: AI-KMS (AI Knowledge Management System)
 - **Current Version**: 1.2.0 (Google OAuth 2.0 & Automated Testing Suite)
-- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, Chat Session Architecture, **Google OAuth 2.0 Web Integration**, and **Full Backend Automated Testing Suite (Vitest + Supertest, 122 tests, 100% pass rate)** are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
+- **Overall Status**: Phase 1 (Core Infrastructure), Phase 2 (Document Vectorization & RAG Engine), Curriculum Dashboard, Smart Flashcards, AI Quizzes, Chat Session Architecture, **Google OAuth 2.0 Web Integration**, **Native Office PPTX/DOCX Extractor**, and **Full Backend Automated Testing Suite (Vitest + Supertest, 125 tests, 100% pass rate)** are **100% Fully Complete & Operational**. Ready for Phase 3 (Knowledge Graph Canvas & Visualization).
 - **Primary Goal**: Transform uploaded multi-format learning materials into a context-grounded AI chat workspace with visual Knowledge Graphs, spaced revision flashcards, adaptive quizzes, and curriculum progress tracking.
 
 ---
@@ -104,6 +104,7 @@
 - [x] Feature-Specific AI Model Architecture: AI Chat & Note Summarization (`gemini-3.5-flash-lite`), Flashcard & Quiz Generation (`gemma-4-26b-a4b-it`), Knowledge Gap Detection (`gemma-4-31b-it`), and Embeddings (`nomic-embed-text` with fallback vector).
 - [x] Documented End-to-End RAG Query & Control Flow Architecture in [`APP_FLOW.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/APP_FLOW.md#L147-L200) and [`SYSTEM_ARCHITECTURE.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/02_Architecture/SYSTEM_ARCHITECTURE.md)
 - [x] Universal AI-Powered Hierarchical Topic Extractor Engine ([`topicExtractor.service.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/topicExtractor.service.js)): Dynamically analyzes ANY uploaded study material using Gemini Flash LLM to automatically discover authentic chapters/units and conceptual subtopics, while globally eliminating MCQs, exam questions, and fragments through linguistic sanitization. Enhanced with graceful regex heuristic fallback if API quotas are exhausted.
+- [x] **Native Multi-Format Office Extractor Engine ([`officeExtractor.js`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/services/officeExtractor.js))**: Pure native zero-dependency extractor using Node.js built-in `zlib` for extracting structured slide-by-slide text from PowerPoint (`.pptx`/`.ppt`) presentations and paragraph text from Word (`.docx`/`.doc`) documents, eliminating raw zip/XML binary corruption in RAG AI Chat grounded queries.
 - [ ] Concept & relationship extraction for Knowledge Graphs (Phase 3)
 - [ ] Interactive Knowledge Graph visualization canvas (Phase 3)
 
@@ -144,7 +145,7 @@
 - [x] **Comprehensive Unit Test Suite**: 17 unit test files containing 76 tests covering Utils (`generateToken`, `sendEmail`), Middlewares (`auth`, `error`, `upload`), Models (`user`), Services (`textCleaner`, `textChunker`, `embeddingService`, `chromaService`, `documentProcessor`, `topicExtractor`), and Controllers (`auth`, `document`, `flashcard`, `quiz`, `progress`).
 - [x] **Comprehensive Integration Test Suite**: 4 integration test files containing 38 tests exercising Auth API workflows, Document upload/validation/deletion, Grounded RAG Chat & Vector Search, and Study Hub (Progress/Flashcards/Quizzes).
 - [x] **100% Mock Isolation of External Services**: Zero dependency on live ChromaDB, Ollama, Gmail SMTP, or local MongoDB daemons during test execution.
-- [x] **Verified Metrics**: 21 test files, 122 tests executed, 122 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)).
+- [x] **Verified Metrics**: 22 test files, 125 tests executed, 125 passed (100% pass rate), 0 failures, statement coverage > 88%-100% across core services and utilities ([`BACKEND_TESTING.md`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/docs/04_Technical/BACKEND_TESTING.md)).
 
 ---
 
@@ -173,7 +174,7 @@
 ### 4.2 Backend Status
 - **Framework**: Node.js + Express 5
 - **Health**: Fully operational. Server runs on port 3000 (`npm run dev`).
-- **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 122 tests passing across 21 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
+- **Automated Testing Suite**: Vitest 5.1 + Supertest 7.3 + V8 Coverage with 125 tests passing across 22 test suites (`npm test`, `npm run test:unit`, `npm run test:integration`, `npm run test:coverage`).
 - **One-Click Local Launcher**: Root Windows launcher scripts ([`start.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/start.bat) and [`run.bat`](file:///c:/Users/mohd%20affan/major-projects/ai-kms/run.bat)) for automatically launching all local services (Ollama local service, ChromaDB server if present, Express Backend on port 3000, Vite Frontend on port 5173, and automated browser launch to `http://localhost:5173`).
 - **Email Service**: Nodemailer 10.2 configured with Gmail SMTP ([sendEmail.js](file:///c:/Users/mohd%20affan/major-projects/ai-kms/Backend/src/utils/sendEmail.js)).
 - **Middlewares Operational**: CORS, express.json(), static file serving (`/uploads`), auth middleware (`protect`), upload middleware (`uploadDocumentMiddleware`), error handling middleware (`notFound`, `errorHandler`).

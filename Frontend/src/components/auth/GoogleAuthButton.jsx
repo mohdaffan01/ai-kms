@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { googleAuthApi } from '../../api/authApi';
@@ -14,7 +14,7 @@ import { googleAuthApi } from '../../api/authApi';
  */
 const GoogleAuthButton = ({ mode = 'login', onError, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [gisLoaded, setGisLoaded] = useState(false);
+  const [gisLoaded, setGisLoaded] = useState(() => Boolean(window.google?.accounts?.id));
   const [isRendered, setIsRendered] = useState(false);
   const googleBtnRef = useRef(null);
   const navigate = useNavigate();
@@ -22,63 +22,67 @@ const GoogleAuthButton = ({ mode = 'login', onError, onSuccess }) => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   // Process ID Token credential returned by Google
-  const handleCredentialResponse = async (response) => {
-    if (!response || !response.credential) {
-      const msg = 'No credential received from Google.';
-      if (onError) onError(msg);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      if (onError) onError('');
-
-      const data = await googleAuthApi(response.credential);
-
-      if (data && data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem(
-          'user',
-          JSON.stringify({
-            id: data._id,
-            name: data.name,
-            email: data.email,
-            role: data.role,
-            profileImage: data.profileImage,
-            authProvider: data.authProvider || 'google',
-          })
-        );
-
-        if (onSuccess) {
-          onSuccess(data);
-        } else {
-          navigate('/dashboard');
-        }
-      } else {
-        const errorMsg = 'Google authentication failed: Token not received from server.';
-        if (onError) onError(errorMsg);
+  const handleCredentialResponse = useCallback(
+    async (response) => {
+      if (!response || !response.credential) {
+        const msg = 'No credential received from Google.';
+        if (onError) onError(msg);
+        return;
       }
-    } catch (err) {
-      console.error('Google OAuth backend error:', err);
-      const msg =
-        err.response?.data?.message ||
-        'Google authentication failed. Please verify your connection or try again.';
-      if (onError) onError(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      try {
+        setIsLoading(true);
+        if (onError) onError('');
+
+        const data = await googleAuthApi(response.credential);
+
+        if (data && data.token) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              id: data._id,
+              name: data.name,
+              email: data.email,
+              role: data.role,
+              profileImage: data.profileImage,
+              authProvider: data.authProvider || 'google',
+            })
+          );
+
+          if (onSuccess) {
+            onSuccess(data);
+          } else {
+            navigate('/dashboard');
+          }
+        } else {
+          const errorMsg = 'Google authentication failed: Token not received from server.';
+          if (onError) onError(errorMsg);
+        }
+      } catch (err) {
+        console.error('Google OAuth backend error:', err);
+        const msg =
+          err.response?.data?.message ||
+          'Google authentication failed. Please verify your connection or try again.';
+        if (onError) onError(msg);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [navigate, onError, onSuccess]
+  );
 
   // Dynamically load Google Identity Services script
   useEffect(() => {
     if (window.google?.accounts?.id) {
-      setGisLoaded(true);
       return;
     }
 
     const SCRIPT_ID = 'google-gsi-client';
     let script = document.getElementById(SCRIPT_ID);
+
+    const onScriptLoaded = () => setGisLoaded(true);
 
     if (!script) {
       script = document.createElement('script');
@@ -86,14 +90,20 @@ const GoogleAuthButton = ({ mode = 'login', onError, onSuccess }) => {
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = () => setGisLoaded(true);
+      script.onload = onScriptLoaded;
       script.onerror = () => {
         console.warn('Google Identity Services script failed to load.');
       };
       document.body.appendChild(script);
     } else {
-      script.addEventListener('load', () => setGisLoaded(true));
+      script.addEventListener('load', onScriptLoaded);
     }
+
+    return () => {
+      if (script) {
+        script.removeEventListener('load', onScriptLoaded);
+      }
+    };
   }, []);
 
   // Initialize and render official Google GIS button if Client ID is configured
@@ -125,7 +135,7 @@ const GoogleAuthButton = ({ mode = 'login', onError, onSuccess }) => {
     } catch (err) {
       console.warn('Google button render exception:', err);
     }
-  }, [gisLoaded, clientId, mode]);
+  }, [gisLoaded, clientId, mode, handleCredentialResponse]);
 
   // Click handler for custom button fallback
   const handleCustomButtonClick = () => {
