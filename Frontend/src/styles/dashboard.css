@@ -548,9 +548,11 @@ body.resizing-sidebar * {
 .content-list::-webkit-scrollbar {
   width: 4px;
 }
+
 .content-list::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .content-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
